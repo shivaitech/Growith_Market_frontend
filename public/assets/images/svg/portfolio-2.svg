@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="pg2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <!-- Document + chart: Review Token Details -->
+  <rect x="14" y="6" width="42" height="56" rx="5" stroke="url(#pg2)" stroke-width="2.5" fill="none"/>
+  <line x1="24" y1="18" x2="46" y2="18" stroke="url(#pg2)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="24" y1="26" x2="40" y2="26" stroke="url(#pg2)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="24" y1="34" x2="44" y2="34" stroke="url(#pg2)" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+  <!-- Bar chart -->
+  <rect x="24" y="50" width="6" height="6" rx="1" fill="url(#pg2)" opacity="0.4"/>
+  <rect x="33" y="44" width="6" height="12" rx="1" fill="url(#pg2)" opacity="0.6"/>
+  <rect x="42" y="40" width="6" height="16" rx="1" fill="url(#pg2)" opacity="0.8"/>
+  <!-- Checkmark badge -->
+  <circle cx="60" cy="54" r="14" fill="url(#pg2)" opacity="0.15"/>
+  <circle cx="60" cy="54" r="14" stroke="url(#pg2)" stroke-width="2.5" fill="none"/>
+  <polyline points="52,54 57,59 68,48" stroke="url(#pg2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

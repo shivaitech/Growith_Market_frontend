@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 550" fill="none">
+  <defs>
+    <linearGradient id="pg1" x1="0" y1="0" x2="480" y2="550" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+    <linearGradient id="pg2" x1="480" y1="0" x2="0" y2="550" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5C27FE"/>
+      <stop offset="100%" stop-color="#DEC7FF"/>
+    </linearGradient>
+    <filter id="glow-p">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Flow path (vertical dotted) -->
+  <line x1="240" y1="20" x2="240" y2="530" stroke="url(#pg1)" stroke-width="1.5" stroke-dasharray="6,8" opacity="0.2"/>
+
+  <!-- Step 1 - Search/Discover -->
+  <circle cx="240" cy="80" r="40" stroke="url(#pg1)" stroke-width="1.5" fill="url(#pg1)" fill-opacity="0.06"/>
+  <circle cx="240" cy="80" r="28" stroke="url(#pg1)" stroke-width="1" fill="url(#pg1)" fill-opacity="0.04" opacity="0.7"/>
+  <!-- Magnifying glass -->
+  <circle cx="235" cy="75" r="12" stroke="url(#pg1)" stroke-width="2" fill="none" opacity="0.5"/>
+  <line x1="244" y1="84" x2="252" y2="92" stroke="url(#pg1)" stroke-width="2" opacity="0.5"/>
+  <!-- Label -->
+  <rect x="290" y="64" width="120" height="32" rx="16" fill="url(#pg1)" fill-opacity="0.08" stroke="url(#pg1)" stroke-width="0.8" opacity="0.4"/>
+  <text x="350" y="85" text-anchor="middle" fill="url(#pg1)" font-size="11" font-weight="600" font-family="system-ui" opacity="0.7">Discover</text>
+
+  <!-- Step 2 - Review -->
+  <circle cx="240" cy="200" r="40" stroke="url(#pg2)" stroke-width="1.5" fill="url(#pg2)" fill-opacity="0.06"/>
+  <circle cx="240" cy="200" r="28" stroke="url(#pg2)" stroke-width="1" fill="url(#pg2)" fill-opacity="0.04" opacity="0.7"/>
+  <!-- Document icon -->
+  <rect x="228" y="185" width="20" height="26" rx="3" stroke="url(#pg2)" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <line x1="233" y1="194" x2="243" y2="194" stroke="url(#pg2)" stroke-width="1" opacity="0.3"/>
+  <line x1="233" y1="199" x2="243" y2="199" stroke="url(#pg2)" stroke-width="1" opacity="0.3"/>
+  <line x1="233" y1="204" x2="240" y2="204" stroke="url(#pg2)" stroke-width="1" opacity="0.3"/>
+  <!-- Label -->
+  <rect x="70" y="184" width="110" height="32" rx="16" fill="url(#pg2)" fill-opacity="0.08" stroke="url(#pg2)" stroke-width="0.8" opacity="0.4"/>
+  <text x="125" y="205" text-anchor="middle" fill="url(#pg2)" font-size="11" font-weight="600" font-family="system-ui" opacity="0.7">Review</text>
+
+  <!-- Step 3 - KYC -->
+  <circle cx="240" cy="320" r="40" stroke="url(#pg1)" stroke-width="1.5" fill="url(#pg1)" fill-opacity="0.06"/>
+  <circle cx="240" cy="320" r="28" stroke="url(#pg1)" stroke-width="1" fill="url(#pg1)" fill-opacity="0.04" opacity="0.7"/>
+  <!-- Shield -->
+  <path d="M230 310 L240 304 L250 310 L250 328 Q240 336 230 328 Z" stroke="url(#pg1)" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M236 320 L239 323 L246 316" stroke="url(#pg1)" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <!-- Label -->
+  <rect x="290" y="304" width="110" height="32" rx="16" fill="url(#pg1)" fill-opacity="0.08" stroke="url(#pg1)" stroke-width="0.8" opacity="0.4"/>
+  <text x="345" y="325" text-anchor="middle" fill="url(#pg1)" font-size="11" font-weight="600" font-family="system-ui" opacity="0.7">KYC Verify</text>
+
+  <!-- Step 4 - Invest -->
+  <circle cx="240" cy="440" r="40" stroke="url(#pg2)" stroke-width="1.5" fill="url(#pg2)" fill-opacity="0.06" filter="url(#glow-p)"/>
+  <circle cx="240" cy="440" r="28" stroke="url(#pg2)" stroke-width="1" fill="url(#pg2)" fill-opacity="0.04" opacity="0.7"/>
+  <!-- Diamond/Token -->
+  <path d="M232 440 L240 428 L248 440 L240 452 Z" stroke="url(#pg2)" stroke-width="1.5" fill="url(#pg2)" fill-opacity="0.15"/>
+  <!-- Label -->
+  <rect x="70" y="424" width="110" height="32" rx="16" fill="url(#pg2)" fill-opacity="0.08" stroke="url(#pg2)" stroke-width="0.8" opacity="0.4"/>
+  <text x="125" y="445" text-anchor="middle" fill="url(#pg2)" font-size="11" font-weight="600" font-family="system-ui" opacity="0.7">Invest</text>
+
+  <!-- Connector arrows -->
+  <path d="M240 120 L240 160" stroke="url(#pg1)" stroke-width="1.5" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <path d="M240 240 L240 280" stroke="url(#pg2)" stroke-width="1.5" opacity="0.3"/>
+  <path d="M240 360 L240 400" stroke="url(#pg1)" stroke-width="1.5" opacity="0.3"/>
+
+  <!-- Arrow tips -->
+  <polygon points="236,158 240,168 244,158" fill="url(#pg1)" opacity="0.3"/>
+  <polygon points="236,278 240,288 244,278" fill="url(#pg2)" opacity="0.3"/>
+  <polygon points="236,398 240,408 244,398" fill="url(#pg1)" opacity="0.3"/>
+
+  <!-- Particles -->
+  <circle cx="60" cy="120" r="2" fill="#DEC7FF" opacity="0.2"/>
+  <circle cx="420" cy="250" r="2" fill="#5C27FE" opacity="0.25"/>
+  <circle cx="100" cy="400" r="1.5" fill="#DEC7FF" opacity="0.15"/>
+  <circle cx="380" cy="480" r="1.5" fill="#5C27FE" opacity="0.2"/>
+</svg>

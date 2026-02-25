@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 560" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="600" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+    <linearGradient id="bg2" x1="600" y1="0" x2="0" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5C27FE"/>
+      <stop offset="100%" stop-color="#DEC7FF"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="300" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a1535"/>
+      <stop offset="100%" stop-color="#0d0b22"/>
+    </linearGradient>
+    <filter id="glow-bn">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow-bn">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#5C27FE" flood-opacity="0.3"/>
+    </filter>
+    <clipPath id="dashClip">
+      <rect x="120" y="60" width="360" height="440" rx="24"/>
+    </clipPath>
+  </defs>
+
+  <!-- Main dashboard card -->
+  <rect x="120" y="60" width="360" height="440" rx="24" fill="url(#card)" stroke="url(#bg)" stroke-width="1.5" filter="url(#shadow-bn)"/>
+
+  <!-- Top bar -->
+  <rect x="120" y="60" width="360" height="52" rx="0" fill="url(#bg)" fill-opacity="0.06" clip-path="url(#dashClip)"/>
+  <circle cx="152" cy="86" r="6" fill="#FF5F57" opacity="0.7"/>
+  <circle cx="172" cy="86" r="6" fill="#FEBC2E" opacity="0.7"/>
+  <circle cx="192" cy="86" r="6" fill="#28C840" opacity="0.7"/>
+  <text x="300" y="90" text-anchor="middle" fill="url(#bg)" font-size="13" font-weight="600" opacity="0.6" font-family="system-ui">Portfolio Dashboard</text>
+
+  <!-- Total Balance section -->
+  <text x="155" y="140" fill="#8a8a9e" font-size="11" font-family="system-ui">Total Portfolio Value</text>
+  <text x="155" y="168" fill="url(#bg)" font-size="26" font-weight="700" font-family="system-ui">$247,893</text>
+  <text x="340" y="168" fill="#28C840" font-size="13" font-weight="600" font-family="system-ui">+12.4%</text>
+  <!-- Up arrow -->
+  <path d="M330 160 L334 154 L338 160" stroke="#28C840" stroke-width="1.5" fill="none"/>
+
+  <!-- Divider -->
+  <line x1="155" y1="185" x2="445" y2="185" stroke="url(#bg)" stroke-width="0.5" opacity="0.15"/>
+
+  <!-- Mini chart area -->
+  <polyline points="155,240 185,228 215,235 245,215 275,222 305,200 335,208 365,190 395,195 425,175 445,180" stroke="url(#bg)" stroke-width="2" fill="none" opacity="0.7"/>
+  <!-- Chart fill -->
+  <path d="M155,240 L185,228 L215,235 L245,215 L275,222 L305,200 L335,208 L365,190 L395,195 L425,175 L445,180 L445,250 L155,250 Z" fill="url(#bg)" opacity="0.06"/>
+  <!-- Chart dots -->
+  <circle cx="305" cy="200" r="3" fill="url(#bg)" opacity="0.6"/>
+  <circle cx="445" cy="180" r="3" fill="url(#bg)" opacity="0.6"/>
+
+  <!-- Horizontal line under chart -->
+  <line x1="155" y1="258" x2="445" y2="258" stroke="url(#bg)" stroke-width="0.5" opacity="0.1"/>
+
+  <!-- Token list -->
+  <!-- Token 1 -->
+  <circle cx="172" cy="288" r="14" fill="url(#bg)" fill-opacity="0.12" stroke="url(#bg)" stroke-width="1"/>
+  <text x="172" y="293" text-anchor="middle" fill="url(#bg)" font-size="11" font-weight="700" font-family="system-ui">S</text>
+  <text x="198" y="284" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">ShivAI Token</text>
+  <text x="198" y="298" fill="#8a8a9e" font-size="10" font-family="system-ui">5,200 tokens</text>
+  <text x="430" y="284" text-anchor="end" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">$84,500</text>
+  <text x="430" y="298" text-anchor="end" fill="#28C840" font-size="10" font-family="system-ui">+18.2%</text>
+
+  <!-- Token 2 -->
+  <circle cx="172" cy="332" r="14" fill="#7DF9A4" fill-opacity="0.12" stroke="#7DF9A4" stroke-width="1" opacity="0.6"/>
+  <text x="172" y="337" text-anchor="middle" fill="#7DF9A4" font-size="11" font-weight="700" font-family="system-ui" opacity="0.8">G</text>
+  <text x="198" y="328" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">GreenVolt</text>
+  <text x="198" y="342" fill="#8a8a9e" font-size="10" font-family="system-ui">3,100 tokens</text>
+  <text x="430" y="328" text-anchor="end" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">$62,300</text>
+  <text x="430" y="342" text-anchor="end" fill="#28C840" font-size="10" font-family="system-ui">+8.7%</text>
+
+  <!-- Token 3 -->
+  <circle cx="172" cy="376" r="14" fill="#FF6B8A" fill-opacity="0.12" stroke="#FF6B8A" stroke-width="1" opacity="0.6"/>
+  <text x="172" y="381" text-anchor="middle" fill="#FF6B8A" font-size="11" font-weight="700" font-family="system-ui" opacity="0.8">N</text>
+  <text x="198" y="372" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">NovaMed</text>
+  <text x="198" y="386" fill="#8a8a9e" font-size="10" font-family="system-ui">2,800 tokens</text>
+  <text x="430" y="372" text-anchor="end" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">$51,200</text>
+  <text x="430" y="386" text-anchor="end" fill="#FF5F57" font-size="10" font-family="system-ui">-2.1%</text>
+
+  <!-- Token 4 -->
+  <circle cx="172" cy="420" r="14" fill="#4FC3F7" fill-opacity="0.12" stroke="#4FC3F7" stroke-width="1" opacity="0.6"/>
+  <text x="172" y="425" text-anchor="middle" fill="#4FC3F7" font-size="11" font-weight="700" font-family="system-ui" opacity="0.8">Q</text>
+  <text x="198" y="416" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">QuantumPay</text>
+  <text x="198" y="430" fill="#8a8a9e" font-size="10" font-family="system-ui">4,500 tokens</text>
+  <text x="430" y="416" text-anchor="end" fill="white" font-size="13" font-weight="600" font-family="system-ui" opacity="0.9">$49,893</text>
+  <text x="430" y="430" text-anchor="end" fill="#28C840" font-size="10" font-family="system-ui">+5.3%</text>
+
+  <!-- Bottom action bar -->
+  <rect x="155" y="455" width="130" height="32" rx="16" fill="url(#bg)" fill-opacity="0.15" stroke="url(#bg)" stroke-width="1"/>
+  <text x="220" y="475" text-anchor="middle" fill="url(#bg)" font-size="11" font-weight="600" font-family="system-ui">Invest More</text>
+  <rect x="300" y="455" width="130" height="32" rx="16" fill="url(#bg)" fill-opacity="0.06"/>
+  <text x="365" y="475" text-anchor="middle" fill="url(#bg)" font-size="11" font-weight="600" font-family="system-ui" opacity="0.6">Withdraw</text>
+
+  <!-- Decorative floating elements outside card -->
+  <!-- Small card top-left -->
+  <rect x="40" y="120" width="70" height="48" rx="10" fill="url(#card)" stroke="url(#bg)" stroke-width="1" opacity="0.5"/>
+  <circle cx="58" cy="137" r="7" fill="url(#bg)" fill-opacity="0.2"/>
+  <rect x="70" y="132" width="28" height="4" rx="2" fill="url(#bg)" fill-opacity="0.15"/>
+  <rect x="70" y="142" width="20" height="3" rx="1.5" fill="url(#bg)" fill-opacity="0.1"/>
+
+  <!-- Small card top-right -->
+  <rect x="490" y="90" width="70" height="48" rx="10" fill="url(#card)" stroke="url(#bg2)" stroke-width="1" opacity="0.5"/>
+  <text x="525" y="120" text-anchor="middle" fill="#28C840" font-size="13" font-weight="700" font-family="system-ui" opacity="0.6">+12%</text>
+
+  <!-- Floating circles -->
+  <circle cx="65" cy="350" r="20" stroke="url(#bg)" stroke-width="1" fill="url(#bg)" fill-opacity="0.04" opacity="0.4"/>
+  <circle cx="540" cy="320" r="16" stroke="url(#bg2)" stroke-width="1" fill="url(#bg2)" fill-opacity="0.04" opacity="0.4"/>
+
+  <!-- Sparkle particles -->
+  <circle cx="30" cy="200" r="2" fill="#DEC7FF" opacity="0.3"/>
+  <circle cx="570" cy="180" r="2" fill="#5C27FE" opacity="0.35"/>
+  <circle cx="90" cy="430" r="1.5" fill="#DEC7FF" opacity="0.2"/>
+  <circle cx="520" cy="440" r="1.5" fill="#5C27FE" opacity="0.25"/>
+  <circle cx="50" cy="60" r="1.5" fill="#DEC7FF" opacity="0.2"/>
+  <circle cx="550" cy="500" r="2" fill="#DEC7FF" opacity="0.15"/>
+</svg>

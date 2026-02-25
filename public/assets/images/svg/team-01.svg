@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" fill="none">
+  <defs>
+    <linearGradient id="tg1" x1="0" y1="0" x2="300" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="300" rx="150" fill="#1a1535"/>
+  <!-- Shoulder silhouette -->
+  <ellipse cx="150" cy="320" rx="100" ry="80" fill="url(#tg1)" fill-opacity="0.12"/>
+  <!-- Neck -->
+  <rect x="128" y="190" width="44" height="40" rx="10" fill="url(#tg1)" fill-opacity="0.1"/>
+  <!-- Head -->
+  <ellipse cx="150" cy="140" rx="52" ry="60" fill="url(#tg1)" fill-opacity="0.1" stroke="url(#tg1)" stroke-width="1.5" opacity="0.5"/>
+  <!-- Hair (long, female) -->
+  <path d="M98 140 Q95 90 120 65 Q140 48 160 48 Q185 50 200 70 Q210 90 208 140 Q210 170 205 190 L200 185 Q205 155 202 130 Q200 95 180 75 Q165 62 148 60 Q128 62 118 80 Q105 100 105 140 Q102 170 100 190 Z" fill="url(#tg1)" fill-opacity="0.15"/>
+  <!-- Eyes -->
+  <ellipse cx="132" cy="135" rx="6" ry="4" fill="url(#tg1)" fill-opacity="0.25"/>
+  <ellipse cx="168" cy="135" rx="6" ry="4" fill="url(#tg1)" fill-opacity="0.25"/>
+  <!-- Smile -->
+  <path d="M138 158 Q150 168 162 158" stroke="url(#tg1)" stroke-width="1.5" fill="none" opacity="0.25"/>
+  <!-- Decorative circle -->
+  <circle cx="150" cy="150" r="110" stroke="url(#tg1)" stroke-width="0.5" fill="none" opacity="0.1"/>
+</svg>

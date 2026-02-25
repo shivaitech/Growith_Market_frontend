@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" fill="none">
+  <defs>
+    <linearGradient id="tg3" x1="0" y1="0" x2="300" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7DF9A4"/>
+      <stop offset="100%" stop-color="#2ECC71"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="300" rx="150" fill="#1a1535"/>
+  <!-- Shoulders -->
+  <ellipse cx="150" cy="320" rx="105" ry="82" fill="url(#tg3)" fill-opacity="0.12"/>
+  <!-- Neck -->
+  <rect x="126" y="188" width="48" height="42" rx="10" fill="url(#tg3)" fill-opacity="0.1"/>
+  <!-- Head -->
+  <ellipse cx="150" cy="132" rx="52" ry="60" fill="url(#tg3)" fill-opacity="0.1" stroke="url(#tg3)" stroke-width="1.5" opacity="0.5"/>
+  <!-- Short hair (male) -->
+  <path d="M98 120 Q99 72 130 55 Q148 46 165 50 Q190 56 202 80 Q208 100 206 120 L200 118 Q198 90 188 72 Q175 58 155 55 Q138 54 124 64 Q108 80 106 118 Z" fill="url(#tg3)" fill-opacity="0.18"/>
+  <!-- Glasses -->
+  <rect x="115" y="125" width="26" height="18" rx="9" stroke="url(#tg3)" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <rect x="159" y="125" width="26" height="18" rx="9" stroke="url(#tg3)" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <line x1="141" y1="132" x2="159" y2="132" stroke="url(#tg3)" stroke-width="1" opacity="0.25"/>
+  <!-- Eyes behind glasses -->
+  <circle cx="128" cy="134" r="3" fill="url(#tg3)" fill-opacity="0.2"/>
+  <circle cx="172" cy="134" r="3" fill="url(#tg3)" fill-opacity="0.2"/>
+  <!-- Smile -->
+  <path d="M138 160 Q150 168 162 160" stroke="url(#tg3)" stroke-width="1.5" fill="none" opacity="0.2"/>
+  <!-- Decorative -->
+  <circle cx="150" cy="150" r="110" stroke="url(#tg3)" stroke-width="0.5" fill="none" opacity="0.1"/>
+</svg>

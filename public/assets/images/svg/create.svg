@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 420" fill="none">
+  <defs>
+    <linearGradient id="cg1" x1="0" y1="0" x2="500" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+    <linearGradient id="cg2" x1="500" y1="0" x2="0" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5C27FE"/>
+      <stop offset="100%" stop-color="#DEC7FF"/>
+    </linearGradient>
+    <filter id="glow-ct">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rocket body -->
+  <path d="M250 60 Q250 40 260 30 Q270 20 280 30 Q290 40 290 60 L290 220 Q270 240 250 220 Z" fill="url(#cg1)" fill-opacity="0.12" stroke="url(#cg1)" stroke-width="1.5"/>
+  <!-- Rocket window -->
+  <circle cx="270" cy="100" r="18" stroke="url(#cg1)" stroke-width="1.5" fill="url(#cg1)" fill-opacity="0.08"/>
+  <circle cx="270" cy="100" r="10" fill="url(#cg1)" fill-opacity="0.15"/>
+  <!-- Rocket fins -->
+  <path d="M250 180 L225 230 L250 220 Z" fill="url(#cg1)" fill-opacity="0.1" stroke="url(#cg1)" stroke-width="1" opacity="0.6"/>
+  <path d="M290 180 L315 230 L290 220 Z" fill="url(#cg1)" fill-opacity="0.1" stroke="url(#cg1)" stroke-width="1" opacity="0.6"/>
+  <!-- Rocket flame -->
+  <path d="M255 225 Q260 260 270 280 Q280 260 285 225" fill="url(#cg1)" fill-opacity="0.2" filter="url(#glow-ct)"/>
+  <path d="M260 230 Q265 255 270 268 Q275 255 280 230" fill="#FFB74D" fill-opacity="0.2"/>
+
+  <!-- Growth chart below -->
+  <line x1="80" y1="380" x2="460" y2="380" stroke="url(#cg1)" stroke-width="1" opacity="0.15"/>
+  <line x1="80" y1="380" x2="80" y2="290" stroke="url(#cg1)" stroke-width="1" opacity="0.15"/>
+  <!-- Chart bars -->
+  <rect x="110" y="350" width="30" height="30" rx="4" fill="url(#cg1)" fill-opacity="0.08" stroke="url(#cg1)" stroke-width="0.8" opacity="0.4"/>
+  <rect x="160" y="335" width="30" height="45" rx="4" fill="url(#cg1)" fill-opacity="0.1" stroke="url(#cg1)" stroke-width="0.8" opacity="0.5"/>
+  <rect x="210" y="320" width="30" height="60" rx="4" fill="url(#cg1)" fill-opacity="0.12" stroke="url(#cg1)" stroke-width="0.8" opacity="0.5"/>
+  <rect x="260" y="305" width="30" height="75" rx="4" fill="url(#cg1)" fill-opacity="0.14" stroke="url(#cg1)" stroke-width="0.8" opacity="0.6"/>
+  <rect x="310" y="325" width="30" height="55" rx="4" fill="url(#cg1)" fill-opacity="0.1" stroke="url(#cg1)" stroke-width="0.8" opacity="0.5"/>
+  <rect x="360" y="300" width="30" height="80" rx="4" fill="url(#cg1)" fill-opacity="0.16" stroke="url(#cg1)" stroke-width="1" opacity="0.7"/>
+  <rect x="410" y="310" width="30" height="70" rx="4" fill="url(#cg2)" fill-opacity="0.14" stroke="url(#cg2)" stroke-width="0.8" opacity="0.6"/>
+
+  <!-- Trend line -->
+  <polyline points="125,348 175,330 225,315 275,298 325,320 375,292 425,305" stroke="url(#cg1)" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+  <!-- Floating coins/tokens -->
+  <circle cx="100" cy="150" r="18" stroke="url(#cg1)" stroke-width="1.2" fill="url(#cg1)" fill-opacity="0.06" opacity="0.5"/>
+  <text x="100" y="155" text-anchor="middle" fill="url(#cg1)" font-size="14" font-weight="700" font-family="system-ui" opacity="0.4">$</text>
+
+  <circle cx="420" cy="120" r="15" stroke="url(#cg2)" stroke-width="1.2" fill="url(#cg2)" fill-opacity="0.06" opacity="0.4"/>
+  <path d="M414 120 L420 114 L426 120 L420 126 Z" stroke="url(#cg2)" stroke-width="1" fill="none" opacity="0.3"/>
+
+  <circle cx="150" cy="270" r="12" stroke="url(#cg1)" stroke-width="1" fill="url(#cg1)" fill-opacity="0.05" opacity="0.35"/>
+  <circle cx="400" cy="240" r="14" stroke="url(#cg2)" stroke-width="1" fill="url(#cg2)" fill-opacity="0.05" opacity="0.35"/>
+
+  <!-- Star sparkles near rocket -->
+  <path d="M200 80 L203 86 L210 88 L203 90 L200 96 L197 90 L190 88 L197 86 Z" fill="url(#cg1)" fill-opacity="0.3"/>
+  <path d="M340 70 L342 74 L346 75 L342 76 L340 80 L338 76 L334 75 L338 74 Z" fill="url(#cg2)" fill-opacity="0.25"/>
+  <path d="M190 140 L191 143 L194 144 L191 145 L190 148 L189 145 L186 144 L189 143 Z" fill="url(#cg1)" fill-opacity="0.2"/>
+
+  <!-- Scattered particles -->
+  <circle cx="60" cy="80" r="2" fill="#DEC7FF" opacity="0.25"/>
+  <circle cx="440" cy="60" r="2" fill="#5C27FE" opacity="0.3"/>
+  <circle cx="40" cy="350" r="1.5" fill="#DEC7FF" opacity="0.2"/>
+  <circle cx="470" cy="350" r="1.5" fill="#5C27FE" opacity="0.2"/>
+</svg>

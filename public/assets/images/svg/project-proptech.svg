@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="400" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0d0b22"/>
+    </linearGradient>
+    <linearGradient id="pr5" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFB74D"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    <linearGradient id="ac5" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="20" fill="url(#bg5)"/>
+  <!-- Smart Building - Main tower -->
+  <rect x="150" y="80" width="70" height="180" rx="4" stroke="url(#pr5)" stroke-width="2" fill="url(#pr5)" fill-opacity="0.06"/>
+  <!-- Windows grid -->
+  <rect x="162" y="95" width="14" height="10" rx="2" fill="url(#pr5)" fill-opacity="0.2"/>
+  <rect x="182" y="95" width="14" height="10" rx="2" fill="url(#ac5)" fill-opacity="0.15"/>
+  <rect x="162" y="115" width="14" height="10" rx="2" fill="url(#ac5)" fill-opacity="0.15"/>
+  <rect x="182" y="115" width="14" height="10" rx="2" fill="url(#pr5)" fill-opacity="0.2"/>
+  <rect x="162" y="135" width="14" height="10" rx="2" fill="url(#pr5)" fill-opacity="0.15"/>
+  <rect x="182" y="135" width="14" height="10" rx="2" fill="url(#pr5)" fill-opacity="0.2"/>
+  <rect x="162" y="155" width="14" height="10" rx="2" fill="url(#ac5)" fill-opacity="0.2"/>
+  <rect x="182" y="155" width="14" height="10" rx="2" fill="url(#pr5)" fill-opacity="0.15"/>
+  <rect x="162" y="175" width="14" height="10" rx="2" fill="url(#pr5)" fill-opacity="0.15"/>
+  <rect x="182" y="175" width="14" height="10" rx="2" fill="url(#ac5)" fill-opacity="0.15"/>
+  <!-- Side building left -->
+  <rect x="80" y="140" width="55" height="120" rx="3" stroke="url(#ac5)" stroke-width="1.5" fill="url(#ac5)" fill-opacity="0.04"/>
+  <rect x="90" y="155" width="10" height="8" rx="1.5" fill="url(#ac5)" fill-opacity="0.15"/>
+  <rect x="105" y="155" width="10" height="8" rx="1.5" fill="url(#ac5)" fill-opacity="0.15"/>
+  <rect x="90" y="172" width="10" height="8" rx="1.5" fill="url(#ac5)" fill-opacity="0.12"/>
+  <rect x="105" y="172" width="10" height="8" rx="1.5" fill="url(#ac5)" fill-opacity="0.12"/>
+  <rect x="90" y="189" width="10" height="8" rx="1.5" fill="url(#ac5)" fill-opacity="0.1"/>
+  <rect x="105" y="189" width="10" height="8" rx="1.5" fill="url(#ac5)" fill-opacity="0.1"/>
+  <!-- Side building right -->
+  <rect x="235" y="160" width="50" height="100" rx="3" stroke="url(#pr5)" stroke-width="1.5" fill="url(#pr5)" fill-opacity="0.04"/>
+  <rect x="245" y="175" width="10" height="8" rx="1.5" fill="url(#pr5)" fill-opacity="0.15"/>
+  <rect x="260" y="175" width="10" height="8" rx="1.5" fill="url(#pr5)" fill-opacity="0.15"/>
+  <rect x="245" y="192" width="10" height="8" rx="1.5" fill="url(#pr5)" fill-opacity="0.12"/>
+  <rect x="260" y="192" width="10" height="8" rx="1.5" fill="url(#pr5)" fill-opacity="0.12"/>
+  <!-- WiFi/Smart icon on main building -->
+  <path d="M175 205 Q185 195 195 205" stroke="url(#pr5)" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M170 212 Q185 198 200 212" stroke="url(#pr5)" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <circle cx="185" cy="215" r="2.5" fill="url(#pr5)" opacity="0.5"/>
+  <!-- Ground -->
+  <line x1="40" y1="260" x2="360" y2="260" stroke="url(#ac5)" stroke-width="1" opacity="0.15"/>
+  <!-- Connection lines (IoT) -->
+  <path d="M310 120 L285 160" stroke="url(#ac5)" stroke-width="1" opacity="0.2" stroke-dasharray="4,4"/>
+  <path d="M330 140 L285 175" stroke="url(#pr5)" stroke-width="1" opacity="0.2" stroke-dasharray="4,4"/>
+  <!-- IoT nodes -->
+  <circle cx="310" cy="120" r="6" stroke="url(#ac5)" stroke-width="1.5" fill="url(#ac5)" fill-opacity="0.15"/>
+  <circle cx="330" cy="140" r="5" stroke="url(#pr5)" stroke-width="1.5" fill="url(#pr5)" fill-opacity="0.15"/>
+  <circle cx="340" cy="100" r="4" fill="url(#ac5)" fill-opacity="0.2"/>
+  <!-- Particles -->
+  <circle cx="50" cy="60" r="2" fill="#FFB74D" opacity="0.3"/>
+  <circle cx="360" cy="50" r="2" fill="#DEC7FF" opacity="0.2"/>
+</svg>

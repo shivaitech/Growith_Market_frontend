@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="400" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a0f3c"/>
+      <stop offset="100%" stop-color="#0d0b22"/>
+    </linearGradient>
+    <linearGradient id="ac1" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="20" fill="url(#bg1)"/>
+  <!-- Neural Network / AI Brain -->
+  <!-- Nodes -->
+  <circle cx="200" cy="100" r="18" stroke="url(#ac1)" stroke-width="2" fill="url(#ac1)" fill-opacity="0.15"/>
+  <circle cx="140" cy="150" r="12" stroke="url(#ac1)" stroke-width="1.5" fill="url(#ac1)" fill-opacity="0.1"/>
+  <circle cx="260" cy="150" r="12" stroke="url(#ac1)" stroke-width="1.5" fill="url(#ac1)" fill-opacity="0.1"/>
+  <circle cx="110" cy="210" r="10" stroke="url(#ac1)" stroke-width="1.5" fill="url(#ac1)" fill-opacity="0.08"/>
+  <circle cx="170" cy="220" r="10" stroke="url(#ac1)" stroke-width="1.5" fill="url(#ac1)" fill-opacity="0.08"/>
+  <circle cx="230" cy="220" r="10" stroke="url(#ac1)" stroke-width="1.5" fill="url(#ac1)" fill-opacity="0.08"/>
+  <circle cx="290" cy="210" r="10" stroke="url(#ac1)" stroke-width="1.5" fill="url(#ac1)" fill-opacity="0.08"/>
+  <circle cx="80" cy="160" r="6" fill="url(#ac1)" fill-opacity="0.3"/>
+  <circle cx="320" cy="160" r="6" fill="url(#ac1)" fill-opacity="0.3"/>
+  <!-- Connections -->
+  <line x1="200" y1="100" x2="140" y2="150" stroke="url(#ac1)" stroke-width="1.2" opacity="0.4"/>
+  <line x1="200" y1="100" x2="260" y2="150" stroke="url(#ac1)" stroke-width="1.2" opacity="0.4"/>
+  <line x1="140" y1="150" x2="110" y2="210" stroke="url(#ac1)" stroke-width="1" opacity="0.3"/>
+  <line x1="140" y1="150" x2="170" y2="220" stroke="url(#ac1)" stroke-width="1" opacity="0.3"/>
+  <line x1="260" y1="150" x2="230" y2="220" stroke="url(#ac1)" stroke-width="1" opacity="0.3"/>
+  <line x1="260" y1="150" x2="290" y2="210" stroke="url(#ac1)" stroke-width="1" opacity="0.3"/>
+  <line x1="140" y1="150" x2="80" y2="160" stroke="url(#ac1)" stroke-width="0.8" opacity="0.2"/>
+  <line x1="260" y1="150" x2="320" y2="160" stroke="url(#ac1)" stroke-width="0.8" opacity="0.2"/>
+  <!-- Brain outline -->
+  <path d="M160 70 Q200 40 240 70 Q280 90 270 130 Q280 170 240 190 Q200 210 160 190 Q120 170 130 130 Q120 90 160 70Z" stroke="url(#ac1)" stroke-width="1.5" fill="none" opacity="0.2"/>
+  <!-- AI text chip -->
+  <rect x="175" y="85" width="50" height="30" rx="6" fill="url(#ac1)" fill-opacity="0.2" stroke="url(#ac1)" stroke-width="1"/>
+  <text x="200" y="105" text-anchor="middle" fill="#DEC7FF" font-size="14" font-weight="bold" font-family="system-ui">AI</text>
+  <!-- Floating particles -->
+  <circle cx="60" cy="80" r="2" fill="#DEC7FF" opacity="0.3"/>
+  <circle cx="340" cy="70" r="2.5" fill="#5C27FE" opacity="0.4"/>
+  <circle cx="50" cy="250" r="1.5" fill="#DEC7FF" opacity="0.2"/>
+  <circle cx="350" cy="240" r="2" fill="#5C27FE" opacity="0.3"/>
+</svg>

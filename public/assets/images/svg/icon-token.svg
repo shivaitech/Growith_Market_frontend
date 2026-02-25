@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" fill="none">
+  <defs>
+    <linearGradient id="tk" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <circle cx="30" cy="30" r="28" fill="url(#tk)" fill-opacity="0.15" stroke="url(#tk)" stroke-width="2"/>
+  <circle cx="30" cy="30" r="20" fill="url(#tk)" fill-opacity="0.08" stroke="url(#tk)" stroke-width="1"/>
+  <!-- Diamond/token shape -->
+  <path d="M22 30 L30 18 L38 30 L30 42 Z" fill="url(#tk)" fill-opacity="0.25" stroke="url(#tk)" stroke-width="1.5"/>
+  <!-- Inner facet -->
+  <line x1="30" y1="18" x2="30" y2="42" stroke="url(#tk)" stroke-width="0.8" opacity="0.2"/>
+  <line x1="22" y1="30" x2="38" y2="30" stroke="url(#tk)" stroke-width="0.8" opacity="0.2"/>
+</svg>

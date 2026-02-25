@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="av3" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF9ED8"/>
+      <stop offset="100%" stop-color="#C62EAA"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="100" fill="#1a1535"/>
+  <ellipse cx="100" cy="215" rx="68" ry="55" fill="url(#av3)" fill-opacity="0.12"/>
+  <rect x="85" y="129" width="30" height="26" rx="8" fill="url(#av3)" fill-opacity="0.1"/>
+  <ellipse cx="100" cy="94" rx="35" ry="40" fill="url(#av3)" fill-opacity="0.1" stroke="url(#av3)" stroke-width="1.2" opacity="0.5"/>
+  <!-- Long hair female -->
+  <path d="M65 94 Q63 55 80 38 Q95 25 106 26 Q125 28 138 48 Q145 65 143 94 Q146 120 142 138 L138 135 Q142 115 140 90 Q138 62 128 48 Q118 35 104 33 Q90 34 80 46 Q70 60 70 90 Q68 118 70 138 Z" fill="url(#av3)" fill-opacity="0.16"/>
+  <ellipse cx="88" cy="90" rx="4.5" ry="3" fill="url(#av3)" fill-opacity="0.25"/>
+  <ellipse cx="112" cy="90" rx="4.5" ry="3" fill="url(#av3)" fill-opacity="0.25"/>
+  <!-- Eyelashes -->
+  <line x1="84" y1="86" x2="82" y2="83" stroke="url(#av3)" stroke-width="0.8" opacity="0.2"/>
+  <line x1="116" y1="86" x2="118" y2="83" stroke="url(#av3)" stroke-width="0.8" opacity="0.2"/>
+  <path d="M93 110 Q100 116 107 110" stroke="url(#av3)" stroke-width="1.2" fill="none" opacity="0.22"/>
+  <circle cx="100" cy="100" r="75" stroke="url(#av3)" stroke-width="0.4" fill="none" opacity="0.08"/>
+</svg>

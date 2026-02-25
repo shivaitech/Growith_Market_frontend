@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="av4" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7DF9A4"/>
+      <stop offset="100%" stop-color="#2ECC71"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="100" fill="#1a1535"/>
+  <ellipse cx="100" cy="215" rx="72" ry="56" fill="url(#av4)" fill-opacity="0.12"/>
+  <rect x="84" y="128" width="32" height="30" rx="8" fill="url(#av4)" fill-opacity="0.1"/>
+  <ellipse cx="100" cy="90" rx="36" ry="42" fill="url(#av4)" fill-opacity="0.1" stroke="url(#av4)" stroke-width="1.2" opacity="0.5"/>
+  <!-- Short hair male -->
+  <path d="M64 86 Q66 48 84 36 Q98 26 112 30 Q130 36 140 56 Q145 72 142 86 L136 84 Q136 68 130 54 Q120 38 108 34 Q94 32 84 42 Q72 56 70 84 Z" fill="url(#av4)" fill-opacity="0.18"/>
+  <ellipse cx="88" cy="88" rx="4.5" ry="3" fill="url(#av4)" fill-opacity="0.25"/>
+  <ellipse cx="112" cy="88" rx="4.5" ry="3" fill="url(#av4)" fill-opacity="0.25"/>
+  <path d="M92 108 Q100 115 108 108" stroke="url(#av4)" stroke-width="1.2" fill="none" opacity="0.22"/>
+  <circle cx="100" cy="100" r="75" stroke="url(#av4)" stroke-width="0.4" fill="none" opacity="0.08"/>
+</svg>

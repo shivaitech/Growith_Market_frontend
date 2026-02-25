@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" fill="none">
+  <defs>
+    <linearGradient id="at" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <circle cx="30" cy="30" r="28" fill="#1a1535" stroke="url(#at)" stroke-width="1.5"/>
+  <!-- Neural network mini icon -->
+  <circle cx="22" cy="22" r="4" fill="url(#at)" fill-opacity="0.2" stroke="url(#at)" stroke-width="1"/>
+  <circle cx="38" cy="22" r="4" fill="url(#at)" fill-opacity="0.2" stroke="url(#at)" stroke-width="1"/>
+  <circle cx="30" cy="36" r="4" fill="url(#at)" fill-opacity="0.2" stroke="url(#at)" stroke-width="1"/>
+  <line x1="22" y1="22" x2="38" y2="22" stroke="url(#at)" stroke-width="0.8" opacity="0.3"/>
+  <line x1="22" y1="22" x2="30" y2="36" stroke="url(#at)" stroke-width="0.8" opacity="0.3"/>
+  <line x1="38" y1="22" x2="30" y2="36" stroke="url(#at)" stroke-width="0.8" opacity="0.3"/>
+  <!-- S letter -->
+  <text x="30" y="34" text-anchor="middle" fill="url(#at)" font-size="16" font-weight="700" font-family="system-ui" opacity="0.4">S</text>
+</svg>

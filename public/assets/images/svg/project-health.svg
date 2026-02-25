@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="400" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a0f2e"/>
+      <stop offset="100%" stop-color="#0d0b22"/>
+    </linearGradient>
+    <linearGradient id="hl3" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF6B8A"/>
+      <stop offset="100%" stop-color="#C62E65"/>
+    </linearGradient>
+    <linearGradient id="ac3" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="20" fill="url(#bg3)"/>
+  <!-- DNA Helix -->
+  <path d="M120 40 Q160 80 120 120 Q80 160 120 200 Q160 240 120 280" stroke="url(#hl3)" stroke-width="2" fill="none" opacity="0.5"/>
+  <path d="M170 40 Q130 80 170 120 Q210 160 170 200 Q130 240 170 280" stroke="url(#ac3)" stroke-width="2" fill="none" opacity="0.5"/>
+  <!-- Cross connections -->
+  <line x1="128" y1="60" x2="162" y2="60" stroke="url(#hl3)" stroke-width="1.5" opacity="0.3"/>
+  <line x1="110" y1="100" x2="180" y2="100" stroke="url(#ac3)" stroke-width="1.5" opacity="0.3"/>
+  <line x1="128" y1="140" x2="162" y2="140" stroke="url(#hl3)" stroke-width="1.5" opacity="0.3"/>
+  <line x1="110" y1="180" x2="180" y2="180" stroke="url(#ac3)" stroke-width="1.5" opacity="0.3"/>
+  <line x1="128" y1="220" x2="162" y2="220" stroke="url(#hl3)" stroke-width="1.5" opacity="0.3"/>
+  <line x1="110" y1="260" x2="180" y2="260" stroke="url(#ac3)" stroke-width="1.5" opacity="0.3"/>
+  <!-- Nodes on helix -->
+  <circle cx="120" cy="40" r="4" fill="url(#hl3)" opacity="0.6"/>
+  <circle cx="170" cy="40" r="4" fill="url(#ac3)" opacity="0.6"/>
+  <circle cx="120" cy="120" r="5" fill="url(#hl3)" opacity="0.7"/>
+  <circle cx="170" cy="120" r="5" fill="url(#ac3)" opacity="0.7"/>
+  <circle cx="120" cy="200" r="4" fill="url(#hl3)" opacity="0.6"/>
+  <circle cx="170" cy="200" r="4" fill="url(#ac3)" opacity="0.6"/>
+  <!-- Health Cross -->
+  <rect x="250" y="100" width="80" height="80" rx="16" stroke="url(#hl3)" stroke-width="2" fill="url(#hl3)" fill-opacity="0.06"/>
+  <rect x="280" y="115" width="20" height="50" rx="4" fill="url(#hl3)" fill-opacity="0.3"/>
+  <rect x="265" y="130" width="50" height="20" rx="4" fill="url(#hl3)" fill-opacity="0.3"/>
+  <!-- Heartbeat line -->
+  <polyline points="220,230 250,230 260,210 270,250 280,220 290,230 340,230" stroke="url(#hl3)" stroke-width="2" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Particles -->
+  <circle cx="60" cy="60" r="2" fill="#FF6B8A" opacity="0.3"/>
+  <circle cx="340" cy="50" r="2" fill="#DEC7FF" opacity="0.2"/>
+  <circle cx="350" cy="270" r="1.5" fill="#FF6B8A" opacity="0.2"/>
+</svg>

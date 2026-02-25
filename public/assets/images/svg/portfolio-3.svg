@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="pg3" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DEC7FF"/>
+      <stop offset="100%" stop-color="#5C27FE"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield + person: KYC Verification -->
+  <path d="M40 6 L68 18 L68 42 C68 58 54 70 40 76 C26 70 12 58 12 42 L12 18 Z" stroke="url(#pg3)" stroke-width="2.8" fill="url(#pg3)" fill-opacity="0.08"/>
+  <!-- Person silhouette -->
+  <circle cx="40" cy="32" r="9" stroke="url(#pg3)" stroke-width="2.5" fill="none"/>
+  <path d="M24 58 C24 48 32 42 40 42 C48 42 56 48 56 58" stroke="url(#pg3)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Check badge -->
+  <circle cx="56" cy="22" r="8" fill="url(#pg3)" opacity="0.9"/>
+  <polyline points="52,22 55,25 61,19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
