@@ -32,6 +32,36 @@ body {
 .faq,
 .create {
   background: #070A29 !important;
+  padding: 60px 0 !important;
+}
+.partner {
+  padding: 60px 0 !important;
+}
+
+/* About heading: fit in 2 lines on desktop */
+.about .block-text .heading {
+  font-size: 36px !important;
+  line-height: 1.25 !important;
+}
+.about .about__right .images::after {
+  display: none !important;
+}
+/* About layout: vertically center both columns */
+.about .row.rev {
+  align-items: center !important;
+}
+.about .block-text {
+  padding: 0 0 0 35px !important;
+}
+.about .about__right .images {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+.about .about__right .images img {
+  margin: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
 }
 
 /* Create section image: constrain size & clip overflow */
@@ -121,6 +151,214 @@ body {
     padding-left: 40px !important;
     padding-right: 40px !important;
   }
+}
+
+/* Badge sub-line (extra info line) */
+.badge-subline {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+/* Learn More — clickable link badge (matches action-btn gradient) */
+.banner-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  z-index: 3;
+  text-decoration: none;
+  padding: 5px;
+  border-radius: 10px;
+  background: linear-gradient(89.96deg, rgba(255, 255, 255, 0.05) 0.03%, rgba(255, 255, 255, 0.008) 49.67%, rgba(255, 255, 255, 0.05) 99.96%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.banner-link-badge__text {
+  background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.banner-link-badge__text::after {
+  background: linear-gradient(90deg, rgba(255,255,255,0.13) 0px, rgba(255,255,255,0.13) 77%, rgba(255,255,255,0.5) 92%, rgba(255,255,255,0));
+  content: "";
+  height: 200%;
+  left: -210%;
+  opacity: 0;
+  position: absolute;
+  top: -50%;
+  transition: all 0.7s ease 0s;
+  width: 200%;
+}
+.banner-link-badge:hover .banner-link-badge__text::after {
+  left: -30%;
+  opacity: 1;
+  top: -20%;
+  transition-duration: 0.7s, 0.7s, 0.15s;
+  transition-property: left, top, opacity;
+  transition-timing-function: linear;
+}
+.banner-link-badge svg {
+  color: #fff;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.banner-link-badge:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(92, 39, 254, 0.2);
+  transform: translateY(-2px) !important;
+}
+.banner-link-badge:hover svg {
+  transform: translateX(3px);
+}
+
+/* Position learn-more link badge */
+.badge-learn-more {
+  bottom: 150px;
+  right: -15px;
+}
+
+/* ===== Banner 15% scale-down (desktop only) ===== */
+@media (min-width: 992px) {
+  .banner .banner__left {
+    padding: 108px 0 !important;
+  }
+  .banner .block-text .sub-heading {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    margin-bottom: 18px !important;
+  }
+  .banner .block-text .heading {
+    font-size: 51px !important;
+    margin-bottom: 22px !important;
+  }
+  .banner .block-text .desc {
+    font-size: 14px !important;
+    margin-bottom: 30px !important;
+    padding-right: 100px !important;
+  }
+  .banner .block-text .action-btn span,
+  .banner .banner-cta-group .action-btn span {
+    padding: 14px 44px !important;
+    font-size: 14px !important;
+  }
+  .banner .banner__left .pay {
+    margin-top: 100px !important;
+  }
+  .banner .banner__left .pay h6 {
+    font-size: 14px !important;
+    margin-bottom: 16px !important;
+  }
+  .banner .banner__left .pay .list p {
+    font-size: 12px !important;
+  }
+  .banner .banner__left .pay .list ul li {
+    margin-right: 16px !important;
+  }
+  .banner .banner__left .pay .list ul li a span {
+    font-size: 28px !important;
+  }
+  .banner .banner__right {
+    padding: 70px 0 !important;
+  }
+  .banner .banner__right .image {
+    width: 468px !important;
+    height: 595px !important;
+    border-radius: 110px !important;
+    margin-right: 60px !important;
+  }
+  .banner .banner__right .image img {
+    border-radius: 110px !important;
+  }
+  .banner .banner__right .image::before,
+  .banner .banner__right .image::after {
+    border-radius: 110px !important;
+  }
+  .banner .banner__right .price {
+    padding: 16px !important;
+    border-radius: 25px !important;
+    top: 143px !important;
+  }
+  .banner .banner__right .price .icon {
+    margin-right: 12px !important;
+  }
+  .banner .banner__right .price .icon img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .banner .banner__right .price p {
+    font-size: 12px !important;
+  }
+  .banner .banner__right .price h5 {
+    font-size: 18px !important;
+  }
+  .banner .banner__right .owner {
+    padding: 16px !important;
+    border-radius: 25px !important;
+    bottom: 175px !important;
+  }
+  .banner .banner__right .owner .image {
+    min-width: 56px !important;
+    width: 56px !important;
+    height: 56px !important;
+    margin-right: 12px !important;
+  }
+  .banner .banner__right .owner h5 {
+    font-size: 16px !important;
+  }
+  .banner .banner__right .owner p {
+    font-size: 12px !important;
+  }
+  .banner-link-badge {
+    padding: 7px 14px !important;
+    border-radius: 18px !important;
+  }
+  .banner-link-badge__text {
+    font-size: 11px !important;
+  }
+  .badge-subline {
+    font-size: 9px !important;
+  }
+}
+
+/* Banner CTA group — dual buttons */
+.banner-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.banner-cta-secondary {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.banner-cta-secondary span {
+  background: none !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.85) !important;
+}
+.banner-cta-secondary:hover {
+  border-color: rgba(92, 39, 254, 0.5) !important;
+  background: rgba(92, 39, 254, 0.1) !important;
+}
+.banner-cta-secondary:hover span {
+  -webkit-text-fill-color: #fff !important;
 }
 
 /* Pay section: desktop shows original, mobile shows duplicate below image */
@@ -285,22 +523,32 @@ html, body {
 
 /* =====================================================
    BANNER HEADING — RESPONSIVE FONT SIZES
+   Never exceed 3 lines using clamp + line-clamp
    ===================================================== */
 .banner-heading {
-  font-size: 52px !important;
-  line-height: 1.15 !important;
+  font-size: clamp(22px, 3.5vw, 52px) !important;
+  line-height: 1.2 !important;
+  max-height: 3.6em !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
 }
 @media (max-width: 1200px) {
-  .banner-heading { font-size: 44px !important; }
+  .banner-heading,
+  .banner .block-text .heading { font-size: clamp(22px, 3.8vw, 44px) !important; }
 }
 @media (max-width: 991px) {
-  .banner-heading { font-size: 38px !important; line-height: 1.2 !important; }
+  .banner-heading,
+  .banner .block-text .heading { font-size: clamp(20px, 4.2vw, 34px) !important; line-height: 1.2 !important; }
 }
 @media (max-width: 767px) {
-  .banner-heading { font-size: 30px !important; line-height: 1.25 !important; }
+  .banner-heading,
+  .banner .block-text .heading { font-size: clamp(18px, 5.5vw, 28px) !important; line-height: 1.25 !important; }
 }
 @media (max-width: 479px) {
-  .banner-heading { font-size: 24px !important; line-height: 1.3 !important; }
+  .banner-heading,
+  .banner .block-text .heading { font-size: clamp(16px, 5.8vw, 24px) !important; line-height: 1.25 !important; }
 }
 
 /* =====================================================
@@ -344,13 +592,54 @@ html, body {
     padding: 20px 0 20px !important;
     text-align: center !important;
   }
-  .banner .heading {
-    font-size: 38px !important;
+  .banner .block-text .sub-heading {
+    display: inline-block !important;
+    font-size: 12px !important;
+    padding: 6px 16px !important;
+    margin-bottom: 16px !important;
+    white-space: nowrap !important;
+  }
+  /* Scale down link badge on tablet */
+  .banner-link-badge {
+    padding: 4px !important;
+    border-radius: 8px !important;
+  }
+  .banner-link-badge__text {
+    padding: 6px 14px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+  }
+  .banner-link-badge svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .badge-learn-more {
+    bottom: 120px !important;
+    right: -5px !important;
+  }
+  .badge-subline {
+    font-size: 8px !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+  .banner .heading,
+  .banner .block-text .heading {
+    font-size: 34px !important;
     line-height: 1.2 !important;
   }
-  .banner .desc {
-    font-size: 15px !important;
+  .banner .desc,
+  .banner .block-text .desc {
+    font-size: 14px !important;
     padding-right: 0 !important;
+  }
+  .banner-cta-group {
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 10px !important;
+  }
+  .banner .banner-cta-group .action-btn span {
+    padding: 11px 28px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
   }
   /* Hide desktop pay, show mobile pay below image */
   .pay-desktop { display: none !important; }
@@ -467,10 +756,13 @@ html, body {
     bottom: auto !important;
     padding: 16px 20px !important;
     border-radius: 28px !important;
-    background: #fff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     z-index: 3 !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
-    animation: animate-1 15s linear 0s infinite !important;
+    animation: animate-1 30s linear 0s infinite !important;
   }
   .banner__right .price .icon {
     margin-right: 12px !important;
@@ -483,13 +775,13 @@ html, body {
   }
   .banner__right .price .content { text-align: left !important; }
   .banner__right .price p {
-    color: #000 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
     font-size: 13px !important;
     margin: 0 !important;
     line-height: 1.3 !important;
   }
   .banner__right .price h5 {
-    color: #000 !important;
+    color: #fff !important;
     font-size: 18px !important;
     font-weight: 700 !important;
     margin: 0 !important;
@@ -505,10 +797,13 @@ html, body {
     top: auto !important;
     padding: 16px 20px !important;
     border-radius: 28px !important;
-    background: #fff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     z-index: 3 !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
-    animation: animate-3 5s linear 0s infinite !important;
+    animation: animate-3 20s linear 0s infinite !important;
   }
   .banner__right .owner .image {
     min-width: 56px !important;
@@ -529,16 +824,39 @@ html, body {
   }
   .banner__right .owner .content { text-align: left !important; }
   .banner__right .owner h5 {
-    color: #000 !important;
+    color: #fff !important;
     font-size: 18px !important;
     font-weight: 700 !important;
     margin: 0 0 2px !important;
   }
   .banner__right .owner p {
-    color: #000 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
     font-size: 13px !important;
     margin: 0 !important;
     line-height: 1.3 !important;
+  }
+  .banner__right .price .badge-subline,
+  .banner__right .owner .badge-subline {
+    font-size: 9px !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+  /* Learn more link badge — tablet */
+  .banner-link-badge {
+    padding: 4px !important;
+    border-radius: 8px !important;
+  }
+  .banner-link-badge__text {
+    padding: 6px 14px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+  }
+  .banner-link-badge svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .badge-learn-more {
+    bottom: 120px !important;
+    right: -5px !important;
   }
 
   /* Block text adjustments */
@@ -574,12 +892,12 @@ html, body {
     padding: 50px 18px 18px !important;
   }
   .speciality-box .icon {
-    width: 80px !important;
-    height: 80px !important;
-    min-width: 80px !important;
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
     top: -14px !important;
   }
-  .speciality-box .icon svg {
+  .speciality-box .icon img {
     width: 36px !important;
     height: 36px !important;
   }
@@ -683,7 +1001,7 @@ html, body {
   .toggle-title { font-size: 15px !important; }
 
   /* Create */
-  .create { padding: 40px 0 60px !important; }
+  .create { padding: 60px 0 !important; }
   .create__main > img { display: none !important; }
   .create__main {
     text-align: center !important;
@@ -777,26 +1095,46 @@ html, body {
     text-align: center !important;
   }
 
-  .banner .heading {
-    font-size: 32px !important;
-    line-height: 1.2 !important;
+  .banner .block-text .sub-heading {
+    display: inline-block !important;
+    font-size: 9px !important;
+    padding: 5px 12px !important;
     margin-bottom: 14px !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
   }
 
-  .banner .desc {
-    font-size: 14px !important;
+  .banner .heading,
+  .banner .block-text .heading {
+    font-size: 26px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .banner .desc,
+  .banner .block-text .desc {
+    font-size: 13px !important;
     line-height: 1.6 !important;
-    margin-bottom: 24px !important;
+    margin-bottom: 20px !important;
     padding-right: 0 !important;
   }
 
-  .banner .block-text .action-btn {
-    display: inline-flex !important;
-    margin: 0 auto !important;
+  .banner-cta-group {
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 8px !important;
   }
-  .banner .block-text .action-btn span {
-    padding: 14px 40px !important;
-    font-size: 14px !important;
+  .banner .block-text .action-btn,
+  .banner .banner-cta-group .action-btn {
+    display: inline-flex !important;
+    margin: 0 !important;
+    width: auto !important;
+  }
+  .banner .block-text .action-btn span,
+  .banner .banner-cta-group .action-btn span {
+    padding: 10px 20px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
   }
 
   /* Hide desktop pay, show mobile pay below image */
@@ -904,7 +1242,7 @@ html, body {
     position: relative !important;
     z-index: 2 !important;
   }
-  /* Price badge — floating top-right like desktop */
+  /* Price badge — floating top-right, glass */
   .banner__right .price {
     display: flex !important;
     align-items: center !important;
@@ -915,10 +1253,13 @@ html, body {
     bottom: auto !important;
     padding: 12px 16px !important;
     border-radius: 24px !important;
-    background: #fff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     z-index: 3 !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-    animation: animate-1 15s linear 0s infinite !important;
+    animation: animate-1 30s linear 0s infinite !important;
   }
   .banner__right .price .icon {
     margin-right: 8px !important;
@@ -931,18 +1272,18 @@ html, body {
   }
   .banner__right .price .content { text-align: left !important; }
   .banner__right .price p {
-    color: #000 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
     font-size: 11px !important;
     margin: 0 !important;
     line-height: 1.3 !important;
   }
   .banner__right .price h5 {
-    color: #000 !important;
+    color: #fff !important;
     font-size: 15px !important;
     font-weight: 700 !important;
     margin: 0 !important;
   }
-  /* Owner badge — floating bottom-left like desktop */
+  /* Owner badge — floating bottom-left, glass */
   .banner__right .owner {
     display: flex !important;
     align-items: center !important;
@@ -953,10 +1294,13 @@ html, body {
     top: auto !important;
     padding: 12px 16px !important;
     border-radius: 24px !important;
-    background: #fff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     z-index: 3 !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-    animation: animate-3 5s linear 0s infinite !important;
+    animation: animate-3 20s linear 0s infinite !important;
   }
   .banner__right .owner .image {
     min-width: 46px !important;
@@ -977,16 +1321,39 @@ html, body {
   }
   .banner__right .owner .content { text-align: left !important; }
   .banner__right .owner h5 {
-    color: #000 !important;
+    color: #fff !important;
     font-size: 14px !important;
     font-weight: 700 !important;
     margin: 0 0 2px !important;
   }
   .banner__right .owner p {
-    color: #000 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
     font-size: 11px !important;
     margin: 0 !important;
     line-height: 1.3 !important;
+  }
+  .banner__right .price .badge-subline,
+  .banner__right .owner .badge-subline {
+    font-size: 8px !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+  /* Learn more link badge — phone */
+  .banner-link-badge {
+    padding: 3px !important;
+    border-radius: 7px !important;
+  }
+  .banner-link-badge__text {
+    padding: 5px 12px !important;
+    font-size: 10px !important;
+    border-radius: 5px !important;
+  }
+  .banner-link-badge svg {
+    width: 9px !important;
+    height: 9px !important;
+  }
+  .badge-learn-more {
+    bottom: 90px !important;
+    right: -5px !important;
   }
 
   /* ---- BLOCK TEXT (section headings) ---- */
@@ -1045,12 +1412,12 @@ html, body {
     text-align: center !important;
   }
   .speciality-box .icon {
-    width: 72px !important;
-    height: 72px !important;
-    min-width: 72px !important;
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
     top: -10px !important;
   }
-  .speciality-box .icon svg {
+  .speciality-box .icon img {
     width: 32px !important;
     height: 32px !important;
   }
@@ -1346,7 +1713,7 @@ html, body {
   }
 
   /* ---- CREATE ---- */
-  .create { padding: 40px 0 60px !important; }
+  .create { padding: 50px 0 !important; }
   .create__main {
     flex-direction: column !important;
     text-align: center !important;

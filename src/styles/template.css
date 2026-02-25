@@ -1283,11 +1283,12 @@ a {
 
 .banner {
   position: relative;
-  background: url("/assets/images/background/bg-banner.png") no-repeat;
-  background-size: cover;
+  background: url("/assets/images/background/bg-banner.png") center no-repeat;
+  background-size: center;
+  
 }
 .banner .block-text .heading {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 .banner .block-text .heading span {
   background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
@@ -1323,6 +1324,7 @@ a {
 @media only screen and (max-width: 767px) {
   .banner .banner__left {
     padding: 80px 0 100px;
+    margin-top: 20px;
   }
 }
 .banner .banner__left .pay {
@@ -1402,36 +1404,42 @@ a {
   display: flex;
   align-items: center;
   padding: 20px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 30px;
   position: absolute;
   top: 168px;
   right: 0;
   z-index: 3;
-  animation: animate-1 15s linear 0s infinite;
+  animation: animate-1 30s linear 0s infinite;
 }
 .banner .banner__right .price .icon {
   margin-right: 15px;
   filter: drop-shadow(0px 15px 20px rgba(164, 128, 255, 0.5));
 }
 .banner .banner__right .price p {
-  color: #000000;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
 }
 .banner .banner__right .price h5 {
-  color: #000000;
+  color: #fff;
 }
 .banner .banner__right .owner {
   display: flex;
   align-items: center;
   padding: 20px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 30px;
   position: absolute;
   bottom: 206px;
   left: 4px;
   z-index: 3;
-  animation: animate-3 5s linear 0s infinite;
+  animation: animate-3 20s linear 0s infinite;
 }
 .banner .banner__right .owner .image {
   margin-right: 15px;
@@ -1447,11 +1455,11 @@ a {
   object-fit: cover;
 }
 .banner .banner__right .owner p {
-  color: #000000;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
 }
 .banner .banner__right .owner h5 {
-  color: #000000;
+  color: #fff;
 }
 
 .banner.s2 {
@@ -2835,9 +2843,9 @@ img.mfp-img {
 .speciality-box .icon {
   background: linear-gradient(289.89deg, #DEC7FF -23.71%, #5C27FE 96.09%);
   backdrop-filter: blur(4px);
-  width: 105px;
-  height: 105px;
-  min-width: 105px;
+  width: 70px;
+  height: 70px;
+  min-width: 70px;
   border-radius: 50%;
   display: flex;
   align-items: center;

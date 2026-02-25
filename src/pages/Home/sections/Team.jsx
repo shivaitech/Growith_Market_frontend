@@ -64,7 +64,7 @@ export default function Team() {
               ))}
             </Swiper>
           </div>
-          <div className="col-12">
+          {/* <div className="col-12">
             <div className="brands block-text center">
               <h6 className="sub-heading"><span>Trusted by Institutional Partners</span></h6>
               <Swiper
@@ -87,7 +87,7 @@ export default function Team() {
                 ))}
               </Swiper>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

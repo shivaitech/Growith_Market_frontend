@@ -2,26 +2,30 @@ const steps = [
   {
     id: 1,
     step: 'Step 1',
-    title: 'Discover the Marketplace',
-    desc: 'Browse available private offerings openly. No login required. Explore token details, issuer structure, and documentation before committing.',
+    title: 'Explore Verified Offerings',
+    desc: 'Browse curated digital securities across startups, real estate, media, and structured projects. Every listing is pre-screened before publication.',
+    img: 'onePic1-removebg-preview.png',
   },
   {
     id: 2,
     step: 'Step 2',
-    title: 'Review Token Details',
-    desc: 'Read the full offering page — token economics, legal documents, whitepaper, founder overview, and the smart contract summary on Polygon.',
+    title: 'Review Issuer & Valuation',
+    desc: 'Access the full offering pack: issuer structure, independent valuation basis, risk disclosures, and smart contract summary. Each asset undergoes legal, structural, and financial due diligence before listing.',
+    img: 'onePic2-removebg-preview.png',
   },
   {
     id: 3,
     step: 'Step 3',
-    title: 'Complete KYC & Profile',
-    desc: 'Submit your legal identity, nationality, and contact details. Pass KYC verification. A custodial wallet is automatically created upon approval.',
+    title: 'Complete Investor Verification',
+    desc: 'Submit identity details and pass KYC/AML screening. A secure custodial wallet is created upon approval.',
+    img: 'onePic3-removebg-preview.png',
   },
   {
     id: 4,
     step: 'Step 4',
-    title: 'Invest & Receive Tokens',
-    desc: 'Submit your investment intent. Upon payment confirmation and compliance clearance, tokens are minted directly to your custodial wallet.',
+    title: 'Invest & Receive Token Allocation',
+    desc: 'Confirm investment at the defined issuance price. Upon payment clearance, tokens are minted directly to your custodial wallet with a full audit trail.',
+    img: 'onepic4-removebg-preview.png',
   },
 ]
 
@@ -33,8 +37,8 @@ export default function Portfolio() {
         <div className="row">
           <div className="col-12">
             <div className="block-text center">
-              <h6 className="sub-heading"><span>Investor Flow</span></h6>
-              <h3 className="heading">How to Participate <br /> in a Private Offering</h3>
+              <h6 className="sub-heading"><span>Investor Process</span></h6>
+              <h3 className="heading">How Participation <br /> Works</h3>
             </div>
           </div>
           <div className="col-xl-6 col-md-6">
@@ -43,7 +47,7 @@ export default function Portfolio() {
                 <div className="portfolio-box" key={item.id}>
                   <div className="step">{item.step}</div>
                   <div className="icon">
-                    <img src={`/assets/images/svg/portfolio-${item.id}.svg`} alt={item.title} />
+                    <img src={`/assets/images/partner/${item.img}`} alt={item.title} style={{ width: 80, height: 80, objectFit: 'contain' }} />
                   </div>
                   <div className="content">
                     <h5 className="title">{item.title}</h5>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
-const WORDS = ['Private Placements', 'Exclusive Partnerships', 'Regulated Securities', 'Wealth Growth']
+const WORDS = ['Private Digital Securities', 'Regulated Investments', 'Wealth Growth', 'Exclusive Access', 'Future Unicorns']
 
 export default function Banner() {
   const [wordIndex, setWordIndex] = useState(0)
@@ -26,9 +26,9 @@ export default function Banner() {
           <div className="col-xl-6 col-md-12">
             <div className="banner__left">
               <div className="block-text">
-                <h6 className="sub-heading">Private Investment Platform</h6>
+                <h6 className="sub-heading">EU-Regulated Private Investment Platform</h6>
                 <h2 className="heading banner-heading">
-                  Your Gateway to{' '}
+                  Access{' '}
                   <span
                     className="banner-animated-word"
                     style={{
@@ -44,9 +44,13 @@ export default function Banner() {
                   >
                     {WORDS[wordIndex]}
                   </span>
+                  {' '}with Confidence
                 </h2>
-                <p className="desc">EU-Regulated · Individual Partnerships · Compliance-First · Min. $1,000</p>
-                <Link to="/nft" className="action-btn"><span>Become a Partner</span></Link>
+                <p className="desc">Invest in structured, EU-issued digital assets backed by legal documentation, compliance screening, and on-chain transparency.</p>
+                <div className="banner-cta-group">
+                  <Link to="/nft" className="action-btn"><span>Explore Live Offering</span></Link>
+                  <Link to="/about" className="action-btn banner-cta-secondary"><span>Review Documentation</span></Link>
+                </div>
               </div>
               <div className="pay pay-desktop">
                 <h6>Partner Benefits</h6>
@@ -65,7 +69,7 @@ export default function Banner() {
           <div className="col-xl-6 col-md-12 banner-right-col">
             <div className="banner__right">
               <div className="image">
-                <img src="/assets/images/svg/banner.svg" alt="Investment Dashboard" />
+                <img src="/assets/images/partner/HeroShivaAI.jpeg" alt="Investment Dashboard" />
               </div>
               <div className="price">
                 <div className="icon">
@@ -74,6 +78,7 @@ export default function Banner() {
                 <div className="content">
                   <p>Min. Investment</p>
                   <h5>$500</h5>
+                  <span className="badge-subline">Start with confidence</span>
                 </div>
               </div>
               <div className="owner">
@@ -83,8 +88,15 @@ export default function Banner() {
                 <div className="content">
                   <h5>ShivAI Token</h5>
                   <p>Status: LIVE</p>
+                  <span className="badge-subline">EU-Regulated Asset</span>
                 </div>
               </div>
+              <Link to="/about" className="banner-link-badge badge-learn-more">
+                <span className="banner-link-badge__text">
+                  Learn More
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </span>
+              </Link>
             </div>
           </div>
           {/* Partner Benefits — shown below image on mobile/tablet */}
