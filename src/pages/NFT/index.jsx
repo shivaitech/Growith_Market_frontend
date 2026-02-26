@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { nftItems } from '../../data'
+import { tokenOfferings } from '../../data'
 
 function PageTitle({ title, sub }) {
   return (
@@ -30,7 +30,9 @@ export default function NFT() {
       <section className="py-20">
         <div className="container-main">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {nftItems.map((nft) => (
+            {tokenOfferings.map((nft) => {
+              const detailUrl = nft.bid === 'LIVE' ? `/token/${nft.slug}` : '#'
+              return (
               <div
                 key={nft.id}
                 className="nft-card group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2"
@@ -38,16 +40,18 @@ export default function NFT() {
               >
                 {/* Image */}
                 <div className="relative overflow-hidden">
-                  <img
-                    src={nft.image}
-                    alt={nft.title}
-                    className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
-                    onError={(e) => {
-                      e.target.style.background = 'rgba(92,39,254,0.15)'
-                      e.target.style.minHeight = '208px'
-                      e.target.src = ''
-                    }}
-                  />
+                  <Link to={detailUrl}>
+                    <img
+                      src={nft.image}
+                      alt={nft.title}
+                      className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        e.target.style.background = 'rgba(92,39,254,0.15)'
+                        e.target.style.minHeight = '208px'
+                        e.target.src = ''
+                      }}
+                    />
+                  </Link>
                   {/* Status badge */}
                   <div
                     className="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-heading font-semibold text-white"
@@ -65,7 +69,7 @@ export default function NFT() {
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <img
-                      src={nft.ownerImg}
+                      src={nft.logo || nft.ownerImg}
                       alt={nft.owner}
                       className="w-7 h-7 rounded-full object-cover border border-primary/40"
                       onError={(e) => {
@@ -76,25 +80,29 @@ export default function NFT() {
                     <span className="text-white/50 text-xs font-body">{nft.owner}</span>
                   </div>
                   <h4 className="font-heading font-bold text-white text-base mb-3 group-hover:text-secondary transition-colors">
-                    {nft.title}
+                    <Link to={detailUrl} className="text-white hover:text-[#DEC7FF] transition-colors">
+                      {nft.title}
+                    </Link>
                   </h4>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white/40 text-xs font-body mb-0.5">Token Price</p>
                       <p className="text-primary font-heading font-bold text-sm">{nft.price}</p>
                     </div>
-                    <button
+                    <Link
+                      to={detailUrl}
                       className="px-4 py-2 rounded-full text-xs font-heading font-semibold text-white transition-all duration-200"
                       style={{ background: 'rgba(92,39,254,0.3)', border: '1px solid rgba(92,39,254,0.5)' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(92,39,254,0.7)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(92,39,254,0.3)'}
                     >
                       {nft.bid === 'LIVE' ? 'View Offering' : 'Notify Me'}
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

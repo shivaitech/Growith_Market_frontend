@@ -4,14 +4,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Link } from 'react-router-dom'
-
-const projects = [
-  { id: 1, title: 'ShivAI — AI Infrastructure Token', image: '/assets/images/svg/project-ai.svg', status: 'LIVE' },
-  { id: 2, title: 'GreenVolt — Clean Energy Series A', image: '/assets/images/svg/project-energy.svg', status: 'COMING SOON' },
-  { id: 3, title: 'NovaMed — HealthTech Token', image: '/assets/images/svg/project-health.svg', status: 'COMING SOON' },
-  { id: 4, title: 'QuantumPay — Fintech Series B', image: '/assets/images/svg/project-fintech.svg', status: 'COMING SOON' },
-  { id: 5, title: 'UrbanAI — PropTech Token', image: '/assets/images/svg/project-proptech.svg', status: 'COMING SOON' },
-]
+import { tokenOfferings } from '../../../data'
 
 export default function Project() {
   return (
@@ -29,7 +22,7 @@ export default function Project() {
           spaceBetween={30}
           navigation
           pagination={{ clickable: true }}
-          autoplay={{ delay: 4000, disableOnInteraction: false }}
+          autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
           breakpoints={{
             640: { slidesPerView: 1 },
             768: { slidesPerView: 2 },
@@ -37,35 +30,75 @@ export default function Project() {
           }}
           className="pb-14"
         >
-          {projects.map((item) => (
-            <SwiperSlide key={item.id}>
-              <div className="project-box">
-                <div className="image">
-                  <Link to="/nft">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      onError={(e) => {
-                        e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'
-                        e.target.src = ''
-                      }}
-                    />
-                  </Link>
+          {tokenOfferings.map((item) => {
+            const detailUrl = item.bid === 'LIVE' ? `/token/${item.slug}` : '/nft'
+            return (
+              <SwiperSlide key={item.id}>
+                <div className="project-box featured-token-card">
+                  {/* Image */}
+                  <div className="image">
+                    <Link to={detailUrl}>
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        onError={(e) => {
+                          e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'
+                          e.target.src = ''
+                        }}
+                      />
+                    </Link>
+                    {/* Status badge */}
+                    <span className={`token-status-badge ${item.bid === 'LIVE' ? 'token-status-badge--live' : ''}`}>
+                      {item.bid === 'LIVE' ? '● LIVE' : item.bid}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="content">
+                    {/* Logo + issuer */}
+                    <div className="token-card-issuer">
+                      <img
+                        src={item.logo || item.ownerImg}
+                        alt={item.owner}
+                        className="token-card-issuer__img"
+                        onError={(e) => { e.target.style.background = 'rgba(92,39,254,0.2)'; e.target.src = '' }}
+                      />
+                      <span className="token-card-issuer__name">{item.owner}</span>
+                    </div>
+
+                    <Link to={detailUrl} className="font-heading text-white text-base hover:text-[#DEC7FF] transition-colors block mb-1">
+                      {item.title}
+                    </Link>
+
+                    {item.shortDescription && (
+                      <p className="token-card-desc">{item.shortDescription}</p>
+                    )}
+
+                    {/* Key metrics row */}
+                    <div className="token-card-metrics">
+                      <div className="token-card-metric">
+                        <span className="token-card-metric__label">Price</span>
+                        <span className="token-card-metric__value">{item.issuancePrice || item.price}</span>
+                      </div>
+                      <div className="token-card-metric">
+                        <span className="token-card-metric__label">Min. Invest</span>
+                        <span className="token-card-metric__value">{item.minInvestment || 'TBA'}</span>
+                      </div>
+                      <div className="token-card-metric">
+                        <span className="token-card-metric__label">Lock-in</span>
+                        <span className="token-card-metric__value">{item.lockPeriod || 'TBA'}</span>
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    <Link to={detailUrl} className="token-card-cta">
+                      {item.bid === 'LIVE' ? 'View Details' : 'Notify Me'}
+                    </Link>
+                  </div>
                 </div>
-                <div className="content">
-                  <Link to="/nft" className="font-heading text-white text-base hover:text-[#DEC7FF] transition-colors block mb-1">
-                    {item.title}
-                  </Link>
-                  <span
-                    className="text-xs font-heading px-2 py-0.5 rounded-full"
-                    style={{ background: item.status === 'LIVE' ? 'rgba(92,39,254,0.7)' : 'rgba(255,255,255,0.1)', color: 'white' }}
-                  >
-                    {item.status}
-                  </span>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
+              </SwiperSlide>
+            )
+          })}
         </Swiper>
       </div>
     </section>

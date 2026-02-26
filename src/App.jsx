@@ -3,6 +3,7 @@ import Layout from './layouts/Layout'
 import Home from './pages/Home'
 import About from './pages/About'
 import NFT from './pages/NFT'
+import TokenDetail from './pages/TokenDetail'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
 import BlogDetails from './pages/BlogDetails'
@@ -17,6 +18,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
           <Route path="nft" element={<NFT />} />
+          <Route path="token/:slug" element={<TokenDetail />} />
           <Route path="contact" element={<Contact />} />
           <Route path="blog" element={<Blog />} />
           <Route path="blog/:id" element={<BlogDetails />} />

@@ -1,8 +1,3 @@
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination, Autoplay } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/pagination'
-
 const testimonials = [
   {
     id: 1,
@@ -36,32 +31,25 @@ export default function Testimonials() {
             <h6 className="sub-heading"><span>Testimonials</span></h6>
             <h3 className="heading">What Investors Say</h3>
           </div>
-          <Swiper
-            modules={[Pagination, Autoplay]}
-            className="testimonials-swiper"
-            slidesPerView={1}
-            spaceBetween={30}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-          >
-            {testimonials?.map((item) => (
-              <SwiperSlide key={item.id}>
-                <div className="box-testimonial center">
+          <div className="testimonial-cards">
+            {testimonials.map((item) => (
+              <div className="testimonial-card" key={item.id}>
+                <div className="testimonial-card__quote">
                   <img src="/assets/images/svg/quote.svg" alt="quote" />
-                  <p className="text">{item.text}</p>
-                  <div className="info">
-                    <div className="image">
-                      <img src={item.avatar} alt={item.name} />
-                    </div>
-                    <div className="content">
-                      <h5 className="name">{item.name}</h5>
-                      <p>{item.role}</p>
-                    </div>
+                </div>
+                <p className="testimonial-card__text">{item.text}</p>
+                <div className="testimonial-card__author">
+                  <div className="testimonial-card__avatar">
+                    <img src={item.avatar} alt={item.name} />
+                  </div>
+                  <div className="testimonial-card__info">
+                    <h5 className="testimonial-card__name">{item.name}</h5>
+                    <p className="testimonial-card__role">{item.role}</p>
                   </div>
                 </div>
-              </SwiperSlide>
+              </div>
             ))}
-          </Swiper>
+          </div>
         </div>
       </div>
     </section>

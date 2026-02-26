@@ -34,36 +34,25 @@ export default function Portfolio() {
     <section className="portfolio">
       <div className="shape" />
       <div className="container">
-        <div className="row">
-          <div className="col-12">
-            <div className="block-text center">
-              <h6 className="sub-heading"><span>Investor Process</span></h6>
-              <h3 className="heading">How Participation <br /> Works</h3>
-            </div>
-          </div>
-          <div className="col-xl-6 col-md-6">
-            <div className="portfolio__left">
-              {steps.map((item) => (
-                <div className="portfolio-box" key={item.id}>
-                  <div className="step">{item.step}</div>
-                  <div className="icon">
-                    <img src={`/assets/images/partner/${item.img}`} alt={item.title} style={{ width: 80, height: 80, objectFit: 'contain' }} />
-                  </div>
-                  <div className="content">
-                    <h5 className="title">{item.title}</h5>
-                    <p>{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="col-xl-6 col-md-6">
-            <div className="portfolio__right">
-              <div className="image">
-                <img src="/assets/images/svg/portfolio.svg" alt="Investment Flow" />
+        <div className="block-text center">
+          <h6 className="sub-heading"><span>Investor Process</span></h6>
+          <h3 className="heading">How Participation <br /> Works</h3>
+        </div>
+
+        <div className="timeline">
+          <div className="timeline__line" />
+          {steps.map((item, idx) => (
+            <div className={`timeline__item ${idx % 2 !== 0 ? 'timeline__item--right' : ''}`} key={item.id}>
+              <div className="timeline__dot">
+                <img src={`/assets/images/partner/${item.img}`} alt={item.title} />
+              </div>
+              <div className="timeline__card">
+                <div className="timeline__card-badge">{item.step}</div>
+                <h5 className="timeline__card-title">{item.title}</h5>
+                <p className="timeline__card-desc">{item.desc}</p>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
