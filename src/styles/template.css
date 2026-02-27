@@ -1324,7 +1324,7 @@ a {
 @media only screen and (max-width: 767px) {
   .banner .banner__left {
     padding: 80px 0 100px;
-    margin-top: 20px;
+    margin-top: 40px;
   }
 }
 .banner .banner__left .pay {

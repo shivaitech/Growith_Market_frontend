@@ -7,6 +7,14 @@ import { Link } from 'react-router-dom'
 import { tokenOfferings } from '../../../data'
 
 export default function Project() {
+  // Get ShivAI token and one random other token
+  const shivaiToken = tokenOfferings.find(token => token.slug === 'shivai')
+  const otherTokens = tokenOfferings.filter(token => token.slug !== 'shivai')
+  const randomToken = otherTokens[Math.floor(Math.random() * otherTokens.length)]
+  
+  // Featured tokens: ShivAI + 1 random
+  const featuredTokens = [shivaiToken, randomToken].filter(Boolean)
+
   return (
     <section className="project">
       <div className="shape right" />
@@ -26,11 +34,11 @@ export default function Project() {
           breakpoints={{
             640: { slidesPerView: 1 },
             768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
+            1024: { slidesPerView: 2 },
           }}
           className="pb-14"
         >
-          {tokenOfferings.map((item) => {
+          {featuredTokens.map((item) => {
             const detailUrl = item.bid === 'LIVE' ? `/token/${item.slug}` : '/nft'
             return (
               <SwiperSlide key={item.id}>

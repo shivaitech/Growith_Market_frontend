@@ -91,11 +91,13 @@ body {
     max-width: 480px !important;
     height: auto !important;
     border-radius: 40px !important;
-    background: rgba(13, 11, 34, 0.85) !important;
-    backdrop-filter: blur(20px) saturate(1.4) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
-    border: 1px solid rgba(92, 39, 254, 0.15) !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    background: rgba(13, 11, 34, 0.45) !important;
+    backdrop-filter: blur(28px) saturate(1.8) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(1.8) !important;
+    border: 1.5px solid rgba(92, 39, 254, 0.6) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(222, 199, 255, 0.15),
+                0 0 20px rgba(92, 39, 254, 0.25) !important;
     padding: 0 !important;
     z-index: 9999 !important;
   }
@@ -114,7 +116,9 @@ body {
   }
   /* Hide nav, search, join now — hamburger only */
   #main-nav        { display: none !important; }
-  .header__action  { display: none !important; }
+  .header__action  { display: flex !important; flex-direction: column; gap: 8px; }
+  .header__action .search-btn { display: none !important; }
+  .header__action .action-btn { width: 100%; text-align: center; }
   .mobile-button   { display: flex !important; }
 
   /* Style hamburger */
@@ -357,6 +361,17 @@ body {
   gap: 14px;
   flex-wrap: wrap;
 }
+@media (max-width: 767px) {
+  .banner-cta-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .banner-cta-group .action-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
 .banner-cta-secondary {
   background: transparent !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -375,15 +390,199 @@ body {
   -webkit-text-fill-color: #fff !important;
 }
 
+/* Marketplace Enter Button */
+.banner-marketplace-link {
+  margin-top: 24px !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Force full visibility for container */
+.banner .col-12:has(.banner-marketplace-link),
+.banner .col-12 .banner-marketplace-link,
+.banner .banner-marketplace-link {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.marketplace-enter-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 18px 48px !important;
+  background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%) !important;
+  border: 2px solid #DEC7FF !important;
+  border-radius: 14px !important;
+  color: #FFFFFF !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
+  letter-spacing: 0.3px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 
+    0 10px 40px rgba(92, 39, 254, 0.7),
+    0 0 70px rgba(107, 53, 255, 0.5),
+    inset 0 2px 20px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 10px rgba(0, 0, 0, 0.25) !important;
+  animation: marketplacePulse 2.5s ease-in-out infinite !important;
+  z-index: 10 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Gloss overlay effect */
+.marketplace-enter-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent
+  );
+  animation: glossSweep 3s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes glossSweep {
+  0%, 100% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+}
+
+.marketplace-enter-btn:hover::before {
+  animation: none;
+  left: 100%;
+  transition: left 0.6s ease;
+}
+
+.marketplace-enter-btn:hover {
+  background: linear-gradient(135deg, #7D47FF 0%, #B88FFF 100%) !important;
+  border-color: #FFFFFF !important;
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 
+    0 16px 56px rgba(107, 53, 255, 0.9),
+    0 0 90px rgba(157, 111, 255, 0.7),
+    inset 0 2px 24px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.marketplace-enter-btn svg {
+  transition: transform 0.4s ease !important;
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.6)) !important;
+  position: relative !important;
+  z-index: 3 !important;
+  opacity: 1 !important;
+}
+
+.marketplace-enter-btn span {
+  position: relative !important;
+  z-index: 3 !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.marketplace-enter-btn:hover svg:first-child {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.marketplace-enter-btn:hover svg:last-child {
+  transform: translateX(10px);
+}
+
+@keyframes marketplacePulse {
+  0%, 100% {
+    box-shadow: 
+      0 10px 40px rgba(92, 39, 254, 0.7),
+      0 0 70px rgba(107, 53, 255, 0.5),
+      inset 0 2px 20px rgba(255, 255, 255, 0.35),
+      inset 0 -2px 10px rgba(0, 0, 0, 0.25);
+  }
+  50% {
+    box-shadow: 
+      0 12px 48px rgba(107, 53, 255, 0.85),
+      0 0 85px rgba(157, 111, 255, 0.65),
+      inset 0 2px 24px rgba(255, 255, 255, 0.4),
+      inset 0 -2px 10px rgba(0, 0, 0, 0.25);
+  }
+}
+
+@media (max-width: 767px) {
+  .banner-marketplace-link {
+    margin-top: 20px !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .banner .col-12 {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .banner .row {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .banner {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .marketplace-enter-btn {
+    width: 100% !important;
+    max-width: 400px !important;
+    padding: 16px 32px !important;
+    font-size: 16px !important;
+    background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%) !important;
+    border: 2px solid #DEC7FF !important;
+    color: #FFFFFF !important;
+    opacity: 1 !important;
+    filter: none !important;
+    box-shadow: 
+      0 10px 40px rgba(92, 39, 254, 0.7),
+      0 0 70px rgba(107, 53, 255, 0.5),
+      inset 0 2px 20px rgba(255, 255, 255, 0.35),
+      inset 0 -2px 10px rgba(0, 0, 0, 0.25) !important;
+  }
+  .marketplace-enter-btn span {
+    color: #FFFFFF !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .marketplace-enter-btn svg {
+    opacity: 1 !important;
+    stroke: #FFFFFF !important;
+    filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.6)) !important;
+  }
+}
+
 /* Banner sub-heading — slightly larger */
 .banner .block-text .sub-heading {
   font-size: 16px;
   white-space: nowrap;
 }
 
-/* Pay section: desktop shows original, mobile shows duplicate below image */
+/* Pay section: hide mobile version, show only list items on desktop */
 .pay-mobile-wrap { display: none !important; }
 .pay-desktop { display: block !important; }
+.pay-desktop h6 { display: none !important; }
+.pay-desktop .list p { display: none !important; }
+
+/* Global section spacing reduction for consistency */
+.banner, .about, .roadmap, .team, .create, .project, .token, 
+.td-section, section[class*="section"] {
+  padding-top: 50px !important;
+  padding-bottom: 50px !important;
+}
 
 /* Header: always fixed in React SPA */
 .header.is-fixed {
@@ -401,8 +600,13 @@ body {
   background: rgba(7, 10, 41, 0.7) !important;
   backdrop-filter: blur(18px) saturate(1.4) !important;
   -webkit-backdrop-filter: blur(18px) saturate(1.4) !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important;
-  border-bottom: 1px solid rgba(92, 39, 254, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3),
+              0 0 0 1px rgba(92, 39, 254, 0.18),
+              0 1px 0 0 rgba(222, 199, 255, 0.08) inset !important;
+  border-bottom: 1px solid rgba(92, 39, 254, 0.25) !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
 }
 @media (max-width: 991px) {
   .header.is-fixed {
@@ -760,7 +964,25 @@ a, .action-btn {
     font-size: 13px;
   }
   .spec-card__num {
-    font-size: 40px;
+    font-size: 32px !important;
+    color: transparent !important;
+    background: linear-gradient(135deg, rgba(92,39,254,0.5), rgba(222,199,255,0.35)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: pulseGlow 2s ease-in-out infinite !important;
+    filter: drop-shadow(0 0 8px rgba(92,39,254,0.3));
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
   }
 }
 
@@ -929,26 +1151,36 @@ a, .action-btn {
     padding-left: 40px;
   }
   .timeline__line {
-    left: 18px;
+    left: 37px;
+    top: 29px;
   }
   .timeline__item,
   .timeline__item--right {
-    padding-left: 36px !important;
+    margin-bottom: 32px;
+    position: relative;
+    left: -20px;
+    padding-left: 70px !important;
     padding-right: 0 !important;
     justify-content: flex-start;
   }
   .timeline__item::after,
   .timeline__item--right::after {
-    left: 34px !important;
+    left: 35px !important;
     right: auto !important;
-    width: 16px;
-    top: 32px;
+    width: 35px !important;
+    top: 32px !important;
+    height: 2px !important;
+    background: rgba(92,39,254,0.45) !important;
   }
   .timeline__dot {
     left: 18px;
     width: 34px;
     height: 34px;
     top: 18px;
+    transform: translateX(-50%) !important;
+  }
+  .timeline__item:hover .timeline__dot {
+    transform: translateX(-50%) scale(1.1) !important;
   }
   .timeline__dot img {
     width: 38px;
@@ -1098,12 +1330,13 @@ html, body {
     padding-right: 0 !important;
   }
   .banner-cta-group {
-    flex-direction: row !important;
-    justify-content: center !important;
-    gap: 10px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
   .banner-cta-group .action-btn {
-    flex: 1 1 0 !important;
+    width: 100% !important;
+    flex: none !important;
     min-width: 0 !important;
     text-align: center !important;
     justify-content: center !important;
@@ -1116,58 +1349,9 @@ html, body {
     text-align: center !important;
     display: block !important;
   }
-  /* Hide desktop pay, show mobile pay below image */
+  /* Hide both desktop and mobile pay sections on tablet */
   .pay-desktop { display: none !important; }
-  .pay-mobile-wrap {
-    display: block !important;
-    text-align: center !important;
-    margin-top: 32px !important;
-    padding: 0 20px !important;
-  }
-  .pay-mobile {
-    display: inline-block !important;
-    text-align: left !important;
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    border-radius: 16px !important;
-    padding: 18px 24px !important;
-    max-width: 400px !important;
-  }
-  .pay-mobile h6 {
-    font-size: 12px !important;
-    letter-spacing: 0.1em !important;
-    margin-bottom: 10px !important;
-    opacity: 0.7 !important;
-    text-transform: uppercase !important;
-    color: #fff !important;
-  }
-  .pay-mobile .list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    gap: 4px 14px !important;
-  }
-  .pay-mobile .list p {
-    font-size: 12px !important;
-    margin: 0 !important;
-    opacity: 0.5 !important;
-    white-space: nowrap !important;
-    color: #fff !important;
-  }
-  .pay-mobile .banner-pay-list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 4px 12px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    list-style: none !important;
-  }
-  .pay-mobile .banner-pay-list li {
-    font-size: 13px !important;
-    white-space: nowrap !important;
-    opacity: 0.9 !important;
-    color: #fff !important;
-  }
+  .pay-mobile-wrap { display: none !important; }
 
   /* Show image below text on tablet — full desktop look */
   .banner-right-col {
@@ -1346,8 +1530,14 @@ html, body {
     padding: 0 !important;
   }
 
+  /* Global section spacing reduction — tablet */
+  .banner, .about, .roadmap, .team, .create, .project, .token,
+  .td-section, section[class*="section"] {
+    padding-top: 45px !important;
+    padding-bottom: 45px !important;
+  }
+
   /* About */
-  .about { padding: 60px 0 !important; }
   .about__right { display: none !important; }
   .about .col-xl-6.col-md-12 {
     flex: 0 0 100% !important;
@@ -1358,12 +1548,6 @@ html, body {
   .speciality .block-text p { padding: 0 !important; }
 
   /* Portfolio — handled by timeline component CSS */
-
-  /* Project */
-  .project { padding: 60px 0 !important; }
-
-  /* Roadmap */
-  .roadmap { padding: 60px 0 !important; }
   .roadmap__main {
     margin-top: 50px !important;
     flex-direction: column !important;
@@ -1565,15 +1749,16 @@ html, body {
   }
 
   .banner-cta-group {
-    flex-direction: row !important;
-    justify-content: center !important;
-    gap: 8px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
   .banner .block-text .action-btn,
   .banner .banner-cta-group .action-btn {
     display: inline-flex !important;
     margin: 0 !important;
-    flex: 1 1 0 !important;
+    width: 100% !important;
+    flex: none !important;
     min-width: 0 !important;
     text-align: center !important;
     justify-content: center !important;
@@ -1588,58 +1773,9 @@ html, body {
     display: block !important;
   }
 
-  /* Hide desktop pay, show mobile pay below image */
+  /* Hide both desktop and mobile pay sections on mobile */
   .pay-desktop { display: none !important; }
-  .pay-mobile-wrap {
-    display: block !important;
-    text-align: center !important;
-    margin-top: 28px !important;
-    padding: 0 16px !important;
-  }
-  .pay-mobile {
-    display: inline-block !important;
-    text-align: left !important;
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    border-radius: 14px !important;
-    padding: 14px 18px !important;
-    max-width: 320px !important;
-  }
-  .pay-mobile h6 {
-    font-size: 11px !important;
-    letter-spacing: 0.1em !important;
-    margin-bottom: 8px !important;
-    opacity: 0.7 !important;
-    text-transform: uppercase !important;
-    color: #fff !important;
-  }
-  .pay-mobile .list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    gap: 4px 12px !important;
-  }
-  .pay-mobile .list p {
-    font-size: 11px !important;
-    margin: 0 !important;
-    opacity: 0.5 !important;
-    white-space: nowrap !important;
-    color: #fff !important;
-  }
-  .pay-mobile .banner-pay-list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 4px 10px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    list-style: none !important;
-  }
-  .pay-mobile .banner-pay-list li {
-    font-size: 12px !important;
-    white-space: nowrap !important;
-    opacity: 0.9 !important;
-    color: #fff !important;
-  }
+  .pay-mobile-wrap { display: none !important; }
 
   .banner-right-col {
     display: block !important;
@@ -1825,8 +1961,14 @@ html, body {
     padding: 0 !important;
   }
 
+  /* Global section spacing reduction — mobile */
+  .banner, .about, .roadmap, .team, .create, .project, .token,
+  .td-section, section[class*="section"] {
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+  }
+
   /* ---- ABOUT ---- */
-  .about { padding: 50px 0 !important; }
   .about .row.rev {
     flex-direction: column !important;
   }
@@ -1854,7 +1996,6 @@ html, body {
   /* ---- PORTFOLIO — handled by timeline component CSS ---- */
 
   /* ---- PROJECT ---- */
-  .project { padding: 50px 0 !important; }
   .project .container-main {
     padding-left: 16px !important;
     padding-right: 16px !important;
@@ -1893,7 +2034,6 @@ html, body {
   .swiper-pagination { margin-top: 12px !important; }
 
   /* ---- ROADMAP ---- */
-  .roadmap { padding: 50px 0 !important; }
   .roadmap__main {
     padding: 0 !important;
     margin-top: 40px !important;
@@ -2896,7 +3036,6 @@ html, body {
   .td-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .td-founder-grid { grid-template-columns: 1fr; }
   .td-structure-grid { grid-template-columns: 1fr; }
-  .td-section { padding: 60px 0; }
   .td-final-cta-box { padding: 36px 28px; }
 }
 
@@ -2911,7 +3050,6 @@ html, body {
   .td-hero__actions { flex-direction: column; }
   .td-hero__actions .action-btn { width: 100%; text-align: center; }
   .td-hero__actions .action-btn span { display: block; width: 100%; text-align: center; }
-  .td-section { padding: 48px 0; }
   .td-founder-card { padding: 20px; }
   .td-info-card { padding: 18px; }
   .td-allocation { padding: 20px; }
@@ -2935,4 +3073,60 @@ html, body {
   .td-section-nav { gap: 4px; }
   .td-section-nav button { font-size: 11px; padding: 5px 10px; }
   .td-docs-grid { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MARKETPLACE LISTING PAGE
+   ══════════════════════════════════════════════════════════════ */
+
+.page-title {
+  position: relative;
+  overflow: hidden;
+}
+
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 28px;
+}
+
+@media (max-width: 991px) {
+  .marketplace-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-title {
+    padding-top: 120px !important;
+    padding-bottom: 40px !important;
+  }
+  .marketplace-section {
+    padding: 40px 0 !important;
+  }
+  .marketplace-filters {
+    margin-bottom: 32px !important;
+  }
+  .marketplace-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .marketplace-token-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 479px) {
+  .page-title {
+    padding-top: 100px !important;
+    padding-bottom: 32px !important;
+  }
+  .marketplace-filters {
+    gap: 8px !important;
+  }
+  .filter-btn {
+    padding: 8px 18px !important;
+    font-size: 12px !important;
+  }
 }
