@@ -1285,10 +1285,13 @@ a {
   position: relative;
   background: url("/assets/images/background/bg-banner.png") center no-repeat;
   background-size: center;
+
+  padding-top: -20px !important;
   
 }
 .banner .block-text .heading {
-  margin-bottom: 30px;
+  margin-bottom: 10px;
+  
 }
 .banner .block-text .heading span {
   background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);

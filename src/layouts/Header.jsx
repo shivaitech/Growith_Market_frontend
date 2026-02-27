@@ -66,7 +66,8 @@ export default function Header() {
                     <path d="M16.0176 16.4849L19.5416 19.9997" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </a>
-                <Link to="/contact" className="action-btn"><span>Join Now</span></Link>
+                <Link to="/login" className="action-btn action-btn-secondary"><span>Sign In</span></Link>
+                <Link to="/onboarding" className="action-btn"><span>Join Now</span></Link>
               </div>
             </div>
           </div>
@@ -100,7 +101,8 @@ export default function Header() {
             </nav>
             {/* CTA */}
             <div className="mobi-drawer__cta">
-              <Link to="/contact" className="mobi-drawer__btn" onClick={() => setMobileOpen(false)}>Become a Partner</Link>
+              <Link to="/login" className="mobi-drawer__btn mobi-drawer__btn-secondary" onClick={() => setMobileOpen(false)}>Sign In</Link>
+              <Link to="/onboarding" className="mobi-drawer__btn" onClick={() => setMobileOpen(false)}>Join Now</Link>
             </div>
           </div>
         </div>

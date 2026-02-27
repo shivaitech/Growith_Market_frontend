@@ -306,9 +306,9 @@ export default function TokenDetail() {
             <div className="td-final-cta-box__actions">
               {isLive ? (
                 <>
-                  <button className="action-btn td-cta-primary">
+                  <Link to="/onboarding" className="action-btn td-cta-primary">
                     <span>Create Profile & Start KYC</span>
-                  </button>
+                  </Link>
                   <Link to="/contact" className="action-btn banner-cta-secondary">
                     <span>Contact Us</span>
                   </Link>

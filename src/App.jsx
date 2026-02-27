@@ -9,11 +9,24 @@ import Blog from './pages/Blog'
 import BlogDetails from './pages/BlogDetails'
 import RoadmapPage from './pages/Roadmap'
 import TeamPage from './pages/Team'
+import Onboarding from './pages/Onboarding'
+import OnboardingSuccess from './pages/OnboardingSuccess'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import ForgotPassword from './pages/ForgotPassword'
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Standalone routes (no layout) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding/success" element={<OnboardingSuccess />} />
+        
+        {/* Main app routes (with layout) */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
