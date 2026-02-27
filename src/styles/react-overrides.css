@@ -195,6 +195,49 @@ body {
   }
 }
 
+/* Desktop Header Buttons - Match Mobile Style */
+@media (min-width: 768px) {
+  .header__action .action-btn {
+    padding: 5px !important;
+    background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 16px rgba(92, 39, 254, 0.4) !important;
+    border: 1px solid rgba(157, 111, 255, 0.3) !important;
+    transition: all 0.3s ease !important;
+  }
+  .header__action .action-btn:hover {
+    background: linear-gradient(135deg, #7D47FF 0%, #B88FFF 100%) !important;
+    box-shadow: 0 6px 20px rgba(92, 39, 254, 0.5) !important;
+    transform: translateY(-1px) !important;
+  }
+  .header__action .action-btn span {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+    padding: 10px 20px !important;
+  }
+  .header__action .action-btn-secondary {
+    padding: 5px !important;
+    background: rgba(13, 11, 34, 0.6) !important;
+    border: 1.5px solid rgba(92, 39, 254, 0.4) !important;
+    color: #DEC7FF !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 16px rgba(92, 39, 254, 0.2) !important;
+  }
+  .header__action .action-btn-secondary:hover {
+    background: rgba(92, 39, 254, 0.2) !important;
+    border-color: rgba(92, 39, 254, 0.6) !important;
+    box-shadow: 0 6px 20px rgba(92, 39, 254, 0.3) !important;
+    transform: translateY(-1px) !important;
+  }
+  .header__action .action-btn-secondary span {
+    color: #DEC7FF !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+    padding: 10px 20px !important;
+  }
+}
+
 /* Desktop container padding */
 .container,
 .container.big {
@@ -3880,11 +3923,13 @@ select.form-input option {
 .btn-primary {
   background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%);
   color: #FFFFFF;
+  border: 1px solid rgba(157, 111, 255, 0.3) !important;
   box-shadow: 0 8px 24px rgba(92, 39, 254, 0.4), inset 0 2px 12px rgba(255, 255, 255, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #7D47FF 0%, #B88FFF 100%);
+  border-color: rgba(157, 111, 255, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(92, 39, 254, 0.5), inset 0 2px 16px rgba(255, 255, 255, 0.25);
 }
@@ -3906,12 +3951,14 @@ select.form-input option {
   background: rgba(92, 39, 254, 0.12);
   color: #DEC7FF;
   border: 1.5px solid rgba(92, 39, 254, 0.3);
+  box-shadow: 0 4px 16px rgba(92, 39, 254, 0.2);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: rgba(92, 39, 254, 0.2);
   border-color: rgba(92, 39, 254, 0.5);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(92, 39, 254, 0.3);
 }
 
 .btn-secondary:active:not(:disabled) {
@@ -4356,23 +4403,23 @@ select.form-input option {
 /* Branding */
 .login-branding {
   text-align: center;
-  padding: 40px 20px 60px;
+  padding: 30px 20px 40px;
 }
 
 .login-logo {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 800;
   background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   letter-spacing: -1px;
 }
 
 .login-tagline {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -4388,25 +4435,27 @@ select.form-input option {
 }
 
 .login-card {
-  background: rgba(13, 11, 34, 0.5);
-  border-radius: 24px;
-  padding: 32px 24px 40px;
-  border: 1px solid rgba(92, 39, 254, 0.2);
-  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, rgba(92, 39, 254, 0.08), rgba(157, 111, 255, 0.04));
+  border-radius: 20px;
+  padding: 28px 20px 32px;
+  border: 1px solid rgba(92, 39, 254, 0.25);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .login-title {
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   color: #FFFFFF;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   text-align: center;
 }
 
 .login-subtitle {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0 0 28px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 24px 0;
   text-align: center;
 }
 
@@ -4414,14 +4463,14 @@ select.form-input option {
 .login-error-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: rgba(255, 77, 109, 0.1);
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 77, 109, 0.12);
   border: 1px solid rgba(255, 77, 109, 0.3);
-  border-radius: 12px;
+  border-radius: 10px;
   color: #FF6B8A;
-  margin-bottom: 20px;
-  font-size: 14px;
+  margin-bottom: 18px;
+  font-size: 13px;
   animation: slideDown 0.3s ease-out;
 }
 
@@ -4443,29 +4492,29 @@ select.form-input option {
 
 /* Form */
 .login-form {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .login-form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .login-label {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 7px;
   letter-spacing: 0.2px;
 }
 
 .login-input {
   width: 100%;
-  padding: 16px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.98);
   border: 1.5px solid rgba(92, 39, 254, 0.25);
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #2D1B69;
   outline: none;
@@ -4507,11 +4556,11 @@ select.form-input option {
 
 .password-toggle {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4534,11 +4583,11 @@ select.form-input option {
 /* Submit Button */
 .login-submit-btn {
   width: 100%;
-  padding: 18px 24px;
+  padding: 16px 24px;
   background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%);
-  border: none;
+  border: 1px solid rgba(157, 111, 255, 0.3);
   border-radius: 14px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #FFFFFF;
   cursor: pointer;
@@ -4548,11 +4597,12 @@ select.form-input option {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .login-submit-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #7D47FF 0%, #B88FFF 100%);
+  border-color: rgba(157, 111, 255, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(92, 39, 254, 0.5), inset 0 2px 16px rgba(255, 255, 255, 0.25);
 }
@@ -4585,7 +4635,7 @@ select.form-input option {
 .login-forgot-link {
   display: block;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #9D6FFF;
   text-decoration: none;
@@ -4601,7 +4651,7 @@ select.form-input option {
 .login-divider {
   display: flex;
   align-items: center;
-  margin: 28px 0 24px;
+  margin: 22px 0 20px;
   position: relative;
 }
 
@@ -4631,16 +4681,17 @@ select.form-input option {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 16px;
-  background: rgba(13, 11, 34, 0.6);
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.08);
   border: 1.5px solid rgba(92, 39, 254, 0.25);
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(92, 39, 254, 0.15);
 }
 
 .social-btn:hover {
@@ -4685,7 +4736,7 @@ select.form-input option {
   }
 
   .login-branding {
-    padding: 80px 20px 40px;
+    padding: 60px 20px 30px;
   }
 
   .login-content {
@@ -4693,26 +4744,26 @@ select.form-input option {
   }
 
   .login-card {
-    padding: 40px;
+    padding: 32px;
     border-radius: 20px;
   }
 
   .login-title {
-    font-size: 32px;
+    font-size: 26px;
   }
 
   .login-subtitle {
-    font-size: 16px;
-    margin-bottom: 32px;
+    font-size: 15px;
+    margin-bottom: 28px;
   }
 
   .login-input {
-    padding: 18px;
-    font-size: 16px;
+    padding: 14px 16px;
+    font-size: 15px;
   }
 
   .login-submit-btn {
-    padding: 20px 24px;
-    font-size: 17px;
+    padding: 18px 24px;
+    font-size: 16px;
   }
 }
