@@ -22,7 +22,7 @@ function App() {
         {/* Standalone routes (no layout) */}
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />
         

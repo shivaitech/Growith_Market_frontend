@@ -108,26 +108,77 @@ export default function Onboarding() {
     }
   };
 
+  const stepLabels = [
+    'Personal Info',
+    'Address',
+    'Investment Profile',
+    'Identity Verification',
+    'Financial Info',
+    'Terms & Agreements',
+  ];
+
   return (
     <div className="onboarding-container">
-      {/* Mobile App Header */}
-      <div className="onboarding-header">
-        <button className="onboarding-back" onClick={() => currentStep === 1 ? navigate(-1) : prevStep()}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        <h1 className="onboarding-title">Create Profile</h1>
-        <div className="onboarding-header-spacer"></div>
+
+      {/* ── Left Banner (desktop only) ── */}
+      <div className="onboarding-banner">
+        <div className="onboarding-banner-blob onboarding-banner-blob--1"></div>
+        <div className="onboarding-banner-blob onboarding-banner-blob--2"></div>
+        <div className="onboarding-banner-blob onboarding-banner-blob--3"></div>
+
+        <div className="onboarding-banner-content">
+          <h1 className="onboarding-banner-logo">Growith</h1>
+          <p className="onboarding-banner-tagline">Invest. Grow. Repeat.</p>
+          <p className="onboarding-banner-desc">
+            Complete your profile to unlock full access to the Growith investment platform.
+          </p>
+
+          {/* Step progress list */}
+          <ul className="onboarding-banner-steps">
+            {stepLabels.map((label, i) => (
+              <li
+                key={i}
+                className={`ob-step-item ${
+                  i + 1 < currentStep ? 'ob-step-done' :
+                  i + 1 === currentStep ? 'ob-step-active' : ''
+                }`}
+              >
+                <span className="ob-step-num">
+                  {i + 1 < currentStep ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : i + 1}
+                </span>
+                <span className="ob-step-label">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      {/* Progress Bar */}
-      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+      {/* ── Right Panel ── */}
+      <div className="onboarding-right">
+        {/* Header */}
+        <div className="onboarding-header">
+          <button className="onboarding-back" onClick={() => currentStep === 1 ? navigate(-1) : prevStep()}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <h1 className="onboarding-title">Create Profile</h1>
+          <div className="onboarding-header-spacer"></div>
+        </div>
 
-      {/* Step Content */}
-      <div className="onboarding-content">
-        {renderStep()}
-      </div>
+        {/* Progress Bar */}
+        <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+
+        {/* Step Content */}
+        <div className="onboarding-content">
+          {renderStep()}
+        </div>
+      </div>{/* end onboarding-right */}
+
     </div>
   );
 }

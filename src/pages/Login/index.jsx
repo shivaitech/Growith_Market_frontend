@@ -72,28 +72,67 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      {/* Header */}
-      <div className="login-header">
-        <button className="login-back" onClick={() => navigate(-1)} aria-label="Go back">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        
-        <div className="login-header-right">
-          <span className="login-header-text">Don't have an account?</span>
-          <Link to="/onboarding" className="login-header-link">Get Started</Link>
+
+      {/* ── Left Banner (desktop only) ── */}
+      <div className="login-banner">
+        <div className="login-banner-blob login-banner-blob--1"></div>
+        <div className="login-banner-blob login-banner-blob--2"></div>
+        <div className="login-banner-blob login-banner-blob--3"></div>
+
+        <div className="login-banner-content">
+          <h1 className="login-banner-logo">Growith</h1>
+          <p className="login-banner-tagline">Invest. Grow. Repeat.</p>
+          <p className="login-banner-desc">
+            Join thousands of investors growing their portfolio with smart, data-driven insights.
+          </p>
+
+          <ul className="login-banner-features">
+            <li>
+              <span className="feature-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </span>
+              <span>Real-time market analytics</span>
+            </li>
+            <li>
+              <span className="feature-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#9D6FFF" strokeWidth="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </span>
+              <span>Enterprise-grade security</span>
+            </li>
+            <li>
+              <span className="feature-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="#9D6FFF" strokeWidth="2"/><path d="M8 21h8M12 17v4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/></svg>
+              </span>
+              <span>Smart portfolio management</span>
+            </li>
+          </ul>
         </div>
       </div>
 
-      {/* Logo/Branding */}
-      <div className="login-branding">
-        <h1 className="login-logo">Growith</h1>
-        <p className="login-tagline">Invest. Grow. Repeat.</p>
-      </div>
+      {/* ── Right Panel ── */}
+      <div className="login-right">
+        {/* Header */}
+        <div className="login-header">
+          <button className="login-back" onClick={() => navigate(-1)} aria-label="Go back">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
 
-      {/* Content Card */}
-      <div className="login-content">
+          <div className="login-header-right">
+            <span className="login-header-text">Don't have an account?</span>
+            <Link to="/onboarding" className="login-header-link">Get Started</Link>
+          </div>
+        </div>
+
+        {/* Logo/Branding — visible on mobile only */}
+        <div className="login-branding">
+          <h1 className="login-logo">Growith</h1>
+          <p className="login-tagline">Invest. Grow. Repeat.</p>
+        </div>
+
+        {/* Content Card */}
+        <div className="login-content">
         <div className="login-card">
           <h2 className="login-title">Welcome Back</h2>
           <p className="login-subtitle">Enter your details below</p>
@@ -211,8 +250,9 @@ const Login = () => {
               <span>Facebook</span>
             </button>
           </div>
-        </div>
-      </div>
+        </div>{/* end login-card */}
+        </div>{/* end login-content */}
+      </div>{/* end login-right */}
     </div>
   );
 };

@@ -3248,6 +3248,20 @@ html, body {
   min-height: 100vh;
   background: linear-gradient(180deg, #070A29 0%, #0D0B22 100%);
   padding-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Left Banner (hidden on mobile) ── */
+.onboarding-banner {
+  display: none;
+}
+
+/* ── Right panel ── */
+.onboarding-right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* Header - Mobile App Style */
@@ -4003,17 +4017,175 @@ select.form-input option {
   }
 }
 
-/* Desktop Optimizations */
-@media (min-width: 768px) {
+/* ─────────────────────────────────────────
+   Desktop split layout  (≥ 1024 px)
+───────────────────────────────────────── */
+@media (min-width: 1024px) {
   .onboarding-container {
-    padding-bottom: 60px;
+    flex-direction: row;
+    overflow: hidden;
+    height: 100vh;
+    padding-bottom: 0;
+  }
+
+  /* ── Left Banner ── */
+  .onboarding-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a0820 0%, #1a0d4a 50%, #0a0820 100%);
+    padding: 60px 48px;
+  }
+
+  .onboarding-banner-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .onboarding-banner-blob--1 {
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, #5C27FE 0%, transparent 70%);
+    top: -120px; left: -100px;
+  }
+  .onboarding-banner-blob--2 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #9D6FFF 0%, transparent 70%);
+    bottom: -80px; right: -60px;
+  }
+  .onboarding-banner-blob--3 {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #DEC7FF 0%, transparent 70%);
+    top: 50%; left: 55%;
+    transform: translate(-50%, -50%);
+    opacity: 0.15;
+  }
+
+  .onboarding-banner-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 360px;
+  }
+
+  .onboarding-banner-logo {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 8px 0;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .onboarding-banner-tagline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin: 0 0 24px 0;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .onboarding-banner-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.7;
+    margin: 0 0 32px 0;
+  }
+
+  /* Step progress list in banner */
+  .onboarding-banner-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .ob-step-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .ob-step-item.ob-step-active {
+    color: #FFFFFF;
+    font-weight: 700;
+  }
+
+  .ob-step-item.ob-step-done {
+    color: rgba(157,111,255,0.8);
+  }
+
+  .ob-step-num {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: rgba(92,39,254,0.12);
+    border: 1.5px solid rgba(92,39,254,0.25);
+    color: rgba(255,255,255,0.4);
+    transition: all 0.3s ease;
+  }
+
+  .ob-step-item.ob-step-active .ob-step-num {
+    background: linear-gradient(135deg, #6B35FF, #9D6FFF);
+    border-color: #9D6FFF;
+    color: #FFFFFF;
+    box-shadow: 0 0 12px rgba(92,39,254,0.5);
+  }
+
+  .ob-step-item.ob-step-done .ob-step-num {
+    background: linear-gradient(135deg, #6B35FF, #9D6FFF);
+    border-color: #9D6FFF;
+    color: #FFFFFF;
+  }
+
+  .ob-step-label {
+    flex: 1;
+  }
+
+  /* ── Right Panel ── */
+  .onboarding-right {
+    width: 580px;
+    min-width: 580px;
+    max-width: 580px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #070A29 0%, #0D0B22 100%);
   }
 
   .onboarding-header {
-    padding: 20px 40px;
-    border-radius: 0 0 24px 24px;
-    max-width: 600px;
-    margin: 0 auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 20px 32px;
+    background: rgba(7,10,41,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(92,39,254,0.12);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border-radius: 0;
+    max-width: 100%;
+    margin: 0;
   }
 
   .onboarding-title {
@@ -4021,28 +4193,29 @@ select.form-input option {
   }
 
   .progress-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 28px 40px 32px;
-    border-radius: 20px;
-    margin-top: 8px;
+    max-width: 100%;
+    margin: 0;
+    padding: 24px 32px 28px;
+    border-radius: 0;
   }
 
   .onboarding-content {
-    padding: 0 40px 60px;
+    padding: 24px 32px 60px;
+    max-width: 100%;
+    margin: 0;
   }
 
   .step-title {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .step-subtitle {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .form-input {
-    padding: 16px 18px;
-    font-size: 16px;
+    padding: 14px 16px;
+    font-size: 15px;
   }
 
   .summary-grid {
@@ -4051,23 +4224,8 @@ select.form-input option {
 
   .btn-primary,
   .btn-secondary {
-    padding: 18px 32px;
-    font-size: 17px;
-  }
-}
-
-/* Large Desktop */
-@media (min-width: 1024px) {
-  .onboarding-header {
-    max-width: 800px;
-  }
-
-  .progress-container {
-    max-width: 800px;
-  }
-
-  .onboarding-content {
-    max-width: 800px;
+    padding: 16px 28px;
+    font-size: 16px;
   }
 }
 
@@ -4331,6 +4489,20 @@ select.form-input option {
   background: linear-gradient(180deg, #070A29 0%, #0D0B22 100%);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Left Banner ── */
+.login-banner {
+  display: none; /* hidden on mobile */
+}
+
+/* ── Right Panel ── */
+.login-right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* Header */
@@ -4705,25 +4877,146 @@ select.form-input option {
   flex-shrink: 0;
 }
 
-/* Desktop Optimizations */
-@media (min-width: 768px) {
+/* ─────────────────────────────────────────
+   Desktop split layout  (≥ 1024 px)
+───────────────────────────────────────── */
+@media (min-width: 1024px) {
   .login-container {
+    flex-direction: row;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ── Left Banner ── */
+  .login-banner {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a0820 0%, #1a0d4a 50%, #0a0820 100%);
+    padding: 60px 48px;
+  }
+
+  /* Glowing blobs */
+  .login-banner-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .login-banner-blob--1 {
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, #5C27FE 0%, transparent 70%);
+    top: -120px;
+    left: -100px;
+  }
+  .login-banner-blob--2 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #9D6FFF 0%, transparent 70%);
+    bottom: -80px;
+    right: -60px;
+  }
+  .login-banner-blob--3 {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #DEC7FF 0%, transparent 70%);
+    top: 50%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+    opacity: 0.15;
+  }
+
+  .login-banner-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 380px;
+  }
+
+  .login-banner-logo {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 8px 0;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .login-banner-tagline {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0 0 32px 0;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .login-banner-desc {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.7;
+    margin: 0 0 36px 0;
+  }
+
+  .login-banner-features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+  }
+
+  .login-banner-features li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+  }
+
+  .feature-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(92, 39, 254, 0.15);
+    border: 1px solid rgba(92, 39, 254, 0.3);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ── Right Panel ── */
+  .login-right {
+    width: 580px;
+    min-width: 580px;
+    max-width: 580px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #070A29 0%, #0D0B22 100%);
   }
 
   .login-header {
-    position: absolute;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
-    padding: 24px 40px;
-    max-width: 600px;
-    margin: 0 auto;
-    border-radius: 0 0 24px 24px;
+    z-index: 100;
+    padding: 24px 32px;
+    background: rgba(7, 10, 41, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(92, 39, 254, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
   .login-header-text {
@@ -4735,21 +5028,28 @@ select.form-input option {
     font-size: 14px;
   }
 
+  /* Hide mobile branding on desktop — banner shows it */
   .login-branding {
-    padding: 60px 20px 30px;
+    display: none;
   }
 
   .login-content {
-    padding: 0 40px 60px;
+    padding: 40px 32px 60px;
+    max-width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
   }
 
   .login-card {
-    padding: 32px;
+    padding: 36px 32px;
     border-radius: 20px;
   }
 
   .login-title {
-    font-size: 26px;
+    font-size: 28px;
   }
 
   .login-subtitle {
@@ -4767,3 +5067,5 @@ select.form-input option {
     font-size: 16px;
   }
 }
+
+/* DASHBOARD STYLES FOLLOW */
