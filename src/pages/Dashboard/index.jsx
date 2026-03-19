@@ -2013,7 +2013,7 @@ const Dashboard = () => {
         {/* Brand */}
         <div className="db-sidebar-brand">
           <Link to="/" className="db-brand-link">
-            <span className="db-brand-logo">Growith</span>
+            <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="db-brand-logo" />
             <span className="db-brand-sub">Investor Panel</span>
           </Link>
           <button className="db-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu">

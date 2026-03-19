@@ -92,16 +92,7 @@ export default function Footer() {
               </div>
               <div className="footer__bottom">
                 <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
-                  <span style={{
-                    display: 'block',
-                    fontSize: '22px',
-                    fontWeight: '800',
-                    letterSpacing: '-0.5px',
-                    background: 'linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}>Growith</span>
+                  <img src="/assets/images/growith_logo_transparent.png" alt="Growith" style={{ display: 'block', height: '24px', width: 'auto', maxWidth: '100px' }} />
                 </Link>
                 <ul className="list">
                   {footerLinks.map((link) => (

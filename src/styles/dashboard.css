@@ -55,18 +55,17 @@
 }
 
 .db-brand-logo {
-  font-family: 'Conthrax', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6B35FF, #9D6FFF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.04em;
+  display: block;
+  height: 50px;
+  width: auto;
+  max-width: 145px;
+  object-fit: contain;
+  position: relative;
+  left: -12px;
 }
 
 .db-brand-sub {
-  font-size: 10px;
+  font-size: 8px;
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.08em;
   text-transform: uppercase;

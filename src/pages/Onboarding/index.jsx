@@ -127,7 +127,7 @@ export default function Onboarding() {
         <div className="onboarding-banner-blob onboarding-banner-blob--3"></div>
 
         <div className="onboarding-banner-content">
-          <h1 className="onboarding-banner-logo">Growith</h1>
+          <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="onboarding-banner-logo" />
           <p className="onboarding-banner-tagline">Invest. Grow. Repeat.</p>
           <p className="onboarding-banner-desc">
             Complete your profile to unlock full access to the Growith investment platform.

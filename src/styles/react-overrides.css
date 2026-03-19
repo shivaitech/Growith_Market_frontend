@@ -1810,8 +1810,8 @@ html, body {
     flex-direction: column !important;
     justify-content: center !important;
   }
-  .header__logo span:first-child { font-size: 18px !important; line-height: 1 !important; }
-  .header__logo span:last-child  { display: none !important; }
+  .header-logo-img { height: 36px !important; max-width: 155px !important; }
+  .header__logo .logo-slogan { display: none !important; }
   #main-nav { display: none !important; }
   .mobile-button { display: flex !important; }
   .header__action { display: none !important; }
@@ -4074,15 +4074,12 @@ select.form-input option {
   }
 
   .onboarding-banner-logo {
-    font-size: 52px;
-    font-weight: 800;
-    background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 0 0 8px 0;
-    letter-spacing: -2px;
-    line-height: 1;
+    display: block;
+    height: 72px;
+    width: auto;
+    max-width: 300px;
+    margin: 0 auto 12px;
+    object-fit: contain;
   }
 
   .onboarding-banner-tagline {
@@ -4579,14 +4576,12 @@ select.form-input option {
 }
 
 .login-logo {
-  font-size: 36px;
-  font-weight: 800;
-  background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0 0 6px 0;
-  letter-spacing: -1px;
+  display: block;
+  height: 52px;
+  width: auto;
+  max-width: 220px;
+  margin: 0 auto 6px;
+  object-fit: contain;
 }
 
 .login-tagline {
@@ -4940,15 +4935,12 @@ select.form-input option {
   }
 
   .login-banner-logo {
-    font-size: 52px;
-    font-weight: 800;
-    background: linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 0 0 8px 0;
-    letter-spacing: -2px;
-    line-height: 1;
+    display: block;
+    height: 72px;
+    width: auto;
+    max-width: 300px;
+    margin: 0 auto 12px;
+    object-fit: contain;
   }
 
   .login-banner-tagline {

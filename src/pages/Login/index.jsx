@@ -80,7 +80,7 @@ const Login = () => {
         <div className="login-banner-blob login-banner-blob--3"></div>
 
         <div className="login-banner-content">
-          <h1 className="login-banner-logo">Growith</h1>
+          <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="login-banner-logo" />
           <p className="login-banner-tagline">Invest. Grow. Repeat.</p>
           <p className="login-banner-desc">
             Join thousands of investors growing their portfolio with smart, data-driven insights.
@@ -127,7 +127,7 @@ const Login = () => {
 
         {/* Logo/Branding — visible on mobile only */}
         <div className="login-branding">
-          <h1 className="login-logo">Growith</h1>
+          <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="login-logo" />
           <p className="login-tagline">Invest. Grow. Repeat.</p>
         </div>
 

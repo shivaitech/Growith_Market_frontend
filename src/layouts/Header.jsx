@@ -22,14 +22,10 @@ export default function Header() {
             <div className="header__body">
               <div className="header__logo">
                 <Link to="/" style={{ textDecoration: 'none' }}>
-                  <span style={{
-                    display: 'block', fontSize: '26px', fontWeight: '800', letterSpacing: '-0.5px',
-                    background: 'linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1.1,
-                  }}>Growith</span>
+                  <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="header-logo-img" style={{ display: 'block', height: '48px', width: 'auto', maxWidth: '200px' }} />
                   <span className="logo-slogan" style={{
-                    display: 'block', fontSize: '9px', letterSpacing: '0.18em',
-                    color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginTop: '2px',
+                    display: 'block', fontSize: '8px', letterSpacing: '0.18em',
+                    color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginTop: '3px',
                   }}>Invest. Grow. Repeat.</span>
                 </Link>
               </div>
@@ -79,11 +75,7 @@ export default function Header() {
           <div className="mobi-drawer__panel">
             {/* Top bar */}
             <div className="mobi-drawer__top">
-              <span style={{
-                    display: 'block', fontSize: '26px', fontWeight: '800', letterSpacing: '-0.5px',
-                    background: 'linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1.1,
-                  }}>Growith</span>
+              <img src="/assets/images/growith_logo_transparent.png" alt="Growith" style={{ display: 'block', height: '40px', width: 'auto', maxWidth: '170px' }} />
               <button className="mobi-drawer__close" onClick={() => setMobileOpen(false)} aria-label="Close">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M1 1L17 17M17 1L1 17" stroke="white" strokeWidth="2" strokeLinecap="round"/>
