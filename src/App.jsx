@@ -14,6 +14,7 @@ import OnboardingSuccess from './pages/OnboardingSuccess'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         {/* Standalone routes (no layout) */}
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />

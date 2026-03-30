@@ -1,24 +1,118 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
+import { useGoogleLogin } from '@react-oauth/google';
+import { authTokenState, userState, login as loginAction } from '../../recoil/auth';
+import Modal from '../../components/Modal';
+import Toast from '../../components/Toast';
+import FormInput from '../../components/FormInput';
+import authService from '../../services/authService';
 
 const Login = () => {
   const navigate = useNavigate();
+  const setAuthToken = useSetRecoilState(authTokenState);
+  const setUser = useSetRecoilState(userState);
+  const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+  const [toast, setToast] = useState({ isOpen: false, message: '', type: 'success' });
+  const [emailValidating, setEmailValidating] = useState(false);
+  const [emailApiValidated, setEmailApiValidated] = useState(false);
+  const [emailStatus, setEmailStatus] = useState(null); // null | 'valid' | 'not-found' | 'invalid-format'
+  const emailDebounceRef = useRef(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      try {
+        const response = await authService.googleLogin(tokenResponse.access_token);
+        const { token, user } = response;
+        setAuthToken(token);
+        setUser(user);
+        authService.setToken(token);
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        setToast({ isOpen: true, message: 'Google sign-in successful! Redirecting...', type: 'success' });
+        setTimeout(() => navigate('/dashboard'), 2000);
+      } catch (error) {
+        setModal({ isOpen: true, title: 'Google Sign-In Failed', message: error.message || 'Failed to sign in with Google. Please try again.', type: 'error' });
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    onError: () => {
+      setModal({ isOpen: true, title: 'Google Sign-In Failed', message: 'Google authentication was cancelled or failed. Please try again.', type: 'error' });
+    },
+    flow: 'implicit',
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+    if (name === 'email') {
+      setEmailApiValidated(false);
+      setEmailStatus(null);
+      setEmailValidating(false);
+    }
   };
+
+  // Debounced email validation — fires 700ms after user stops typing
+  useEffect(() => {
+    const email = formData.email;
+    if (emailDebounceRef.current) clearTimeout(emailDebounceRef.current);
+
+    if (!email) {
+      setEmailStatus(null);
+      setEmailValidating(false);
+      setEmailApiValidated(false);
+      return;
+    }
+
+    const isValidFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidFormat) {
+      setEmailStatus('invalid-format');
+      setEmailValidating(false);
+      setEmailApiValidated(false);
+      return;
+    }
+
+    setEmailStatus(null);
+    setEmailValidating(true);
+    setEmailApiValidated(false);
+
+    emailDebounceRef.current = setTimeout(async () => {
+      try {
+        await authService.validateEmail(email);
+        setEmailStatus('valid');
+        setEmailApiValidated(true);
+        setErrors(prev => ({ ...prev, email: '' }));
+      } catch (err) {
+        const msg = err?.message?.toLowerCase() || '';
+        const isNotFound = msg.includes('email not found') || msg.includes('not found');
+        setEmailStatus('not-found');
+        setEmailApiValidated(false);
+        setErrors(prev => ({
+          ...prev,
+          email: isNotFound
+            ? 'Email not registered. Please sign up first.'
+            : 'Unable to verify email. Please try again.',
+        }));
+      } finally {
+        setEmailValidating(false);
+      }
+    }, 700);
+
+    return () => clearTimeout(emailDebounceRef.current);
+  }, [formData.email]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -49,25 +143,20 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      console.log('Login data:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // On success, navigate to dashboard
-      navigate('/dashboard');
+      await loginAction(setAuthToken, setUser, formData);
+      setToast({ isOpen: true, message: 'Login successful! Redirecting to dashboard...', type: 'success' });
+      setTimeout(() => navigate('/dashboard'), 2000);
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ submit: 'Invalid email or password. Please try again.' });
+      setModal({ isOpen: true, title: 'Login Failed', message: error.message || 'Invalid email or password. Please try again.', type: 'error' });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSocialLogin = (provider) => {
-    console.log(`Login with ${provider}`);
-    // TODO: Implement social login
+    if (provider === 'google') {
+      googleLogin();
+    }
   };
 
   return (
@@ -137,68 +226,44 @@ const Login = () => {
           <h2 className="login-title">Welcome Back</h2>
           <p className="login-subtitle">Enter your details below</p>
 
-          {errors.submit && (
-            <div className="login-error-banner">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span>{errors.submit}</span>
-            </div>
-          )}
+
 
           <form onSubmit={handleSubmit} className="login-form">
-            {/* Email Field */}
-            <div className="login-form-group">
-              <label htmlFor="email" className="login-label">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`login-input ${errors.email ? 'error' : ''}`}
-                placeholder="nicholas@ergemia.com"
-                autoComplete="email"
-              />
-              {errors.email && <span className="login-field-error">{errors.email}</span>}
-            </div>
+<FormInput
+  label="Email Address"
+  type="email"
+  name="email"
+  value={formData.email}
+  onChange={handleChange}
+  validating={emailValidating}
+  isValid={emailApiValidated}
+  emailStatus={emailStatus}
+  placeholder="nicholas@ergemia.com"
+  error={errors.email}
+  realTimeValidation={(value) => {
+    if (!value) return null;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email';
+    return null;
+  }}
+  autoComplete="email"
+/>
 
-            {/* Password Field */}
-            <div className="login-form-group">
-              <label htmlFor="password" className="login-label">Password</label>
-              <div className="login-password-wrapper">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`login-input ${errors.password ? 'error' : ''}`}
-                  placeholder="••••••••••••••••"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {errors.password && <span className="login-field-error">{errors.password}</span>}
-            </div>
+<FormInput
+  label="Password"
+  type="password"
+  name="password"
+  value={formData.password}
+  onChange={handleChange}
+  placeholder="••••••••••••••••"
+  error={errors.password}
+  showPasswordToggle={true}
+  realTimeValidation={(value) => {
+    if (!value) return null;
+    if (value.length < 6) return 'Password must be at least 6 characters';
+    return null;
+  }}
+  autoComplete="current-password"
+/>
 
             {/* Submit Button */}
             <button type="submit" className="login-submit-btn" disabled={isLoading}>
@@ -227,16 +292,29 @@ const Login = () => {
           <div className="login-social">
             <button
               type="button"
-              className="social-btn"
+              className={`social-btn${googleLoading ? ' social-btn--loading' : ''}`}
               onClick={() => handleSocialLogin('google')}
+              disabled={googleLoading}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              <span>Google</span>
+              {googleLoading ? (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ animation: 'fi-spin 0.75s linear infinite' }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                  </svg>
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span>Google</span>
+                </>
+              )}
             </button>
 
             <button
@@ -253,6 +331,8 @@ const Login = () => {
         </div>{/* end login-card */}
         </div>{/* end login-content */}
       </div>{/* end login-right */}
+      <Modal {...modal} onClose={() => setModal(prev => ({ ...prev, isOpen: false }))} />
+      <Toast {...toast} onClose={() => setToast(prev => ({ ...prev, isOpen: false }))} />
     </div>
   );
 };
