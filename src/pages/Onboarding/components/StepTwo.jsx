@@ -1,164 +1,143 @@
-import { useState } from 'react';
+﻿import { useState, useRef } from 'react';
+import authService from '../../../services/authService';
 
-export default function StepTwo({ formData, updateFormData, nextStep, prevStep }) {
-  const [errors, setErrors] = useState({});
+export default function StepTwo({ email, onVerified }) {
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
+  const [apiError, setApiError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputs = useRef([]);
 
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.country) newErrors.country = 'Country is required';
-    if (!formData.address1.trim()) newErrors.address1 = 'Address is required';
-    if (!formData.city.trim()) newErrors.city = 'City is required';
-    if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleInput = (i, val) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...code];
+    next[i] = val;
+    setCode(next);
+    setError('');
+    setApiError('');
+    if (val && i < 5) inputs.current[i + 1]?.focus();
   };
 
-  const handleContinue = () => {
-    if (validate()) {
-      nextStep();
+  const handleKeyDown = (i, e) => {
+    if (e.key === 'Backspace' && !code[i] && i > 0) {
+      inputs.current[i - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length === 6) {
+      setCode(pasted.split(''));
+      inputs.current[5]?.focus();
+    }
+    e.preventDefault();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const fullCode = code.join('');
+    if (fullCode.length < 6) {
+      setError('Please enter all 6 digits');
+      return;
+    }
+    setIsLoading(true);
+    setApiError('');
+    try {
+      const response = await authService.verifyEmail({ email, code: fullCode });
+      const { token, user } = response;
+      onVerified(token, user);
+    } catch (err) {
+      setApiError(err.message || 'Invalid or expired code. Please try again.');
+      setCode(['', '', '', '', '', '']);
+      inputs.current[0]?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0) return;
+    try {
+      await authService.validateEmail(email, 'register');
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown(prev => {
+          if (prev <= 1) { clearInterval(interval); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch {
+      setApiError('Failed to resend code. Please try again.');
     }
   };
 
   return (
-    <div className="onboarding-step">
-      <div className="step-header">
-        <h2 className="step-title">Residence Information</h2>
-        <p className="step-subtitle">Where do you currently reside?</p>
-      </div>
-
-      <div className="form-container">
-        {/* Country */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="country">
-            Country of Residence *
-          </label>
-          <select
-            id="country"
-            className={`form-input ${errors.country ? 'error' : ''}`}
-            value={formData.country}
-            onChange={(e) => updateFormData('country', e.target.value)}
-          >
-            <option value="">Select country</option>
-            <option value="US">United States</option>
-            <option value="UK">United Kingdom</option>
-            <option value="DE">Germany</option>
-            <option value="FR">France</option>
-            <option value="IT">Italy</option>
-            <option value="ES">Spain</option>
-            <option value="NL">Netherlands</option>
-            <option value="BE">Belgium</option>
-            <option value="AT">Austria</option>
-            <option value="CH">Switzerland</option>
-            <option value="OTHER">Other</option>
-          </select>
-          {errors.country && <span className="form-error">{errors.country}</span>}
-        </div>
-
-        {/* Address Line 1 */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="address1">
-            Address Line 1 *
-          </label>
-          <input
-            type="text"
-            id="address1"
-            className={`form-input ${errors.address1 ? 'error' : ''}`}
-            placeholder="Street address, P.O. box"
-            value={formData.address1}
-            onChange={(e) => updateFormData('address1', e.target.value)}
-          />
-          {errors.address1 && <span className="form-error">{errors.address1}</span>}
-        </div>
-
-        {/* Address Line 2 */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="address2">
-            Address Line 2 (Optional)
-          </label>
-          <input
-            type="text"
-            id="address2"
-            className="form-input"
-            placeholder="Apartment, suite, unit, building, floor, etc."
-            value={formData.address2}
-            onChange={(e) => updateFormData('address2', e.target.value)}
-          />
-        </div>
-
-        {/* City */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="city">
-            City *
-          </label>
-          <input
-            type="text"
-            id="city"
-            className={`form-input ${errors.city ? 'error' : ''}`}
-            placeholder="Enter your city"
-            value={formData.city}
-            onChange={(e) => updateFormData('city', e.target.value)}
-          />
-          {errors.city && <span className="form-error">{errors.city}</span>}
-        </div>
-
-        {/* State/Province */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="state">
-            State / Province
-          </label>
-          <input
-            type="text"
-            id="state"
-            className="form-input"
-            placeholder="Enter state or province"
-            value={formData.state}
-            onChange={(e) => updateFormData('state', e.target.value)}
-          />
-        </div>
-
-        {/* Postal Code */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="postalCode">
-            Postal Code *
-          </label>
-          <input
-            type="text"
-            id="postalCode"
-            className={`form-input ${errors.postalCode ? 'error' : ''}`}
-            placeholder="Enter postal code"
-            value={formData.postalCode}
-            onChange={(e) => updateFormData('postalCode', e.target.value)}
-          />
-          {errors.postalCode && <span className="form-error">{errors.postalCode}</span>}
-        </div>
-      </div>
-
-      {/* Info Box */}
-      <div className="info-box">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-          <path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <div className="ob-step">
+      <div className="ob-otp-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points="22,6 12,13 2,6" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <p>We verify your address to comply with EU regulations and ensure secure delivery of documents.</p>
       </div>
 
-      {/* Buttons */}
-      <div className="button-group">
-        <button className="btn-secondary btn-half" onClick={prevStep}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back
-        </button>
-        <button className="btn-primary btn-half" onClick={handleContinue}>
-          Continue
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+      <div className="ob-step-head">
+        <h2 className="ob-step-title">Check your email</h2>
+        <p className="ob-step-sub">
+          We sent a 6-digit verification code to<br/>
+          <strong style={{ color: '#DEC7FF' }}>{email}</strong>
+        </p>
       </div>
+
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="ob-otp-wrap" onPaste={handlePaste}>
+          {code.map((digit, i) => (
+            <input
+              key={i}
+              ref={el => inputs.current[i] = el}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={e => handleInput(i, e.target.value)}
+              onKeyDown={e => handleKeyDown(i, e)}
+              className={`ob-otp-box${error ? ' error' : ''}`}
+              autoFocus={i === 0}
+            />
+          ))}
+        </div>
+        {error && <p className="ob-field-error">{error}</p>}
+        {apiError && <p className="ob-api-error">{apiError}</p>}
+
+        <button
+          type="submit"
+          className="login-submit-btn"
+          disabled={isLoading}
+          style={{ marginTop: 24 }}
+        >
+          {isLoading ? (
+            <span className="login-spinner"></span>
+          ) : (
+            <>
+              Verify Email
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </>
+          )}
+        </button>
+      </form>
+
+      <p className="ob-resend-row">
+        Didn't receive the code?{' '}
+        {resendCooldown > 0 ? (
+          <span className="ob-resend-timer">Resend in {resendCooldown}s</span>
+        ) : (
+          <button type="button" className="ob-resend-btn" onClick={handleResend}>
+            Resend code
+          </button>
+        )}
+      </p>
     </div>
   );
 }

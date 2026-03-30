@@ -1,156 +1,99 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
+import { authTokenState, userState } from '../../recoil/auth';
+import authService from '../../services/authService';
 import ProgressBar from './components/ProgressBar';
 import StepOne from './components/StepOne';
 import StepTwo from './components/StepTwo';
 import StepThree from './components/StepThree';
-import StepFour from './components/StepFour';
-import StepFive from './components/StepFive';
-import StepSix from './components/StepSix';
+
+const STEP_LABELS = ['Create Account', 'Verify Email', 'Complete Profile'];
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const setAuthToken = useSetRecoilState(authTokenState);
+  const setUser = useSetRecoilState(userState);
+
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    // Step 1: Personal Information
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    nationality: '',
-    
-    // Step 2: Address & Residence
-    country: '',
-    address1: '',
-    address2: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    
-    // Step 3: Investment Profile
-    investmentExperience: '',
-    annualIncome: '',
-    netWorth: '',
-    investmentGoals: [],
-    riskTolerance: '',
-    
-    // Step 4: Identity Verification
-    idType: '',
-    idNumber: '',
-    idFrontImage: null,
-    idBackImage: null,
-    selfieImage: null,
-    
-    // Step 5: Financial Information
-    sourceOfFunds: '',
-    occupation: '',
-    employer: '',
-    purposeOfInvestment: '',
-    
-    // Step 6: Terms & Agreements
-    termsAccepted: false,
-    privacyAccepted: false,
-    kycAccepted: false,
-  });
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
-  const totalSteps = 6;
-
-  const updateFormData = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const goNext = () => {
+    setCurrentStep(prev => prev + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(prev => prev + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  // Called by StepOne after successful register
+  const handleRegistered = (email) => {
+    setRegisteredEmail(email);
+    goNext();
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  // Called by StepTwo after successful email verification
+  const handleVerified = (token, user) => {
+    setAuthToken(token);
+    setUser(user);
+    authService.setToken(token);
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    goNext();
   };
 
-  const handleSubmit = async () => {
-    try {
-      // TODO: API call to submit onboarding data
-      console.log('Submitting onboarding data:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Navigate to success page or dashboard
-      navigate('/onboarding/success');
-    } catch (error) {
-      console.error('Onboarding submission error:', error);
-    }
+  // Called by StepThree when KYC is submitted or skipped
+  const handleDone = () => {
+    navigate('/dashboard');
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepOne formData={formData} updateFormData={updateFormData} nextStep={nextStep} />;
+        return <StepOne onRegistered={handleRegistered} />;
       case 2:
-        return <StepTwo formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
+        return <StepTwo email={registeredEmail} onVerified={handleVerified} />;
       case 3:
-        return <StepThree formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
-      case 4:
-        return <StepFour formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
-      case 5:
-        return <StepFive formData={formData} updateFormData={updateFormData} nextStep={nextStep} prevStep={prevStep} />;
-      case 6:
-        return <StepSix formData={formData} updateFormData={updateFormData} handleSubmit={handleSubmit} prevStep={prevStep} />;
+        return <StepThree onDone={handleDone} />;
       default:
         return null;
     }
   };
 
-  const stepLabels = [
-    'Personal Info',
-    'Address',
-    'Investment Profile',
-    'Identity Verification',
-    'Financial Info',
-    'Terms & Agreements',
-  ];
-
   return (
-    <div className="onboarding-container">
+    <div className="ob-wrap">
 
       {/* ── Left Banner (desktop only) ── */}
-      <div className="onboarding-banner">
-        <div className="onboarding-banner-blob onboarding-banner-blob--1"></div>
-        <div className="onboarding-banner-blob onboarding-banner-blob--2"></div>
-        <div className="onboarding-banner-blob onboarding-banner-blob--3"></div>
+      <div className="ob-banner">
+        <div className="ob-banner-blob ob-banner-blob--1"></div>
+        <div className="ob-banner-blob ob-banner-blob--2"></div>
+        <div className="ob-banner-blob ob-banner-blob--3"></div>
 
-        <div className="onboarding-banner-content">
-          <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="onboarding-banner-logo" />
-          <p className="onboarding-banner-tagline">Invest. Grow. Repeat.</p>
-          <p className="onboarding-banner-desc">
-            Complete your profile to unlock full access to the Growith investment platform.
+        <div className="ob-banner-content">
+          <img
+            src="/assets/images/growith_logo_transparent.png"
+            alt="Growith"
+            className="ob-banner-logo"
+          />
+          <p className="ob-banner-tagline">Invest. Grow. Repeat.</p>
+          <p className="ob-banner-desc">
+            Create your account and start growing your portfolio with Growith.
           </p>
 
-          {/* Step progress list */}
-          <ul className="onboarding-banner-steps">
-            {stepLabels.map((label, i) => (
+          <ul className="ob-banner-steps">
+            {STEP_LABELS.map((label, i) => (
               <li
                 key={i}
-                className={`ob-step-item ${
-                  i + 1 < currentStep ? 'ob-step-done' :
-                  i + 1 === currentStep ? 'ob-step-active' : ''
+                className={`ob-banner-step ${
+                  i + 1 < currentStep ? 'is-done' :
+                  i + 1 === currentStep ? 'is-active' : ''
                 }`}
               >
-                <span className="ob-step-num">
+                <span className="ob-banner-step-num">
                   {i + 1 < currentStep ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
                       <polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                  ) : i + 1}
+                  ) : (i + 1)}
                 </span>
-                <span className="ob-step-label">{label}</span>
+                <span className="ob-banner-step-label">{label}</span>
               </li>
             ))}
           </ul>
@@ -158,27 +101,32 @@ export default function Onboarding() {
       </div>
 
       {/* ── Right Panel ── */}
-      <div className="onboarding-right">
+      <div className="ob-right">
+
         {/* Header */}
-        <div className="onboarding-header">
-          <button className="onboarding-back" onClick={() => currentStep === 1 ? navigate(-1) : prevStep()}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <div className="ob-header">
+          <button
+            className="ob-back"
+            onClick={() => currentStep === 1 ? navigate('/login') : setCurrentStep(prev => prev - 1)}
+            aria-label="Go back"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <h1 className="onboarding-title">Create Profile</h1>
-          <div className="onboarding-header-spacer"></div>
+          <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="ob-header-logo" />
+          <div style={{ width: 40 }}></div>
         </div>
 
         {/* Progress Bar */}
-        <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+        <ProgressBar currentStep={currentStep} totalSteps={3} />
 
         {/* Step Content */}
-        <div className="onboarding-content">
+        <div className="ob-content">
           {renderStep()}
         </div>
-      </div>{/* end onboarding-right */}
 
+      </div>
     </div>
   );
 }

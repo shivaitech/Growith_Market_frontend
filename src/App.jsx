@@ -15,6 +15,11 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import PrivacyPolicy from './pages/Legal/PrivacyPolicy'
+import TermsOfUse from './pages/Legal/TermsOfUse'
+import RiskDisclosure from './pages/Legal/RiskDisclosure'
+import CookiePolicy from './pages/Legal/CookiePolicy'
+import KycAml from './pages/Legal/KycAml'
 
 function App() {
   return (
@@ -39,6 +44,11 @@ function App() {
           <Route path="blog/:id" element={<BlogDetails />} />
           <Route path="roadmap" element={<RoadmapPage />} />
           <Route path="team" element={<TeamPage />} />
+          <Route path="legal/privacy" element={<PrivacyPolicy />} />
+          <Route path="legal/terms" element={<TermsOfUse />} />
+          <Route path="legal/risk" element={<RiskDisclosure />} />
+          <Route path="legal/cookies" element={<CookiePolicy />} />
+          <Route path="legal/kyc-aml" element={<KycAml />} />
         </Route>
       </Routes>
     </Router>

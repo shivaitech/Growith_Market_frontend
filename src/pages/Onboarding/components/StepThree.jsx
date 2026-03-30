@@ -1,236 +1,172 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import FormInput from '../../../components/FormInput';
+import authService from '../../../services/authService';
 
-export default function StepThree({ formData, updateFormData, nextStep, prevStep }) {
+const COUNTRIES = [
+  'Afghanistan','Albania','Algeria','Andorra','Angola','Argentina','Armenia','Australia',
+  'Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Belarus','Belgium','Bolivia',
+  'Bosnia and Herzegovina','Brazil','Bulgaria','Cambodia','Canada','Chile','China',
+  'Colombia','Croatia','Cyprus','Czech Republic','Denmark','Ecuador','Egypt','Estonia',
+  'Finland','France','Georgia','Germany','Ghana','Greece','Hungary','India','Indonesia',
+  'Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kazakhstan','Kenya',
+  'Kuwait','Latvia','Lebanon','Libya','Lithuania','Luxembourg','Malaysia','Malta',
+  'Mexico','Moldova','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan',
+  'Palestine','Panama','Peru','Philippines','Poland','Portugal','Qatar','Romania',
+  'Russia','Saudi Arabia','Serbia','Singapore','Slovakia','Slovenia','South Africa',
+  'South Korea','Spain','Sri Lanka','Sweden','Switzerland','Syria','Taiwan','Thailand',
+  'Tunisia','Turkey','UAE','Ukraine','United Kingdom','United States','Uruguay',
+  'Uzbekistan','Venezuela','Vietnam','Yemen'
+];
+
+export default function StepThree({ onDone }) {
+  const [formData, setFormData] = useState({
+    phone: '', dateOfBirth: '', nationality: '', country: '', address: '', city: ''
+  });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
 
-  const investmentGoalOptions = [
-    { id: 'capital-growth', label: 'Capital Growth' },
-    { id: 'income', label: 'Regular Income' },
-    { id: 'diversification', label: 'Portfolio Diversification' },
-    { id: 'innovation', label: 'Access to Innovation' },
-  ];
-
-  const toggleInvestmentGoal = (goalId) => {
-    const currentGoals = formData.investmentGoals || [];
-    if (currentGoals.includes(goalId)) {
-      updateFormData('investmentGoals', currentGoals.filter(g => g !== goalId));
-    } else {
-      updateFormData('investmentGoals', [...currentGoals, goalId]);
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    if (apiError) setApiError('');
   };
 
   const validate = () => {
-    const newErrors = {};
-
-    if (!formData.investmentExperience) newErrors.investmentExperience = 'Investment experience is required';
-    if (!formData.annualIncome) newErrors.annualIncome = 'Annual income is required';
-    if (!formData.netWorth) newErrors.netWorth = 'Net worth is required';
-    if (!formData.investmentGoals || formData.investmentGoals.length === 0) {
-      newErrors.investmentGoals = 'Please select at least one investment goal';
-    }
-    if (!formData.riskTolerance) newErrors.riskTolerance = 'Risk tolerance is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const errs = {};
+    if (!formData.phone.trim()) errs.phone = 'Phone number is required';
+    if (!formData.dateOfBirth) errs.dateOfBirth = 'Date of birth is required';
+    if (!formData.nationality) errs.nationality = 'Nationality is required';
+    if (!formData.country) errs.country = 'Country of residence is required';
+    if (!formData.address.trim()) errs.address = 'Address is required';
+    if (!formData.city.trim()) errs.city = 'City is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
-  const handleContinue = () => {
-    if (validate()) {
-      nextStep();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setIsLoading(true);
+    setApiError('');
+    try {
+      await authService.submitKyc(formData);
+      onDone();
+    } catch (err) {
+      setApiError(err.message || 'Failed to save your details. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="onboarding-step">
-      <div className="step-header">
-        <h2 className="step-title">Investment Profile</h2>
-        <p className="step-subtitle">Help us understand your investment experience</p>
+    <div className="ob-step">
+      <div className="ob-step-head">
+        <h2 className="ob-step-title">Complete your profile</h2>
+        <p className="ob-step-sub">
+          This information helps us verify your identity. You can skip and do this later.
+        </p>
       </div>
 
-      <div className="form-container">
-        {/* Investment Experience */}
-        <div className="form-group">
-          <label className="form-label">
-            Investment Experience *
-          </label>
-          <div className="radio-group">
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="investmentExperience"
-                value="beginner"
-                checked={formData.investmentExperience === 'beginner'}
-                onChange={(e) => updateFormData('investmentExperience', e.target.value)}
-              />
-              <div className="radio-content">
-                <span className="radio-title">Beginner</span>
-                <span className="radio-desc">Less than 1 year</span>
-              </div>
-            </label>
+      <form onSubmit={handleSubmit} noValidate>
+        <FormInput
+          label="Phone Number"
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="+1 (555) 123-4567"
+          error={errors.phone}
+        />
+        <FormInput
+          label="Date of Birth"
+          type="date"
+          name="dateOfBirth"
+          value={formData.dateOfBirth}
+          onChange={handleChange}
+          error={errors.dateOfBirth}
+          max={new Date().toISOString().split('T')[0]}
+        />
 
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="investmentExperience"
-                value="intermediate"
-                checked={formData.investmentExperience === 'intermediate'}
-                onChange={(e) => updateFormData('investmentExperience', e.target.value)}
-              />
-              <div className="radio-content">
-                <span className="radio-title">Intermediate</span>
-                <span className="radio-desc">1-5 years</span>
-              </div>
-            </label>
-
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="investmentExperience"
-                value="experienced"
-                checked={formData.investmentExperience === 'experienced'}
-                onChange={(e) => updateFormData('investmentExperience', e.target.value)}
-              />
-              <div className="radio-content">
-                <span className="radio-title">Experienced</span>
-                <span className="radio-desc">5+ years</span>
-              </div>
-            </label>
-          </div>
-          {errors.investmentExperience && <span className="form-error">{errors.investmentExperience}</span>}
-        </div>
-
-        {/* Annual Income */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="annualIncome">
-            Annual Income (USD) *
-          </label>
+        <div className="login-form-group">
+          <label className="login-label" htmlFor="nationality">Nationality</label>
           <select
-            id="annualIncome"
-            className={`form-input ${errors.annualIncome ? 'error' : ''}`}
-            value={formData.annualIncome}
-            onChange={(e) => updateFormData('annualIncome', e.target.value)}
+            id="nationality"
+            name="nationality"
+            value={formData.nationality}
+            onChange={handleChange}
+            className={`login-input${errors.nationality ? ' error' : ''}`}
           >
-            <option value="">Select annual income</option>
-            <option value="0-50k">$0 - $50,000</option>
-            <option value="50k-100k">$50,000 - $100,000</option>
-            <option value="100k-250k">$100,000 - $250,000</option>
-            <option value="250k-500k">$250,000 - $500,000</option>
-            <option value="500k+">$500,000+</option>
+            <option value="">Select nationality</option>
+            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          {errors.annualIncome && <span className="form-error">{errors.annualIncome}</span>}
+          {errors.nationality && <span className="login-error-msg">{errors.nationality}</span>}
         </div>
 
-        {/* Net Worth */}
-        <div className="form-group">
-          <label className="form-label" htmlFor="netWorth">
-            Estimated Net Worth (USD) *
-          </label>
+        <div className="login-form-group">
+          <label className="login-label" htmlFor="country">Country of Residence</label>
           <select
-            id="netWorth"
-            className={`form-input ${errors.netWorth ? 'error' : ''}`}
-            value={formData.netWorth}
-            onChange={(e) => updateFormData('netWorth', e.target.value)}
+            id="country"
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+            className={`login-input${errors.country ? ' error' : ''}`}
           >
-            <option value="">Select net worth</option>
-            <option value="0-100k">$0 - $100,000</option>
-            <option value="100k-500k">$100,000 - $500,000</option>
-            <option value="500k-1m">$500,000 - $1,000,000</option>
-            <option value="1m-5m">$1,000,000 - $5,000,000</option>
-            <option value="5m+">$5,000,000+</option>
+            <option value="">Select country</option>
+            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          {errors.netWorth && <span className="form-error">{errors.netWorth}</span>}
+          {errors.country && <span className="login-error-msg">{errors.country}</span>}
         </div>
 
-        {/* Investment Goals */}
-        <div className="form-group">
-          <label className="form-label">
-            Investment Goals * <span className="label-note">(Select all that apply)</span>
-          </label>
-          <div className="checkbox-group">
-            {investmentGoalOptions.map(goal => (
-              <label key={goal.id} className="checkbox-option">
-                <input
-                  type="checkbox"
-                  checked={(formData.investmentGoals || []).includes(goal.id)}
-                  onChange={() => toggleInvestmentGoal(goal.id)}
-                />
-                <span className="checkbox-label">{goal.label}</span>
-                <svg className="checkbox-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </label>
-            ))}
-          </div>
-          {errors.investmentGoals && <span className="form-error">{errors.investmentGoals}</span>}
-        </div>
+        <FormInput
+          label="Address"
+          type="text"
+          name="address"
+          value={formData.address}
+          onChange={handleChange}
+          placeholder="Street address"
+          error={errors.address}
+        />
+        <FormInput
+          label="City"
+          type="text"
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          placeholder="Your city"
+          error={errors.city}
+        />
 
-        {/* Risk Tolerance */}
-        <div className="form-group">
-          <label className="form-label">
-            Risk Tolerance *
-          </label>
-          <div className="radio-group">
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="riskTolerance"
-                value="conservative"
-                checked={formData.riskTolerance === 'conservative'}
-                onChange={(e) => updateFormData('riskTolerance', e.target.value)}
-              />
-              <div className="radio-content">
-                <span className="radio-title">Conservative</span>
-                <span className="radio-desc">Prefer stability over growth</span>
-              </div>
-            </label>
+        {apiError && <p className="ob-api-error">{apiError}</p>}
 
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="riskTolerance"
-                value="moderate"
-                checked={formData.riskTolerance === 'moderate'}
-                onChange={(e) => updateFormData('riskTolerance', e.target.value)}
-              />
-              <div className="radio-content">
-                <span className="radio-title">Moderate</span>
-                <span className="radio-desc">Balanced approach</span>
-              </div>
-            </label>
-
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="riskTolerance"
-                value="aggressive"
-                checked={formData.riskTolerance === 'aggressive'}
-                onChange={(e) => updateFormData('riskTolerance', e.target.value)}
-              />
-              <div className="radio-content">
-                <span className="radio-title">Aggressive</span>
-                <span className="radio-desc">Seeking high growth potential</span>
-              </div>
-            </label>
-          </div>
-          {errors.riskTolerance && <span className="form-error">{errors.riskTolerance}</span>}
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="button-group">
-        <button className="btn-secondary btn-half" onClick={prevStep}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back
+        <button
+          type="submit"
+          className="login-submit-btn"
+          disabled={isLoading}
+          style={{ marginTop: 8 }}
+        >
+          {isLoading ? (
+            <span className="login-spinner"></span>
+          ) : (
+            <>
+              Save & Continue
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </>
+          )}
         </button>
-        <button className="btn-primary btn-half" onClick={handleContinue}>
-          Continue
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
+      </form>
+
+      <button
+        type="button"
+        className="ob-skip-btn"
+        onClick={onDone}
+        disabled={isLoading}
+      >
+        Skip for now, I'll do this later
+      </button>
     </div>
   );
 }

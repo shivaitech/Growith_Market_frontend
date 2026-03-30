@@ -29,6 +29,14 @@ class AuthService {
     return apiService.post('/auth/reset-password', data);
   }
 
+  async verifyEmail(data) {
+    return apiService.post('/auth/verify-email', data);
+  }
+
+  async submitKyc(data) {
+    return apiService.post('/auth/kyc', data);
+  }
+
   logout() {
     apiService.setToken(null);
   }

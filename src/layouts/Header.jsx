@@ -32,22 +32,12 @@ export default function Header() {
               <div className="header__right">
                 <nav id="main-nav" className="main-nav">
                   <ul id="menu-primary-menu" className="menu">
-                    <li className={`menu-item menu-item-has-children${pathname === '/' ? ' menu-current-item' : ''}`}>
+                    <li className={`menu-item${pathname === '/' ? ' menu-current-item' : ''}`}>
                       <Link to="/">Home</Link>
-                      <ul className="sub-menu">
-                        <li className="menu-item"><Link to="/">Home v1</Link></li>
-                      </ul>
                     </li>
-                    <li className="menu-item menu-item-has-children">
-                      <Link to="/nft">Explore</Link>
-                      <ul className="sub-menu">
-                        <li className="menu-item"><Link to="/nft">Marketplace</Link></li>
-                        <li className="menu-item"><Link to="/blog">Blog</Link></li>
-                      </ul>
-                    </li>
+                    <li className={`menu-item${pathname === '/nft' ? ' menu-current-item' : ''}`}><Link to="/nft">Marketplace</Link></li>
+                    <li className={`menu-item${pathname === '/blog' ? ' menu-current-item' : ''}`}><Link to="/blog">Blog</Link></li>
                     <li className={`menu-item${pathname === '/about' ? ' menu-current-item' : ''}`}><Link to="/about">About</Link></li>
-                    <li className={`menu-item${pathname === '/roadmap' ? ' menu-current-item' : ''}`}><Link to="/roadmap">RoadMap</Link></li>
-                    <li className={`menu-item${pathname === '/team' ? ' menu-current-item' : ''}`}><Link to="/team">Team</Link></li>
                     <li className={`menu-item${pathname === '/contact' ? ' menu-current-item' : ''}`}><Link to="/contact">Contact</Link></li>
                   </ul>
                 </nav>
@@ -86,9 +76,8 @@ export default function Header() {
             <nav className="mobi-drawer__nav">
               <Link to="/" onClick={() => setMobileOpen(false)}>Home</Link>
               <Link to="/nft" onClick={() => setMobileOpen(false)}>Marketplace</Link>
+              <Link to="/blog" onClick={() => setMobileOpen(false)}>Blog</Link>
               <Link to="/about" onClick={() => setMobileOpen(false)}>About</Link>
-              <Link to="/roadmap" onClick={() => setMobileOpen(false)}>RoadMap</Link>
-              <Link to="/team" onClick={() => setMobileOpen(false)}>Team</Link>
               <Link to="/contact" onClick={() => setMobileOpen(false)}>Contact</Link>
             </nav>
             {/* CTA */}

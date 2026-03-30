@@ -3,19 +3,18 @@ import { Link } from 'react-router-dom'
 
 const platformLinks = [
   { label: 'Home', path: '/' },
-  { label: 'Explore', path: '/nft' },
+  { label: 'Marketplace', path: '/nft' },
+  { label: 'Blog', path: '/blog' },
   { label: 'About Us', path: '/about' },
-  { label: 'Roadmap', path: '/roadmap' },
-  { label: 'Team', path: '/team' },
   { label: 'Contact', path: '/contact' },
 ]
 
 const legalLinks = [
-  { label: 'Privacy Policy', path: '#' },
-  { label: 'Terms of Use', path: '#' },
-  { label: 'Risk Disclosure', path: '#' },
-  { label: 'Cookie Policy', path: '#' },
-  { label: 'KYC / AML', path: '#' },
+  { label: 'Privacy Policy', path: '/legal/privacy' },
+  { label: 'Terms of Use', path: '/legal/terms' },
+  { label: 'Risk Disclosure', path: '/legal/risk' },
+  { label: 'Cookie Policy', path: '/legal/cookies' },
+  { label: 'KYC / AML', path: '/legal/kyc-aml' },
 ]
 
 const socialIcons = [
