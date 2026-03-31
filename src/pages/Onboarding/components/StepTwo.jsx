@@ -45,8 +45,10 @@ export default function StepTwo({ email, onVerified }) {
     setApiError('');
     try {
       const response = await authService.verifyEmail({ email, code: fullCode });
-      const { token, user } = response;
-      onVerified(token, user);
+      const token   = response?.data?.tokens?.accessToken  || response?.token;
+      const refresh = response?.data?.tokens?.refreshToken || '';
+      const user    = response?.data?.user                 || response?.user;
+      onVerified(token, refresh, user);
     } catch (err) {
       setApiError(err.message || 'Invalid or expired code. Please try again.');
       setCode(['', '', '', '', '', '']);
@@ -59,7 +61,7 @@ export default function StepTwo({ email, onVerified }) {
   const handleResend = async () => {
     if (resendCooldown > 0) return;
     try {
-      await authService.validateEmail(email, 'register');
+      await authService.sendEmailVerification(email);
       setResendCooldown(60);
       const interval = setInterval(() => {
         setResendCooldown(prev => {

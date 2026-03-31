@@ -35,7 +35,7 @@ export default function Header() {
                     <li className={`menu-item${pathname === '/' ? ' menu-current-item' : ''}`}>
                       <Link to="/">Home</Link>
                     </li>
-                    <li className={`menu-item${pathname === '/nft' ? ' menu-current-item' : ''}`}><Link to="/nft">Marketplace</Link></li>
+                    <li className={`menu-item menu-item--highlight${pathname === '/nft' ? ' menu-current-item' : ''}`}><Link to="/nft">Marketplace</Link></li>
                     <li className={`menu-item${pathname === '/blog' ? ' menu-current-item' : ''}`}><Link to="/blog">Blog</Link></li>
                     <li className={`menu-item${pathname === '/about' ? ' menu-current-item' : ''}`}><Link to="/about">About</Link></li>
                     <li className={`menu-item${pathname === '/contact' ? ' menu-current-item' : ''}`}><Link to="/contact">Contact</Link></li>
@@ -46,12 +46,6 @@ export default function Header() {
                 </div>
               </div>
               <div className="header__action">
-                <a href="#" className="search-btn">
-                  <svg width="21" height="21" viewBox="0 0 21 21" fill="none">
-                    <circle cx="9.7659" cy="9.76639" r="8.98856" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M16.0176 16.4849L19.5416 19.9997" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </a>
                 <Link to="/login" className="action-btn action-btn-secondary"><span>Sign In</span></Link>
                 <Link to="/onboarding" className="action-btn"><span>Join Now</span></Link>
               </div>

@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useRecoilValue, useRecoilState } from 'recoil';
+import { userState, authTokenState } from '../../recoil/auth';
+import apiService from '../../services/apiService';
+import { clearAuth, getUser } from '../../utils/secureStorage';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
@@ -12,7 +16,7 @@ import 'swiper/css/pagination';
 const INVESTOR = {
   name: 'Nicholas Ergemia',
   email: 'nicholas@ergemia.com',
-  kycStatus: 'approved',
+  kycStatus: 'not_started',
   walletAddress: '0x3f5CE91d4A458B72b5a4cB4d5F6e7B8C9D0E1234',
   joinedDate: 'March 2026',
   tier: 'Premium',
@@ -821,7 +825,7 @@ function TabPortfolio() {
 }
 
 /* ── Invest ─────────────────────────────────────── */
-function TabInvest() {
+function TabInvest({ investor }) {
   const [selectedToken, setSelectedToken] = useState(null);
   const [amount, setAmount] = useState('500');
   const [method, setMethod] = useState('bank');
@@ -858,7 +862,7 @@ function TabInvest() {
           </p>
           <div className="db-alert db-alert--info" style={{ textAlign: 'left', maxWidth: 440, margin: '0 auto 24px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div>Tokens will be minted to your custodial wallet <strong style={{ color: '#DEC7FF' }}>{INVESTOR.walletAddress}</strong> on Polygon after payment confirmation.</div>
+            <div>Tokens will be minted to your custodial wallet <strong style={{ color: '#DEC7FF' }}>{investor?.walletAddress || '—'}</strong> on Polygon after payment confirmation.</div>
           </div>
           <button className="db-btn db-btn--primary" onClick={() => { setSubmitted(false); setAmount('500'); }}>Submit Another Intent</button>
         </div>
@@ -1136,7 +1140,7 @@ function TabTransactions() {
 }
 
 /* ── Wallet ─────────────────────────────────────── */
-function TabWallet() {
+function TabWallet({ investor }) {
   const [redeemAmount, setRedeemAmount] = useState('');
   const [redeemMethod, setRedeemMethod] = useState('usdt_trc20');
   const [redeemAddress, setRedeemAddress] = useState('');
@@ -1144,7 +1148,7 @@ function TabWallet() {
   const [loading, setLoading] = useState(false);
   const { copy, copied } = useCopyText();
 
-  const walletAddr = INVESTOR.walletAddress;
+  const walletAddr = investor?.walletAddress || INVESTOR.walletAddress;
   const shortAddr = walletAddr.slice(0, 14) + '…' + walletAddr.slice(-6);
   const minAmounts = { usdt_trc20: 20, usdt_erc20: 50, bank: 200 };
   const selectedMin = minAmounts[redeemMethod] || 20;
@@ -1708,54 +1712,385 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
 }
 
 function TabVerification({ investor }) {
-  return (
-    <div className="db-tab-content">
-      <div className="db-welcome-bar">
-        <div>
-          <h1 className="db-h1">Identity Verification</h1>
-          <p className="db-muted">KYC/AML status and your onboarding step record.</p>
-        </div>
-        <KycBadge status={investor.kycStatus} />
-      </div>
+  const [stage, setStage] = useState('info');   // 'info' | 'iframe' | 'pending'
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [diditUrl, setDiditUrl] = useState('');
+  const [form, setForm] = useState({
+    fullName:    investor.name || '',
+    dob:         '',
+    nationality: '',
+    country:     '',
+    phone:       '',
+    address:     '',
+  });
+  const [errors, setErrors] = useState({});
 
-      {investor.kycStatus === 'approved' && (
-        <div className="db-alert db-alert--success" style={{ marginBottom: 32 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  // Offline approval modal
+  const [offlineModal, setOfflineModal] = useState({
+    open: false,
+    name: investor.name || '',
+    email: investor.email || '',
+    message: '',
+    loading: false,
+    success: false,
+    error: '',
+  });
+
+  const openOfflineModal = () =>
+    setOfflineModal(prev => ({ ...prev, open: true, success: false, error: '' }));
+
+  const closeOfflineModal = () =>
+    setOfflineModal(prev => ({ ...prev, open: false }));
+
+  const handleOfflineChange = (e) => {
+    const { name, value } = e.target;
+    setOfflineModal(prev => ({ ...prev, [name]: value, error: '' }));
+  };
+
+  const handleOfflineSubmit = async (e) => {
+    e.preventDefault();
+    const { name, email, message } = offlineModal;
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setOfflineModal(prev => ({ ...prev, error: 'All fields are required.' }));
+      return;
+    }
+    setOfflineModal(prev => ({ ...prev, loading: true, error: '' }));
+    try {
+      await apiService.post('/kyc/offline-request', { name, email, message });
+      setOfflineModal(prev => ({ ...prev, loading: false, success: true }));
+    } catch (err) {
+      setOfflineModal(prev => ({
+        ...prev,
+        loading: false,
+        error: err.message || 'Failed to send request. Please try again.',
+      }));
+    }
+  };
+
+  // Already approved — show status only
+  if (investor.kycStatus === 'approved') {
+    return (
+      <div className="db-tab-content">
+        <div className="db-welcome-bar">
           <div>
-            <strong>Full KYC Approval Granted</strong> — Verified via Sumsub. Sanctions screening passed. You are cleared to invest.
+            <h1 className="db-h1">Identity Verification</h1>
+            <p className="db-muted">Your KYC is fully approved.</p>
           </div>
+          <KycBadge status="approved" />
         </div>
-      )}
-
-      <div className="db-section-title">KYC Checklist</div>
-      <div className="db-kyc-steps">
-        {KYC_STEPS.map((step, i) => (
-          <div key={step.id} className={`db-kyc-step db-kyc-step--${step.status}`}>
-            <div className="db-kyc-step__num">
-              {step.status === 'done'
-                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                : step.status === 'pending'
-                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  : i + 1}
-            </div>
-            <div className="db-kyc-step__body">
-              <div className="db-kyc-step__label">{step.label}</div>
-              <div className="db-kyc-step__desc">{step.desc}</div>
-            </div>
-            {i < KYC_STEPS.length - 1 && <div className="db-kyc-step__line" />}
-          </div>
-        ))}
-      </div>
-
-      <div className="db-info-box" style={{ marginTop: 32 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <div>
-          <strong style={{ color: '#DEC7FF' }}>Re-verification Policy</strong><br />
-          KYC is valid for 24 months. You may be asked to re-verify if your circumstances change or regulations require. Contact <a href="mailto:compliance@growith.io" className="db-link">compliance@growith.io</a> for any queries.
+        <div className="db-alert db-alert--success">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div><strong>Full KYC Approval Granted</strong> — Identity verified. Sanctions screening passed. You are cleared to invest.</div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Under review
+  if (investor.kycStatus === 'pending' || stage === 'pending') {
+    return (
+      <div className="db-tab-content">
+        <div className="db-welcome-bar">
+          <div>
+            <h1 className="db-h1">Identity Verification</h1>
+            <p className="db-muted">Your documents are under review.</p>
+          </div>
+          <KycBadge status="pending" />
+        </div>
+        <div className="kyc-pending-card">
+          <div className="kyc-pending-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="#9D6FFF" strokeWidth="1.5"/>
+              <polyline points="12 6 12 12 16 14" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h2 className="kyc-pending-title">Verification In Progress</h2>
+          <p className="kyc-pending-desc">Our compliance team is reviewing your documents. This typically takes <strong>1–2 business days</strong>. We'll notify you by email once your account is verified.</p>
+          <div className="kyc-pending-steps">
+            <div className="kyc-ps kyc-ps--done"><span className="kyc-ps__dot" />Personal Info Submitted</div>
+            <div className="kyc-ps kyc-ps--done"><span className="kyc-ps__dot" />Documents Uploaded</div>
+            <div className="kyc-ps kyc-ps--active"><span className="kyc-ps__dot" />Under Review</div>
+            <div className="kyc-ps"><span className="kyc-ps__dot" />Approval</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Stage 1: Personal Info form ──
+  if (stage === 'info') {
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setForm(prev => ({ ...prev, [name]: value }));
+      if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const validate = () => {
+      const errs = {};
+      if (!form.fullName.trim())    errs.fullName    = 'Full name is required';
+      if (!form.dob)                errs.dob         = 'Date of birth is required';
+      if (!form.nationality.trim()) errs.nationality = 'Nationality is required';
+      if (!form.country.trim())     errs.country     = 'Country of residence is required';
+      if (!form.phone.trim())       errs.phone       = 'Phone number is required';
+      if (!form.address.trim())     errs.address     = 'Residential address is required';
+      setErrors(errs);
+      return Object.keys(errs).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+      setIsLoading(true);
+      setApiError('');
+      try {
+        const res = await apiService.post('/kyc/session', { ...form });
+        const url = res?.data?.url || res?.url || '';
+        setDiditUrl(url);
+        setStage('iframe');
+      } catch (err) {
+        setApiError(err.message || 'Failed to start verification. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    return (
+      <div className="db-tab-content">
+        <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
+          <div>
+            <h1 className="db-h1">Identity Verification</h1>
+            <p className="db-muted">Complete KYC to unlock full investment access.</p>
+          </div>
+          <KycBadge status={investor.kycStatus || 'not_started'} />
+        </div>
+
+        {/* Progress stepper */}
+        <div className="kyc-stepper">
+          <div className="kyc-stepper__step kyc-stepper__step--active">
+            <span className="kyc-stepper__num">1</span>
+            <span className="kyc-stepper__label">Personal Info</span>
+          </div>
+          <div className="kyc-stepper__line" />
+          <div className="kyc-stepper__step">
+            <span className="kyc-stepper__num">2</span>
+            <span className="kyc-stepper__label">Document Scan</span>
+          </div>
+          <div className="kyc-stepper__line" />
+          <div className="kyc-stepper__step">
+            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__label">Review</span>
+          </div>
+        </div>
+
+        {/* Info banner */}
+        <div className="kyc-info-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Please enter your details exactly as they appear on your government-issued ID. This information is encrypted and securely processed.</span>
+        </div>
+
+        <form className="kyc-form" onSubmit={handleSubmit} noValidate>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Full Legal Name <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`} name="fullName" value={form.fullName} onChange={handleChange} placeholder="As on your passport/ID" />
+              {errors.fullName && <span className="kyc-form__error">{errors.fullName}</span>}
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Date of Birth <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.dob ? ' kyc-form__input--err' : ''}`} type="date" name="dob" value={form.dob} onChange={handleChange} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
+              {errors.dob && <span className="kyc-form__error">{errors.dob}</span>}
+            </div>
+          </div>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Nationality <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Pakistani" />
+              {errors.nationality && <span className="kyc-form__error">{errors.nationality}</span>}
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Country of Residence <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.country ? ' kyc-form__input--err' : ''}`} name="country" value={form.country} onChange={handleChange} placeholder="e.g. United Kingdom" />
+              {errors.country && <span className="kyc-form__error">{errors.country}</span>}
+            </div>
+          </div>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Phone Number <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" />
+              {errors.phone && <span className="kyc-form__error">{errors.phone}</span>}
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Residential Address <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street, City, Postcode" />
+              {errors.address && <span className="kyc-form__error">{errors.address}</span>}
+            </div>
+          </div>
+
+          {apiError && <div className="kyc-form__api-error">{apiError}</div>}
+
+          <button type="submit" className="kyc-form__submit" disabled={isLoading}>
+            {isLoading ? <span className="login-spinner" /> : (
+              <>
+                Continue to Document Scan
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </>
+            )}
+          </button>
+
+          <div className="kyc-offline-divider"><span>or</span></div>
+
+          <button type="button" className="kyc-offline-btn" onClick={openOfflineModal}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Request Offline Approval
+          </button>
+        </form>
+
+        {/* Offline Approval Modal */}
+        {offlineModal.open && (
+          <div className="kyc-modal-overlay" onClick={closeOfflineModal}>
+            <div className="kyc-modal" onClick={e => e.stopPropagation()}>
+              <div className="kyc-modal__header">
+                <div className="kyc-modal__title-group">
+                  <div className="kyc-modal__icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                  <div>
+                    <h3 className="kyc-modal__title">Request Offline Approval</h3>
+                    <p className="kyc-modal__subtitle">Our compliance team will contact you within 1–2 business days.</p>
+                  </div>
+                </div>
+                <button className="kyc-modal__close" onClick={closeOfflineModal} aria-label="Close">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              {offlineModal.success ? (
+                <div className="kyc-modal__success">
+                  <div className="kyc-modal__success-icon">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="11" stroke="#5C27FE" strokeWidth="1.5"/>
+                      <polyline points="7 12 10.5 15.5 17 8.5" stroke="#9D6FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h4 className="kyc-modal__success-title">Request Sent!</h4>
+                  <p className="kyc-modal__success-msg">We've received your request and will reach out to you at <strong>{offlineModal.email}</strong> soon.</p>
+                  <button className="kyc-modal__done-btn" onClick={closeOfflineModal}>Done</button>
+                </div>
+              ) : (
+                <form className="kyc-modal__form" onSubmit={handleOfflineSubmit} noValidate>
+                  <div className="kyc-modal__field">
+                    <label className="kyc-modal__label">Full Name <span className="kyc-form__req">*</span></label>
+                    <input
+                      className="kyc-modal__input"
+                      name="name"
+                      value={offlineModal.name}
+                      onChange={handleOfflineChange}
+                      placeholder="Your full name"
+                    />
+                  </div>
+                  <div className="kyc-modal__field">
+                    <label className="kyc-modal__label">Email Address <span className="kyc-form__req">*</span></label>
+                    <input
+                      className="kyc-modal__input"
+                      name="email"
+                      type="email"
+                      value={offlineModal.email}
+                      onChange={handleOfflineChange}
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div className="kyc-modal__field">
+                    <label className="kyc-modal__label">Message <span className="kyc-form__req">*</span></label>
+                    <textarea
+                      className="kyc-modal__textarea"
+                      name="message"
+                      value={offlineModal.message}
+                      onChange={handleOfflineChange}
+                      placeholder="Briefly describe your situation or preferred contact time…"
+                      rows={4}
+                    />
+                  </div>
+                  {offlineModal.error && <div className="kyc-form__api-error">{offlineModal.error}</div>}
+                  <div className="kyc-modal__actions">
+                    <button type="button" className="kyc-modal__cancel-btn" onClick={closeOfflineModal}>Cancel</button>
+                    <button type="submit" className="kyc-modal__submit-btn" disabled={offlineModal.loading}>
+                      {offlineModal.loading ? <span className="login-spinner" /> : 'Send Request'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Stage 2: Didit iframe ──
+  if (stage === 'iframe') {
+    return (
+      <div className="db-tab-content">
+        <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
+          <div>
+            <h1 className="db-h1">Identity Verification</h1>
+            <p className="db-muted">Scan your document and take a selfie.</p>
+          </div>
+          <KycBadge status="pending" />
+        </div>
+
+        <div className="kyc-stepper">
+          <div className="kyc-stepper__step kyc-stepper__step--done">
+            <span className="kyc-stepper__num">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span className="kyc-stepper__label">Personal Info</span>
+          </div>
+          <div className="kyc-stepper__line kyc-stepper__line--done" />
+          <div className="kyc-stepper__step kyc-stepper__step--active">
+            <span className="kyc-stepper__num">2</span>
+            <span className="kyc-stepper__label">Document Scan</span>
+          </div>
+          <div className="kyc-stepper__line" />
+          <div className="kyc-stepper__step">
+            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__label">Review</span>
+          </div>
+        </div>
+
+        <div className="kyc-iframe-wrap">
+          {diditUrl ? (
+            <iframe
+              src={diditUrl}
+              title="Didit Identity Verification"
+              className="kyc-iframe"
+              allow="camera; microphone"
+              onLoad={() => {}}
+            />
+          ) : (
+            /* Fallback if no URL returned from backend yet */
+            <div className="kyc-iframe-placeholder">
+              <div className="kyc-iframe-placeholder__inner">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="12" cy="9" r="2.5"/>
+                </svg>
+                <p>Didit verification session is loading…</p>
+                <div className="login-spinner" style={{ margin: '0 auto' }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <button className="kyc-done-btn" onClick={() => setStage('pending')}>
+            I've completed the scan →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 /* ── Settings ───────────────────────────────────── */
@@ -1977,29 +2312,74 @@ const Dashboard = () => {
   /* When set, the affiliate tab opens directly to this program's detail view */
   const [directAffProgId, setDirectAffProgId] = useState(null);
 
+  // ── Real user: Recoil atom (live) with direct secureStorage read as instant fallback ──
+  const recoilUser = useRecoilValue(userState);
+  const [, setToken] = useRecoilState(authTokenState);
+  const [, setUser] = useRecoilState(userState);
+  // If Recoil hasn’t been seeded yet on this render cycle, read directly from cache
+  // so we never fall back to the mock INVESTOR object while the atom is initializing.
+  const u = recoilUser || getUser();
+
+  // Normalise API response to the shape the dashboard expects, keeping mock
+  // values as fallbacks so nothing breaks while backend fields are rolled out.
+  const investor = {
+    name:                  u?.name        || u?.fullName   || INVESTOR.name,
+    email:                 u?.email                       || INVESTOR.email,
+    kycStatus:             u?.kycStatus   || u?.kyc_status || INVESTOR.kycStatus,
+    walletAddress:         u?.walletAddress               || INVESTOR.walletAddress,
+    joinedDate:            u?.joinedDate  || u?.createdAt  || INVESTOR.joinedDate,
+    tier:                  u?.tier                        || INVESTOR.tier,
+    affiliateCode:         u?.affiliateCode               || INVESTOR.affiliateCode,
+    referralCount:         u?.referralCount        ?? INVESTOR.referralCount,
+    totalReferralEarned:   u?.totalReferralEarned  ?? INVESTOR.totalReferralEarned,
+    pendingReferralPayout: u?.pendingReferralPayout ?? INVESTOR.pendingReferralPayout,
+    linkedAccounts:        u?.linkedAccounts       || INVESTOR.linkedAccounts,
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    clearAuth();
+    apiService.setToken(null);
+    navigate('/login');
+  };
+
   // Derive active tab from URL segment, e.g. /dashboard/portfolio → 'portfolio'
   const tabFromUrl = pathname.split('/dashboard')[1]?.replace('/', '') || 'overview';
   const activeTab = VALID_TABS.has(tabFromUrl) ? tabFromUrl : 'overview';
 
-  // Scroll to top on tab change
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [activeTab]);
+  // KYC gate — tabs locked until email is verified KYC approved
+  const kycApproved = investor.kycStatus === 'approved';
+  const KYC_FREE_TABS = new Set(['verification', 'settings']);
+  const isTabLocked = (id) => !kycApproved && !KYC_FREE_TABS.has(id);
+
+  // On mount: if not KYC-approved and trying to access a locked tab → redirect to verification
+  useEffect(() => {
+    if (!kycApproved && !KYC_FREE_TABS.has(activeTab)) {
+      navigate('/dashboard/verification', { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kycApproved]);
 
   const handleNav = (id) => {
+    if (isTabLocked(id)) return; // ignore clicks on locked tabs
     navigate(`/dashboard${id === 'overview' ? '' : '/' + id}`);
     setSidebarOpen(false);
   };
 
   const renderTab = () => {
+    // Safety: if tab is locked (shouldn't happen after redirect), show verification
+    if (isTabLocked(activeTab)) return <TabVerification investor={investor} />;
     switch (activeTab) {
-      case 'overview':     return <TabOverview investor={INVESTOR} onNav={handleNav} />;
+      case 'overview':     return <TabOverview investor={investor} onNav={handleNav} />;
       case 'portfolio':    return <TabPortfolio />;
-      case 'invest':       return <TabInvest />;
+      case 'invest':       return <TabInvest investor={investor} />;
       case 'transactions': return <TabTransactions />;
-      case 'wallet':       return <TabWallet />;
-      case 'affiliate':    return <TabAffiliate investor={INVESTOR} enrolled={enrolledPrograms} setEnrolled={setEnrolledPrograms} directProgramId={directAffProgId} onClearDirect={() => setDirectAffProgId(null)} />;
-      case 'verification': return <TabVerification investor={INVESTOR} />;
-      case 'settings':     return <TabSettings investor={INVESTOR} />;
-      default:             return <TabOverview investor={INVESTOR} onNav={handleNav} />;
+      case 'wallet':       return <TabWallet investor={investor} />;
+      case 'affiliate':    return <TabAffiliate investor={investor} enrolled={enrolledPrograms} setEnrolled={setEnrolledPrograms} directProgramId={directAffProgId} onClearDirect={() => setDirectAffProgId(null)} />;
+      case 'verification': return <TabVerification investor={investor} />;
+      case 'settings':     return <TabSettings investor={investor} />;
+      default:             return <TabOverview investor={investor} onNav={handleNav} />;
     }
   };
 
@@ -2030,8 +2410,9 @@ const Dashboard = () => {
             return (
               <div key={item.id}>
                 <button
-                  className={`db-nav-item ${activeTab === item.id ? 'db-nav-item--active' : ''}`}
+                  className={`db-nav-item ${activeTab === item.id ? 'db-nav-item--active' : ''} ${isTabLocked(item.id) ? 'db-nav-item--locked' : ''}`}
                   onClick={() => handleNav(item.id)}
+                  title={isTabLocked(item.id) ? 'Complete KYC verification to unlock' : undefined}
                 >
                   <item.Icon />
                   <span>{item.label}</span>
@@ -2065,13 +2446,13 @@ const Dashboard = () => {
         {/* KYC status chip at bottom */}
         <div className="db-sidebar-footer">
           <div className="db-sidebar-user">
-            <div className="db-sidebar-avatar">{INVESTOR.name.charAt(0)}</div>
+            <div className="db-sidebar-avatar">{investor.name.charAt(0)}</div>
             <div className="db-sidebar-user-info">
-              <span className="db-sidebar-user-name">{INVESTOR.name.split(' ')[0]}</span>
-              <KycBadge status={INVESTOR.kycStatus} />
+              <span className="db-sidebar-user-name">{investor.name.split(' ')[0]}</span>
+              <KycBadge status={investor.kycStatus} />
             </div>
           </div>
-          <button className="db-nav-item db-nav-item--logout" onClick={() => navigate('/login')}>
+          <button className="db-nav-item db-nav-item--logout" onClick={handleLogout}>
             <Icon.logout />
             <span>Sign Out</span>
           </button>
@@ -2093,7 +2474,7 @@ const Dashboard = () => {
               <Icon.bell />
               <span className="db-notif-dot" />
             </button>
-            <div className="db-topbar-avatar">{INVESTOR.name.charAt(0)}</div>
+            <div className="db-topbar-avatar">{investor.name.charAt(0)}</div>
           </div>
         </header>
 

@@ -1,16 +1,17 @@
 import { atom, selector } from 'recoil';
 import authService from '../services/authService';
+import { getToken, getUser, setToken as ssSetToken, setUser as ssSetUser, setRefreshToken as ssSetRefreshToken, clearAuth } from '../utils/secureStorage';
 
 // Atom for storing the authentication token
 export const authTokenState = atom({
   key: 'authTokenState',
-  default: localStorage.getItem('authToken') || null,
+  default: getToken(),
 });
 
 // Atom for storing user data
 export const userState = atom({
   key: 'userState',
-  default: JSON.parse(localStorage.getItem('user')) || null,
+  default: getUser(),
 });
 
 // Selector for checking if user is authenticated
@@ -30,13 +31,13 @@ export const userDataState = selector({
   },
   set: ({ set }, newValue) => {
     set(userState, newValue);
-    localStorage.setItem('user', JSON.stringify(newValue));
+    ssSetUser(newValue);
   },
 });
 
 // Function to initialize token from localStorage
 export const initializeAuth = () => {
-  const token = localStorage.getItem('authToken');
+  const token = getToken();
   if (token) {
     authService.setToken(token);
   }
@@ -46,12 +47,15 @@ export const initializeAuth = () => {
 export const login = async (setAuthToken, setUser, credentials) => {
   try {
     const response = await authService.login(credentials);
-    const { token, user } = response;
+    const token   = response?.data?.tokens?.accessToken  || response?.token;
+    const refresh = response?.data?.tokens?.refreshToken || '';
+    const user    = response?.data?.user                 || response?.user;
     setAuthToken(token);
     setUser(user);
     authService.setToken(token);
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    ssSetToken(token);
+    ssSetRefreshToken(refresh);
+    ssSetUser(user);
     return response;
   } catch (error) {
     throw error;
@@ -63,6 +67,5 @@ export const logout = (setAuthToken, setUser) => {
   authService.logout();
   setAuthToken(null);
   setUser(null);
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('user');
+  clearAuth();
 };

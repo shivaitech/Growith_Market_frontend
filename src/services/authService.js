@@ -29,12 +29,28 @@ class AuthService {
     return apiService.post('/auth/reset-password', data);
   }
 
+  async verifyForgotPasswordCode(data) {
+    return apiService.post('/auth/verify-forgot-password-code', data);
+  }
+
+  async sendEmailVerification(email) {
+    return apiService.post('/auth/send-email-verification', { email });
+  }
+
+  async getMe() {
+    return apiService.get('/auth/me');
+  }
+
   async verifyEmail(data) {
     return apiService.post('/auth/verify-email', data);
   }
 
   async submitKyc(data) {
     return apiService.post('/auth/kyc', data);
+  }
+
+  async createKycSession(data) {
+    return apiService.post('/kyc/session', data);
   }
 
   logout() {

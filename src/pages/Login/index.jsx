@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { useGoogleLogin } from '@react-oauth/google';
 import { authTokenState, userState, login as loginAction } from '../../recoil/auth';
+import { setToken as ssSetToken, setUser as ssSetUser, setRefreshToken as ssSetRefreshToken } from '../../utils/secureStorage';
 import Modal from '../../components/Modal';
 import Toast from '../../components/Toast';
 import FormInput from '../../components/FormInput';
@@ -32,12 +33,15 @@ const Login = () => {
       setGoogleLoading(true);
       try {
         const response = await authService.googleLogin(tokenResponse.access_token);
-        const { token, user } = response;
+        const token   = response?.data?.tokens?.accessToken  || response?.token;
+        const refresh = response?.data?.tokens?.refreshToken || '';
+        const user    = response?.data?.user                 || response?.user;
         setAuthToken(token);
         setUser(user);
         authService.setToken(token);
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        ssSetToken(token);
+        ssSetRefreshToken(refresh);
+        ssSetUser(user);
         setToast({ isOpen: true, message: 'Google sign-in successful! Redirecting...', type: 'success' });
         setTimeout(() => navigate('/dashboard'), 2000);
       } catch (error) {

@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { authTokenState, userState } from '../../recoil/auth';
+import { setToken as ssSetToken, setUser as ssSetUser, setRefreshToken as ssSetRefreshToken } from '../../utils/secureStorage';
 import authService from '../../services/authService';
+import apiService from '../../services/apiService';
 import ProgressBar from './components/ProgressBar';
 import StepOne from './components/StepOne';
 import StepTwo from './components/StepTwo';
-import StepThree from './components/StepThree';
 
-const STEP_LABELS = ['Create Account', 'Verify Email', 'Complete Profile'];
+const STEP_LABELS = ['Create Account', 'Verify Email'];
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -18,30 +19,40 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
-  const goNext = () => {
-    setCurrentStep(prev => prev + 1);
+  // Called by StepOne after successful register — silently log the user in
+  const handleRegistered = (email, token, refresh, user) => {
+    // Store auth data immediately so the user is logged in from this point on
+    if (token) {
+      setAuthToken(token);
+      authService.setToken(token);
+      ssSetToken(token);
+    }
+    if (refresh) ssSetRefreshToken(refresh);
+    if (user) { setUser(user); ssSetUser(user); }
+    setRegisteredEmail(email);
+    setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Called by StepOne after successful register
-  const handleRegistered = (email) => {
-    setRegisteredEmail(email);
-    goNext();
-  };
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Called by StepTwo after successful email verification
-  const handleVerified = (token, user) => {
-    setAuthToken(token);
-    setUser(user);
-    authService.setToken(token);
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    goNext();
-  };
-
-  // Called by StepThree when KYC is submitted or skipped
-  const handleDone = () => {
-    navigate('/dashboard');
+  // Called by StepTwo after successful email verification — silently log the user in
+  const handleVerified = (token, refresh, user) => {
+    // 1. Persist to secure storage first (so ProtectedRoute reads it on navigate)
+    if (token) ssSetToken(token);
+    if (refresh) ssSetRefreshToken(refresh);
+    if (user) ssSetUser(user);
+    // 2. Set in-memory API clients
+    if (token) {
+      apiService.setToken(token);
+      authService.setToken(token);
+    }
+    // 3. Seed Recoil atoms
+    if (token) setAuthToken(token);
+    if (user) setUser(user);
+    // 4. Show success then navigate
+    setShowSuccess(true);
+    setTimeout(() => navigate('/dashboard/verification'), 3000);
   };
 
   const renderStep = () => {
@@ -50,8 +61,6 @@ export default function Onboarding() {
         return <StepOne onRegistered={handleRegistered} />;
       case 2:
         return <StepTwo email={registeredEmail} onVerified={handleVerified} />;
-      case 3:
-        return <StepThree onDone={handleDone} />;
       default:
         return null;
     }
@@ -119,11 +128,23 @@ export default function Onboarding() {
         </div>
 
         {/* Progress Bar */}
-        <ProgressBar currentStep={currentStep} totalSteps={3} />
+        <ProgressBar currentStep={currentStep} totalSteps={2} />
 
         {/* Step Content */}
         <div className="ob-content">
-          {renderStep()}
+          {showSuccess ? (
+            <div className="ob-success-screen">
+              <div className="ob-success-icon">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="11" stroke="#9D6FFF" strokeWidth="1.5"/>
+                  <path d="M7 12l3.5 3.5L17 8" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h2 className="ob-success-title">You're all set! 🎉</h2>
+              <p className="ob-success-msg">Your account has been created successfully. Taking you to the dashboard to complete your KYC verification…</p>
+              <div className="ob-success-spinner"></div>
+            </div>
+          ) : renderStep()}
         </div>
 
       </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import FormInput from '../../../components/FormInput';
 import authService from '../../../services/authService';
+import apiService from '../../../services/apiService';
 
 export default function StepOne({ onRegistered }) {
   const [formData, setFormData] = useState({ email: '', fullName: '', password: '', confirmPassword: '' });
@@ -46,13 +47,22 @@ export default function StepOne({ onRegistered }) {
     setIsLoading(true);
     setApiError('');
     try {
-      await authService.register({
+      const response = await authService.register({
         email: formData.email,
         fullName: formData.fullName,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
       });
-      onRegistered(formData.email);
+      // Extract auth data from register response
+      const token   = response?.data?.tokens?.accessToken  || response?.token  || '';
+      const refresh = response?.data?.tokens?.refreshToken || response?.refreshToken || '';
+      const user    = response?.data?.user || response?.user || null;
+      // Set token on API client so /send-email-verification works
+      if (token) apiService.setToken(token);
+      // Trigger verification email
+      await authService.sendEmailVerification(formData.email);
+      // Pass all auth data up so Onboarding can silently log the user in
+      onRegistered(formData.email, token, refresh, user);
     } catch (err) {
       setApiError(err.message || 'Registration failed. Please try again.');
     } finally {

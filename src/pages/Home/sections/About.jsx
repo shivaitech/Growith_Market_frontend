@@ -82,7 +82,7 @@ function HexVisual() {
 
   return (
     <svg viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg"
-      style={{ width: '100%', maxWidth: '460px' }}>
+      style={{ width: '100%', maxWidth: '340px' }}>
       <defs>
         <radialGradient id="hbg" cx="50%" cy="50%" r="50%">
           <stop offset="0%"   stopColor="#5c27fe" stopOpacity="0.22" />
@@ -96,11 +96,7 @@ function HexVisual() {
           </feMerge>
         </filter>
       </defs>
-
-      {/* Radial background glow */}
       <circle cx={cx} cy={cy} r="225" fill="url(#hbg)" />
-
-      {/* Connector lines from hex edge to each orbital node */}
       {nodes.map(({ x, y }, i) => {
         const dx = x - cx, dy = y - cy
         const d  = Math.sqrt(dx * dx + dy * dy)
@@ -113,20 +109,13 @@ function HexVisual() {
           />
         )
       })}
-
-      {/* Outer hex ring (faint) */}
       <polygon points={hexPts(104)} stroke="#5826fc" strokeWidth="1.2" fill="none" opacity="0.35" />
-      {/* Inner hex (filled + glow) */}
       <polygon points={hexPts(82)}  stroke="#7b4fff" strokeWidth="2.5" fill="#0d0e26" filter="url(#hglow)" />
-
-      {/* Lock icon */}
       <rect x={cx - 14} y={cy - 1} width="28" height="19" rx="2.5"
         stroke="#d4c6ff" strokeWidth="1.8" fill="none" />
       <path d={`M${cx - 9},${cy - 1}V${cy - 9}a9,9,0,0,1,18,0V${cy - 1}`}
         stroke="#d4c6ff" strokeWidth="1.8" strokeLinecap="round" fill="none" />
       <circle cx={cx} cy={cy + 8} r="2.5" fill="#d4c6ff" />
-
-      {/* Orbital nodes */}
       {nodes.map(({ x, y, type }, i) => (
         <g key={i}>
           <circle cx={x} cy={y} r="26" fill="#0d0e26" stroke="#2c1c6a" strokeWidth="1.5" />
@@ -148,6 +137,7 @@ const features = [
         <polyline points="9 22 9 12 15 12 15 22" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
+    label: 'EU-Registered',
     text: 'Issued through an EU-registered entity',
   },
   {
@@ -156,7 +146,8 @@ const features = [
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    text: 'KYC/AML verified investors only',
+    label: 'KYC/AML',
+    text: 'Verified investors only',
   },
   {
     icon: (
@@ -167,7 +158,8 @@ const features = [
         <line x1="16" y1="17" x2="8" y2="17" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
-    text: 'Fully documented with risk disclosures',
+    label: 'Risk Disclosures',
+    text: 'Fully documented',
   },
   {
     icon: (
@@ -175,7 +167,8 @@ const features = [
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    text: 'Transparently minted on Polygon',
+    label: 'On-Chain',
+    text: 'Minted on Polygon',
   },
   {
     icon: (
@@ -184,44 +177,51 @@ const features = [
         <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    text: 'Allocated via secure custodial wallets',
+    label: 'Custodial Wallets',
+    text: 'Secure allocation',
   },
 ]
 
 export default function About() {
   return (
-    <section className="about">
-      <div className="shape" />
+    <section className="abt" id="about">
       <div className="container">
-        <div className="row rev">
-          <div className="col-xl-6 col-md-12">
-            <div className="about__right">
-              <div className="images" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <HexVisual />
-              </div>
-            </div>
+        {/* ── Header ── */}
+        <div className="abt__header">
+          <div className="block-text center">
+            <h6 className="sub-heading"><span>About Growith</span></h6>
+            <h3 className="heading">Private Capital Market Access</h3>
+            <p>A regulated digital securities marketplace for asset-backed investment opportunities.</p>
           </div>
-          <div className="col-xl-6 col-md-12">
-            <div className="block-text">
-              <h6 className="sub-heading"><span>About Growith</span></h6>
-              <h3 className="heading">Private Capital Market Access</h3>
-              <p className="mb-17">Growith is a regulated digital securities marketplace providing access to asset-backed opportunities across startups, real estate, structured projects, and media ventures — all issued through a compliant EU-registered entity.</p>
-              <p className="mb-17">Our first live offering is <strong>ShivAI</strong>, a UAE-headquartered deep-tech AI SaaS company expanding across India, the Middle East, and Canada.</p>
-              <p className="mb-17">Every offering on Growith is:</p>
+        </div>
 
-              <ul className="about-features-list">
-                {features.map((f, i) => (
-                  <li key={i} className="about-features-list__item">
-                    <span className="about-features-list__icon">{f.icon}</span>
-                    <span className="about-features-list__text">{f.text}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="mb-26">Growith is not a crypto trading platform. It is structured digital securities infrastructure for private capital markets.</p>
-              <Link to="/about" className="action-btn"><span>More About Us</span></Link>
-            </div>
+        {/* ── Body: hex visual + text ── */}
+        <div className="abt__body">
+          <div className="abt__visual">
+            <HexVisual />
           </div>
+          <div className="abt__content">
+            <p>Growith provides access to startups, real estate, structured projects, and media ventures &mdash; all issued through a compliant EU-registered entity.</p>
+            <p>Our first live offering is <strong>ShivAI</strong>, a UAE-headquartered deep-tech AI SaaS company expanding across India, the Middle East, and Canada.</p>
+            <span className="abt__divider" />
+            <p className="abt__note">Growith is not a crypto trading platform. It is structured digital securities infrastructure for private capital markets.</p>
+          </div>
+        </div>
+
+        {/* ── Feature cards strip ── */}
+        <div className="abt__features">
+          {features?.map((f, i) => (
+            <div key={i} className="abt__fcard">
+              <span className="abt__ficon">{f.icon}</span>
+              <strong className="abt__flabel">{f.label}</strong>
+              <span className="abt__ftext">{f.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* ── CTA ── */}
+        <div className="abt__cta">
+          <Link to="/about" className="action-btn"><span>More About Us</span></Link>
         </div>
       </div>
     </section>

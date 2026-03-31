@@ -20,6 +20,7 @@ import TermsOfUse from './pages/Legal/TermsOfUse'
 import RiskDisclosure from './pages/Legal/RiskDisclosure'
 import CookiePolicy from './pages/Legal/CookiePolicy'
 import KycAml from './pages/Legal/KycAml'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -29,7 +30,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route path="/dashboard/*" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />
         

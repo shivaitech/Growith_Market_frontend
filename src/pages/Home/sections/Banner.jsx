@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const WORDS = [
@@ -128,33 +128,6 @@ export default function Banner() {
             </div>
           </div>
           
-          {/* Marketplace Link Section */}
-          <div className="col-12" style={{ opacity: 1 }}>
-            <div className="banner-marketplace-link" style={{ opacity: 1 }}>
-              <Link 
-                to="/nft" 
-                className="marketplace-enter-btn"
-                style={{
-                  opacity: 1,
-                  background: 'linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%)',
-                  borderColor: '#DEC7FF',
-                  color: '#FFFFFF'
-                }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ marginRight: '10px', opacity: 1 }}>
-                  <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5" />
-                  <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5" />
-                  <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5" />
-                  <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
-                <span style={{ opacity: 1, color: '#FFFFFF' }}>Enter Marketplace</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ marginLeft: '8px', opacity: 1 }}>
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            </div>
-          </div>
-
           {/* Partner Benefits — shown below image on mobile/tablet */}
           <div className="col-12 pay-mobile-wrap">
             <div className="pay pay-mobile">

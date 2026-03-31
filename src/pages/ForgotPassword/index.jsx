@@ -1,29 +1,93 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const [stage, setStage] = useState('email');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [otp, setOtp] = useState(Array(6).fill(''));
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const otpRefs = useRef([]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
 
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  const handleSubmit = async (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email) { setError('Email address is required'); return; }
     if (!validateEmail(email)) { setError('Please enter a valid email address'); return; }
-
     setIsLoading(true);
     setError('');
-
     try {
       await authService.forgotPassword(email);
-      setIsSubmitted(true);
+      setStage('otp');
+      setResendCooldown(60);
     } catch (err) {
-      setError(err.message || 'Failed to send reset link. Please try again.');
+      setError(err.message || 'Failed to send reset code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    setError('');
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const newOtp = Array(6).fill('');
+    digits.split('').forEach((ch, i) => { newOtp[i] = ch; });
+    setOtp(newOtp);
+    otpRefs.current[Math.min(digits.length, 5)]?.focus();
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    const code = otp.join('');
+    if (code.length < 6) { setError('Please enter the complete 6-digit code'); return; }
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await authService.verifyForgotPasswordCode({ email, code });
+      const token = res?.data?.token || res?.token || '';
+      navigate(`/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`);
+    } catch (err) {
+      setError(err.message || 'Invalid or expired code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0 || isLoading) return;
+    setIsLoading(true);
+    setError('');
+    try {
+      await authService.forgotPassword(email);
+      setOtp(Array(6).fill(''));
+      setResendCooldown(60);
+    } catch (err) {
+      setError(err.message || 'Failed to resend. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +102,7 @@ const ForgotPassword = () => {
         <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="login-banner-logo" />
         <p className="login-banner-tagline">Invest. Grow. Repeat.</p>
         <p className="login-banner-desc">
-          Secure your investment account with a strong password. We'll send a reset link to your registered email.
+          Secure your investment account with a strong password. We'll send a reset code to your registered email.
         </p>
         <ul className="login-banner-features">
           <li>
@@ -71,14 +135,14 @@ const ForgotPassword = () => {
     </div>
   );
 
-  // ── Success state ──
-  if (isSubmitted) {
+  // ── OTP stage ──
+  if (stage === 'otp') {
     return (
       <div className="login-container">
         <BannerPanel />
         <div className="login-right">
           <div className="login-header">
-            <button className="login-back" onClick={() => navigate('/login')} aria-label="Back to login">
+            <button className="login-back" onClick={() => { setStage('email'); setOtp(Array(6).fill('')); setError(''); }} aria-label="Back to email">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -105,20 +169,52 @@ const ForgotPassword = () => {
 
               <h2 className="login-title" style={{ marginTop: 0 }}>Check Your Email</h2>
               <p className="login-subtitle" style={{ marginBottom: '8px' }}>
-                We've sent a reset link to
+                We've sent a 6-digit code to
               </p>
-              <p style={{ fontWeight: 700, color: '#9D6FFF', fontSize: '15px', marginBottom: '20px' }}>{email}</p>
+              <p style={{ fontWeight: 700, color: '#9D6FFF', fontSize: '15px', marginBottom: '28px' }}>{email}</p>
 
-              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', lineHeight: '1.7', marginBottom: '32px' }}>
-                Click the link in the email to reset your password. If you don't see it, check your spam folder. The link expires in 15 minutes.
-              </p>
+              {error && (
+                <div className="login-error-banner" style={{ marginBottom: 20 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
 
-              <Link to="/login" className="login-submit-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                Back to Sign In
-              </Link>
+              <form onSubmit={handleOtpSubmit}>
+                <div className="ob-otp-wrap" style={{ justifyContent: 'center', marginBottom: 0 }}>
+                  {otp.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={el => { otpRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={e => handleOtpChange(i, e.target.value)}
+                      onKeyDown={e => handleOtpKeyDown(i, e)}
+                      onPaste={i === 0 ? handleOtpPaste : undefined}
+                      className="ob-otp-box"
+                      autoFocus={i === 0}
+                    />
+                  ))}
+                </div>
+                <button type="submit" className="login-submit-btn" disabled={isLoading} style={{ marginTop: 28 }}>
+                  {isLoading ? (
+                    <><span className="login-spinner" /><span>Verifying…</span></>
+                  ) : 'Verify Code'}
+                </button>
+              </form>
 
-              <button className="fp-resend-btn" onClick={() => setIsSubmitted(false)}>
-                Didn't receive it? Resend
+              <button
+                className="fp-resend-btn"
+                onClick={handleResend}
+                disabled={resendCooldown > 0 || isLoading}
+                style={{ marginTop: 16, opacity: resendCooldown > 0 ? 0.5 : 1 }}
+              >
+                {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Didn't receive it? Resend"}
               </button>
             </div>
           </div>
@@ -167,7 +263,7 @@ const ForgotPassword = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="login-form" noValidate>
+            <form onSubmit={handleEmailSubmit} className="login-form" noValidate>
               <div className="login-form-group">
                 <label htmlFor="fp-email" className="login-label">Email Address</label>
                 <input

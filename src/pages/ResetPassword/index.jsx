@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import authService from '../../services/authService';
 
@@ -6,6 +6,8 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
+  const email = searchParams.get('email') || '';
+  const code  = searchParams.get('code')  || '';
 
   const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -35,10 +37,9 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
     setIsLoading(true);
     try {
-      await authService.resetPassword({ token, password: formData.password });
+      await authService.resetPassword({ token, email, code, newPassword: formData.password, confirmPassword: formData.confirmPassword });
       setIsSuccess(true);
     } catch (err) {
       setErrors({ form: err.message || 'Failed to reset password. The link may have expired.' });
@@ -47,7 +48,6 @@ const ResetPassword = () => {
     }
   };
 
-  // Password strength
   const getStrength = (pwd) => {
     if (!pwd) return { level: 0, label: '', color: 'transparent' };
     let score = 0;
@@ -72,9 +72,7 @@ const ResetPassword = () => {
       <div className="login-banner-content">
         <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="login-banner-logo" />
         <p className="login-banner-tagline">Invest. Grow. Repeat.</p>
-        <p className="login-banner-desc">
-          Create a strong, unique password to keep your investment account secure.
-        </p>
+        <p className="login-banner-desc">Create a strong, unique password to keep your investment account secure.</p>
         <ul className="login-banner-features">
           <li>
             <span className="feature-icon">
@@ -91,7 +89,7 @@ const ResetPassword = () => {
                 <polyline points="20 6 9 17 4 12" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </span>
-            <span>Mix uppercase, numbers &amp; symbols</span>
+            <span>Mix uppercase, numbers and symbols</span>
           </li>
           <li>
             <span className="feature-icon">
@@ -106,7 +104,6 @@ const ResetPassword = () => {
     </div>
   );
 
-  // ── Success state ──
   if (isSuccess) {
     return (
       <div className="login-container">
@@ -119,12 +116,10 @@ const ResetPassword = () => {
               </svg>
             </Link>
           </div>
-
           <div className="login-branding">
             <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="login-logo" />
             <p className="login-tagline">Invest. Grow. Repeat.</p>
           </div>
-
           <div className="login-content">
             <div className="login-card" style={{ textAlign: 'center' }}>
               <div className="fp-success-icon" style={{ background: 'linear-gradient(135deg, #2f9e44 0%, #51cf66 100%)' }}>
@@ -132,12 +127,10 @@ const ResetPassword = () => {
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-
               <h2 className="login-title" style={{ marginTop: 0 }}>Password Reset!</h2>
               <p className="login-subtitle" style={{ marginBottom: '32px' }}>
                 Your password has been successfully updated. You can now sign in with your new password.
               </p>
-
               <Link to="/login" className="login-submit-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -154,7 +147,6 @@ const ResetPassword = () => {
   return (
     <div className="login-container">
       <BannerPanel />
-
       <div className="login-right">
         <div className="login-header">
           <Link to="/login" className="login-back" aria-label="Back to login">
@@ -167,18 +159,14 @@ const ResetPassword = () => {
             <Link to="/login" className="login-header-link">Sign In</Link>
           </div>
         </div>
-
         <div className="login-branding">
           <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="login-logo" />
           <p className="login-tagline">Invest. Grow. Repeat.</p>
         </div>
-
         <div className="login-content">
           <div className="login-card">
             <h2 className="login-title">Reset Password</h2>
-            <p className="login-subtitle">
-              Choose a new secure password for your account.
-            </p>
+            <p className="login-subtitle">Choose a new secure password for your account.</p>
 
             {errors.form && (
               <div className="login-error-banner">
@@ -191,7 +179,6 @@ const ResetPassword = () => {
             )}
 
             <form onSubmit={handleSubmit} className="login-form" noValidate>
-              {/* New Password */}
               <div className="login-form-group">
                 <label htmlFor="rp-password" className="login-label">New Password</label>
                 <div className="login-password-wrapper">
@@ -202,15 +189,10 @@ const ResetPassword = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className={`login-input${errors.password ? ' error' : ''}`}
-                    placeholder="••••••••••••••••"
+                    placeholder="Enter new password"
                     autoComplete="new-password"
                   />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(p => !p)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
+                  <button type="button" className="password-toggle" onClick={() => setShowPassword(p => !p)}>
                     {showPassword ? (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -224,16 +206,11 @@ const ResetPassword = () => {
                     )}
                   </button>
                 </div>
-                {/* Strength meter */}
                 {formData.password && (
                   <div className="rp-strength">
                     <div className="rp-strength__bars">
                       {[1, 2, 3, 4].map(n => (
-                        <div
-                          key={n}
-                          className="rp-strength__bar"
-                          style={{ background: n <= strength.level ? strength.color : 'rgba(255,255,255,0.1)' }}
-                        />
+                        <div key={n} className="rp-strength__bar" style={{ background: n <= strength.level ? strength.color : 'rgba(255,255,255,0.1)' }} />
                       ))}
                     </div>
                     <span className="rp-strength__label" style={{ color: strength.color }}>{strength.label}</span>
@@ -242,7 +219,6 @@ const ResetPassword = () => {
                 {errors.password && <span className="login-field-error">{errors.password}</span>}
               </div>
 
-              {/* Confirm Password */}
               <div className="login-form-group">
                 <label htmlFor="rp-confirm" className="login-label">Confirm New Password</label>
                 <div className="login-password-wrapper">
@@ -253,15 +229,10 @@ const ResetPassword = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     className={`login-input${errors.confirmPassword ? ' error' : ''}`}
-                    placeholder="••••••••••••••••"
+                    placeholder="Confirm new password"
                     autoComplete="new-password"
                   />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowConfirm(p => !p)}
-                    aria-label={showConfirm ? 'Hide password' : 'Show password'}
-                  >
+                  <button type="button" className="password-toggle" onClick={() => setShowConfirm(p => !p)}>
                     {showConfirm ? (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -280,10 +251,7 @@ const ResetPassword = () => {
 
               <button type="submit" className="login-submit-btn" disabled={isLoading}>
                 {isLoading ? (
-                  <>
-                    <span className="login-spinner" />
-                    <span>Resetting…</span>
-                  </>
+                  <><span className="login-spinner" /><span>Resetting...</span></>
                 ) : (
                   <>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ marginRight: 8 }}>
@@ -296,7 +264,7 @@ const ResetPassword = () => {
               </button>
 
               <Link to="/login" className="login-forgot-link">
-                ← Back to Sign In
+                Back to Sign In
               </Link>
             </form>
           </div>
