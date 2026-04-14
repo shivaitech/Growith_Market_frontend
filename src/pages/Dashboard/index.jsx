@@ -1,13 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Toast from '../../components/Toast';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
-import { clearAuth, getUser } from '../../utils/secureStorage';
+import { clearAuth, getUser, getToken } from '../../utils/secureStorage';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+
+/* ═══════════════════════════════════════════════════════════
+   PRE-LAUNCH PRICING  — 50% early investor discount until April 15
+   ═══════════════════════════════════════════════════════════ */
+
+const TOKEN_NORMAL_PRICE   = 10;    // $10.00 per token after launch
+const TOKEN_PRELAUNCH_PRICE = 5;    // $5.00 per token — 50% off until Apr 16
+const PRELAUNCH_END         = new Date('2026-04-16T00:00:00+05:30'); // midnight IST Apr 16
+const IS_PRELAUNCH          = Date.now() < PRELAUNCH_END.getTime();
+const EFFECTIVE_TOKEN_PRICE = IS_PRELAUNCH ? TOKEN_PRELAUNCH_PRICE : TOKEN_NORMAL_PRICE;
 
 /* ═══════════════════════════════════════════════════════════
    MOCK DATA  — replace with API calls in production
@@ -79,11 +90,14 @@ const AVAILABLE_TOKENS = [
     id: 1, slug: 'shivai', name: 'ShivAI Token', ticker: 'SHIV',
     logo: '/assets/images/icon/shivAiToken.png',
     image: '/assets/images/partner/HeroShivaAI.jpeg',
-    price: '$0.011', minInvest: '$500', maxInvest: '$50,000',
+    price: IS_PRELAUNCH ? '$5.00' : '$10.00',
+    normalPrice: '$10.00',
+    minInvest: '$500', maxInvest: '$50,000',
     lock: '12 months', status: 'LIVE',
-    raised: 340000, target: 500000,
-    investors: 142,
-    desc: 'Next-generation AI compute infrastructure token. EU-registered private placement.',
+    raised: 100000, target: 1000000,
+    totalTokens: 1000000, availSupply: 900000, soldTokens: 100000,
+    investors: 0, network: 'ethereum',
+    desc: 'Next-generation AI compute infrastructure token. EU-registered private placement.'
   },
 ];
 
@@ -532,40 +546,40 @@ function KycBadge({ status }) {
 /* ── Overview ───────────────────────────────────── */
 const HOLDINGS_PER_PAGE = 3;
 
-function TabOverview({ investor, onNav }) {
-  const total = HOLDINGS.reduce((s, h) => s + h.currentValue, 0);
-  const invested = HOLDINGS.reduce((s, h) => s + h.invested, 0);
-  const pnl = total - invested;
-  const pnlPct = ((pnl / invested) * 100).toFixed(1);
+function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], walletData = null, walletTransactions = [], onNav }) {
+  const total    = approvedPurchases.reduce((s, h) => s + (h.currentValue || h.invested || 0), 0);
+  const invested = approvedPurchases.reduce((s, h) => s + (h.invested || 0), 0);
+  const pnl    = total - invested;
+  const pnlPct = invested > 0 ? ((pnl / invested) * 100).toFixed(1) : '0.0';
   const [holdingsPage, setHoldingsPage] = useState(1);
-  const visibleHoldings = HOLDINGS.slice(0, holdingsPage * HOLDINGS_PER_PAGE);
+  const visibleHoldings = approvedPurchases.slice(0, holdingsPage * HOLDINGS_PER_PAGE);
   const { copy, copied } = useCopyText();
+  const walletBalance = Number(walletData?.cashBalance || walletData?.balance || walletData?.walletBalance || 0);
+  const walletAddr    = walletData?.walletAddress || investor?.walletAddress || INVESTOR.walletAddress;
 
   const statCards = [
     {
       label: 'Portfolio Value', value: `$${total.toLocaleString()}`,
-      extra: <span className="db-stat-change db-stat-change--up"><Icon.arrow_up /> +{pnlPct}% all-time</span>,
+      extra: pnl > 0
+        ? <span className="db-stat-change db-stat-change--up"><Icon.arrow_up /> +{pnlPct}% all-time</span>
+        : <span className="db-stat-sub">No approved holdings yet</span>,
       chart: <Sparkline data={PORTFOLIO_HISTORY} width={80} height={32} color="#6B35FF" />,
     },
     {
       label: 'Total Invested', value: `$${invested.toLocaleString()}`,
-      extra: <span className="db-stat-sub">Across {HOLDINGS.length} token{HOLDINGS.length !== 1 ? 's' : ''}</span>,
+      extra: <span className="db-stat-sub">Across {approvedPurchases.length} token{approvedPurchases.length !== 1 ? 's' : ''}</span>,
     },
     {
-      label: 'Unrealized P&L', value: `+$${pnl.toLocaleString()}`, valueClass: 'db-stat-value--green',
-      extra: <span className="db-stat-change db-stat-change--up"><Icon.arrow_up /> +{pnlPct}%</span>,
-    },
-    {
-      label: 'Affiliate Earned', value: `$${investor.totalReferralEarned.toLocaleString()}`,
-      extra: <span className="db-stat-sub">{investor.referralCount} referrals · ${investor.pendingReferralPayout} pending</span>,
-    },
-    {
-      label: 'Wallet Balance', value: `$${WALLET_DATA.cashBalance.toLocaleString()}`,
-      extra: <span className="db-stat-sub">${WALLET_DATA.pendingPayout} pending clearance</span>,
+      label: 'Unrealized P&L',
+      value: pnl >= 0 ? `+$${pnl.toLocaleString()}` : `-$${Math.abs(pnl).toLocaleString()}`,
+      valueClass: pnl >= 0 ? 'db-stat-value--green' : '',
+      extra: pnl > 0
+        ? <span className="db-stat-change db-stat-change--up"><Icon.arrow_up /> +{pnlPct}%</span>
+        : <span className="db-stat-sub">—</span>,
     },
     {
       label: 'Custodial Wallet',
-      value: investor.walletAddress.slice(0, 10) + '…' + investor.walletAddress.slice(-6),
+      value: walletAddr.slice(0, 10) + '…' + walletAddr.slice(-6),
       valueClass: 'db-stat-value--sm',
       extra: <span className="db-stat-sub">Polygon · HSM-backed</span>,
     },
@@ -586,6 +600,8 @@ function TabOverview({ investor, onNav }) {
       </div>
 
       {/* KYC banner */}
+      <PrelaunchOfferBanner onNav={onNav} />
+
       {investor.kycStatus === 'approved' && (
         <div className="db-alert db-alert--success">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -627,7 +643,10 @@ function TabOverview({ investor, onNav }) {
         <div className="db-chart-card__header">
           <div>
             <div className="db-chart-card__value">${total.toLocaleString()}</div>
-            <div className="db-chart-card__change db-green" style={{ color: '#4ade80' }}>▲ +${pnl} (+{pnlPct}%) since entry</div>
+            {pnl > 0
+              ? <div className="db-chart-card__change db-green" style={{ color: '#4ade80' }}>▲ +${pnl.toLocaleString()} (+{pnlPct}%) since entry</div>
+              : <div className="db-chart-card__change" style={{ color: 'rgba(255,255,255,0.4)' }}>Invest to start building your portfolio</div>
+            }
           </div>
           <div className="db-chart-card__legend">
             <span className="db-chart-legend-dot" style={{ background: '#9D6FFF' }} /> Weekly value &nbsp;
@@ -643,47 +662,46 @@ function TabOverview({ investor, onNav }) {
 
       {/* Holdings */}
       <div className="db-section-title">Current Holdings</div>
-      <div className="db-holdings-grid">
-        {visibleHoldings.map(h => (
-          <div key={h.id} className="db-hcard">
-            <div className="db-hcard__image">
-              <img src={h.image} alt={h.token} onError={e => { e.target.style.display='none'; }} />
-              <span className={`db-hcard__badge db-hcard__badge--${h.status}`}>
-                <Icon.lock /> {h.status === 'locked' ? 'Locked' : 'Unlocked'}
-              </span>
-            </div>
-            <div className="db-hcard__body">
-              <div className="db-hcard__header">
-                <div className="db-hcard__logo">
-                  <img src={h.logo} alt="" onError={e => { e.target.style.display='none'; }} />
-                </div>
-                <div>
-                  <div className="db-hcard__name">{h.token} <span className="db-ticker">{h.ticker}</span></div>
-                  <div className="db-hcard__chain">{h.blockchain}</div>
-                </div>
-                <div style={{ marginLeft: 'auto' }}>
-                  <Sparkline data={h.priceHistory} width={60} height={28} color="#22C55E" fill={false} />
-                </div>
-              </div>
-              <div className="db-hcard__stats">
-                <div className="db-hcard__stat"><span>Tokens</span><strong>{h.amount.toLocaleString()}</strong></div>
-                <div className="db-hcard__stat"><span>Value</span><strong>${h.currentValue.toLocaleString()}</strong></div>
-                <div className="db-hcard__stat"><span>P&amp;L</span><strong className="db-green">+${h.pnl} (+{h.pnlPct}%)</strong></div>
-              </div>
-              <div className="db-hcard__footer">
-                <span className="db-hcard__lock-info"><Icon.lock /> Lock expires {h.lockExpiry}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {HOLDINGS.length > HOLDINGS_PER_PAGE && (
-        <div className="db-holdings-pagination">
-          {holdingsPage * HOLDINGS_PER_PAGE < HOLDINGS.length
-            ? <button className="db-btn db-btn--secondary db-btn--sm" onClick={() => setHoldingsPage(p => p + 1)}>Show More</button>
-            : <button className="db-btn db-btn--secondary db-btn--sm" onClick={() => setHoldingsPage(1)}>Show Less</button>
-          }
+      {approvedPurchases.length === 0 ? (
+        <div className="db-wallet-empty" style={{ padding: '20px 0' }}>
+          No approved token holdings yet.{' '}
+          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
         </div>
+      ) : (
+        <>
+          <div className="db-holdings-grid">
+            {visibleHoldings.map(h => (
+              <div key={h.id} className="db-hcard">
+                <div className="db-hcard__body" style={{ padding: '16px' }}>
+                  <div className="db-hcard__header">
+                    <div className="db-hcard__logo">
+                      <img src={h.logo} alt="" onError={e => { e.target.style.display='none'; }} />
+                    </div>
+                    <div>
+                      <div className="db-hcard__name">{h.token} <span className="db-ticker">{h.ticker}</span></div>
+                      <div className="db-hcard__chain">{h.ticker || 'Token'}</div>
+                    </div>
+                    <span className="db-wallet-tag db-wallet-tag--green" style={{ marginLeft: 'auto', fontSize: 11 }}>Active</span>
+                  </div>
+                  <div className="db-hcard__stats" style={{ marginTop: 12 }}>
+                    <div className="db-hcard__stat"><span>Tokens</span><strong>{(h.amount ?? 0).toLocaleString()}</strong></div>
+                    <div className="db-hcard__stat"><span>Invested</span><strong>${(h.invested ?? 0).toLocaleString()}</strong></div>
+                    <div className="db-hcard__stat"><span>Value</span><strong style={{ color: '#22C55E' }}>${(h.currentValue ?? h.invested ?? 0).toLocaleString()}</strong></div>
+                    {h.date && <div className="db-hcard__stat"><span>Approved</span><strong>{h.date}</strong></div>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {approvedPurchases.length > HOLDINGS_PER_PAGE && (
+            <div className="db-holdings-pagination">
+              {holdingsPage * HOLDINGS_PER_PAGE < approvedPurchases.length
+                ? <button className="db-btn db-btn--secondary db-btn--sm" onClick={() => setHoldingsPage(p => p + 1)}>Show More</button>
+                : <button className="db-btn db-btn--secondary db-btn--sm" onClick={() => setHoldingsPage(1)}>Show Less</button>
+              }
+            </div>
+          )}
+        </>
       )}
 
       {/* Quick Actions */}
@@ -707,18 +725,20 @@ function TabOverview({ investor, onNav }) {
       {/* Recent activity */}
       <div className="db-section-title">Recent Activity</div>
       <div className="db-activity-list">
-        {TRANSACTIONS.slice(0, 4).map(tx => {
-          const statusColors = { confirmed: '#22C55E', approved: '#22C55E', completed: '#9D6FFF', pending: '#F59E0B' };
-          const typeLabel = { investment: 'Investment', affiliate: 'Affiliate Commission', redeem: 'Redemption', kyc: 'KYC Verified', onboarding: 'Onboarding' };
+        {walletTransactions.length === 0 ? (
+          <div className="db-wallet-empty" style={{ padding: '16px 0' }}>No transactions yet.</div>
+        ) : walletTransactions.slice(0, 5).map(tx => {
+          const statusColors = { confirmed: '#22C55E', approved: '#22C55E', completed: '#9D6FFF', pending: '#F59E0B', failed: '#f87171' };
+          const typeLabel = { investment: 'Investment', affiliate: 'Affiliate Commission', redeem: 'Redemption', commission: 'Commission', withdrawal: 'Withdrawal', token_purchase: 'Token Purchase' };
           return (
             <div key={tx.id} className="db-activity-row">
               <div className="db-activity-dot" style={{ background: statusColors[tx.status] || '#9D6FFF' }} />
               <div className="db-activity-body">
-                <span className="db-activity-label">{typeLabel[tx.type] || tx.type}</span>
-                <span className="db-activity-date">{tx.date}</span>
+                <span className="db-activity-label">{typeLabel[tx.type] || tx.type || '—'}</span>
+                <span className="db-activity-date">{tx.date}{tx.time ? ` · ${tx.time}` : ''}</span>
               </div>
-              <div className="db-activity-amount" style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.amount ? '#22C55E' : 'rgba(255,255,255,0.5)' }}>
-                {tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()}` : '—'}
+              <div className="db-activity-amount" style={{ color: (tx.type === 'redeem' || tx.type === 'withdrawal') ? '#F59E0B' : tx.amount ? '#22C55E' : 'rgba(255,255,255,0.5)' }}>
+                {tx.amount ? `${(tx.type === 'redeem' || tx.type === 'withdrawal') ? '−' : '+'}$${Number(tx.amount).toLocaleString()}` : '—'}
               </div>
             </div>
           );
@@ -729,7 +749,7 @@ function TabOverview({ investor, onNav }) {
 }
 
 /* ── Portfolio ──────────────────────────────────── */
-function TabPortfolio() {
+function TabPortfolio({ onNav }) {
   const total = HOLDINGS.reduce((s, h) => s + h.currentValue, 0);
   const allocSegments = [
     { label: 'Public Sale',              pct: 40, color: '#6B35FF' },
@@ -747,6 +767,7 @@ function TabPortfolio() {
           <p className="db-muted">Token holdings, allocation breakdown, and vesting schedule.</p>
         </div>
       </div>
+      <PrelaunchOfferBanner onNav={onNav} />
 
       {HOLDINGS.map(h => {
         const lockProgress = Math.max(0, Math.min(100, 100 - (h.daysLeft / 365) * 100));
@@ -825,29 +846,162 @@ function TabPortfolio() {
 }
 
 /* ── Invest ─────────────────────────────────────── */
-function TabInvest({ investor }) {
+/* USDT payment wallet address & QR for purchases */
+const USDT_TRC20_ADDRESS = 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE';
+const USDT_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(USDT_TRC20_ADDRESS)}`;
+
+/* ── Pre-launch offer banner ── */
+function PrelaunchOfferBanner({ onNav }) {
+  const msLeft  = Math.max(0, PRELAUNCH_END.getTime() - Date.now());
+  const daysLeft  = Math.floor(msLeft / 86400000);
+  const hoursLeft = Math.floor((msLeft % 86400000) / 3600000);
+  if (!IS_PRELAUNCH) return null;
+  return (
+    <div className="db-prelaunch-banner">
+      <div className="db-prelaunch-banner__left">
+        <span className="db-prelaunch-banner__tag">⚡ Pre-Launch Offer</span>
+        <div className="db-prelaunch-banner__title">50% Early Investor Discount&nbsp;— Ends April 15, 2026</div>
+        <div className="db-prelaunch-banner__pricing">
+          <span className="db-prelaunch-price-old">$10.00</span>
+          <span className="db-prelaunch-arrow">→</span>
+          <span className="db-prelaunch-price-new">$5.00 per token</span>
+          <span className="db-prelaunch-saving">2× tokens for the same investment!</span>
+        </div>
+      </div>
+      <div className="db-prelaunch-banner__right">
+        <div className="db-prelaunch-countdown">
+          <div className="db-prelaunch-countdown__block">
+            <span className="db-prelaunch-countdown__num">{daysLeft}</span>
+            <span className="db-prelaunch-countdown__label">days</span>
+          </div>
+          <span className="db-prelaunch-countdown__sep">:</span>
+          <div className="db-prelaunch-countdown__block">
+            <span className="db-prelaunch-countdown__num">{String(hoursLeft).padStart(2,'0')}</span>
+            <span className="db-prelaunch-countdown__label">hrs</span>
+          </div>
+          <span className="db-prelaunch-countdown__remaining">left</span>
+        </div>
+        {onNav && (
+          <button className="db-btn db-btn--primary db-prelaunch-banner__cta" onClick={() => onNav('invest')}>
+            Invest Now →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading = false, lastRefreshed = null, onRefresh, onAddPendingPurchase }) {
   const [selectedToken, setSelectedToken] = useState(null);
   const [amount, setAmount] = useState('500');
-  const [method, setMethod] = useState('bank');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // payStep: 'form' | 'payment' | 'done'
+  const [payStep, setPayStep] = useState('form');
+  const [screenshot, setScreenshot] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [screenshotError, setScreenshotError] = useState(false);
+  const [purchaseId] = useState(() => Math.random().toString(36).slice(2, 10).toUpperCase());
+  const { copy, copied } = useCopyText();
   const formRef = useRef(null);
+  const fileRef = useRef(null);
+
+  const tokenPrice = selectedToken ? parseFloat(selectedToken.price.replace('$', '')) : EFFECTIVE_TOKEN_PRICE;
+  const tokenQty = amount && !isNaN(amount) && Number(amount) >= 500
+    ? Math.floor(Number(amount) / tokenPrice)
+    : 0;
 
   const handleSelectToken = t => {
     setSelectedToken(t);
     setAmount('500');
+    setPayStep('form');
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
-  const handleSubmit = async e => {
+  const handleProceedToPayment = e => {
     e.preventDefault();
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setLoading(false);
-    setSubmitted(true);
+    setPayStep('payment');
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
-  if (submitted) {
+  const handleScreenshotChange = e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScreenshot(file);
+    setScreenshotError(false);
+    const reader = new FileReader();
+    reader.onload = ev => setScreenshotPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const savePurchase = async (withScreenshot) => {
+    setApiError(null);
+    const fd = new FormData();
+    fd.append('tokenId',     selectedToken.id);
+    fd.append('tokenName',   selectedToken.name);
+    fd.append('ticker',      selectedToken.ticker);
+    fd.append('amountUsd',   String(Number(amount)));
+    fd.append('tokenQty',    String(tokenQty));
+    fd.append('purchaseRef', purchaseId);
+    fd.append('method',      'USDT (TRC20)');
+    if (withScreenshot && screenshot) fd.append('screenshot', screenshot);
+
+    let apiId = null;
+    try {
+      const res = await apiService.createTokenRequest(fd);
+      apiId = res?.data?.id || res?.id || null;
+    } catch (err) {
+      setApiError(err?.message || 'Failed to submit request. Please try again.');
+      return; // do NOT proceed to success screen
+    }
+
+    const purchasePayload = {
+      id:            apiId || Date.now(),
+      apiId,
+      purchaseRef:   purchaseId,
+      token:         selectedToken.name,
+      ticker:        selectedToken.ticker,
+      logo:          selectedToken.logo,
+      tokenId:       selectedToken.id,
+      amountUsd:     Number(amount),
+      tokenQty,
+      date:          new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status:        'pending_verification',
+      paymentStatus: withScreenshot ? 'screenshot_uploaded' : 'awaiting_screenshot',
+      method:        'USDT (TRC20)',
+    };
+    onAddPendingPurchase?.(purchasePayload);
+    setPayStep('done');
+  };
+
+  const handleMarkComplete = async () => {
+    if (!screenshot) {
+      setScreenshotError(true);
+      return;
+    }
+    setApiError(null);
+    setUploading(true);
+    await savePurchase(true);
+    setUploading(false);
+  };
+
+  const handleSkipScreenshot = async () => {
+    setApiError(null);
+    setUploading(true);
+    await savePurchase(false);
+    setUploading(false);
+  };
+
+  const resetFlow = () => {
+    setSelectedToken(null);
+    setAmount('500');
+    setPayStep('form');
+    setScreenshot(null);
+    setScreenshotPreview(null);
+  };
+
+  /* ── Done screen ── */
+  if (payStep === 'done') {
     return (
       <div className="db-tab-content">
         <div className="db-success-box">
@@ -856,15 +1010,22 @@ function TabInvest({ investor }) {
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <h2 className="db-h2">Investment Intent Submitted</h2>
-          <p className="db-muted" style={{ maxWidth: 440, margin: '0 auto 24px' }}>
-            Your investment intent for <strong style={{ color: '#DEC7FF' }}>${Number(amount).toLocaleString()}</strong> in ShivAI has been received. Our team will process your payment and confirm allocation within 1–3 business days.
+          <h2 className="db-h2">Purchase Submitted</h2>
+          <p className="db-muted" style={{ maxWidth: 460, margin: '0 auto 20px' }}>
+            Your purchase of <strong style={{ color: '#DEC7FF' }}>{tokenQty.toLocaleString()} {selectedToken?.ticker}</strong> worth <strong style={{ color: '#DEC7FF' }}>${Number(amount).toLocaleString()}</strong> USDT is now pending.
+            {screenshot ? ' Payment screenshot uploaded.' : ' You can upload a payment screenshot later from Transactions.'}
           </p>
-          <div className="db-alert db-alert--info" style={{ textAlign: 'left', maxWidth: 440, margin: '0 auto 24px' }}>
+          {!screenshot && (
+            <div className="db-alert db-alert--warning" style={{ maxWidth: 460, margin: '0 auto 20px', textAlign: 'left' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>No screenshot uploaded. This purchase is saved as <strong>Pending Purchase</strong> in your Transactions tab. Upload the screenshot there to complete payment verification.</div>
+            </div>
+          )}
+          <div className="db-alert db-alert--info" style={{ maxWidth: 460, margin: '0 auto 20px', textAlign: 'left' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div>Tokens will be minted to your custodial wallet <strong style={{ color: '#DEC7FF' }}>{investor?.walletAddress || '—'}</strong> on Polygon after payment confirmation.</div>
+            <div>Tokens will appear in your Wallet with a <strong>Pending Verification</strong> tag. They become active after admin approves your KYC &amp; payment.</div>
           </div>
-          <button className="db-btn db-btn--primary" onClick={() => { setSubmitted(false); setAmount('500'); }}>Submit Another Intent</button>
+          <button className="db-btn db-btn--primary" onClick={resetFlow}>Invest Again</button>
         </div>
       </div>
     );
@@ -875,14 +1036,43 @@ function TabInvest({ investor }) {
       <div className="db-welcome-bar">
         <div>
           <h1 className="db-h1">Invest</h1>
-          <p className="db-muted">Browse open offerings and submit your investment intent.</p>
+          <p className="db-muted">Browse open offerings and purchase tokens with USDT.</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {lastRefreshed && (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+              Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            className="db-btn db-btn--ghost"
+            style={{ padding: '6px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={onRefresh}
+            disabled={dataLoading}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={dataLoading ? { animation: 'spin 1s linear infinite' } : {}}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            {dataLoading ? 'Loading…' : 'Refresh'}
+          </button>
         </div>
       </div>
 
+      <PrelaunchOfferBanner />
+
+      {/* KYC notice banner when not approved */}
+      {investor?.kycStatus !== 'approved' && (
+        <div className="db-alert db-alert--warning" style={{ marginBottom: 24 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>Your KYC is {investor?.kycStatus === 'not_started' ? 'not yet submitted' : 'under review'}. You can purchase tokens now — they will be marked <strong>Pending Verification</strong> until your KYC and payment are approved by the admin.</div>
+        </div>
+      )}
+
       {/* Token cards */}
-      <div className="db-section-title">Available Offerings</div>
+      <div className="db-section-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        Available Offerings
+        {dataLoading && <span style={{ width: 14, height: 14, border: '2px solid rgba(157,111,255,0.3)', borderTop: '2px solid #9D6FFF', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />}
+      </div>
       <div className="db-token-grid">
-        {AVAILABLE_TOKENS.map(t => (
+        {availableTokens.map(t => (
           <div
             key={t.id}
             className={`db-token-card ${selectedToken?.id === t.id ? 'db-token-card--selected' : ''}`}
@@ -903,25 +1093,42 @@ function TabInvest({ investor }) {
                 </div>
               </div>
               <p className="db-token-card__desc">{t.desc}</p>
-              {/* Fundraise progress */}
               <div className="db-raise-progress">
                 <div className="db-raise-progress__header">
-                  <span className="db-raise-label">Raised</span>
+                  <span className="db-raise-label">Tokens Sold</span>
                   <span className="db-raise-pct">{Math.round((t.raised / t.target) * 100)}%</span>
                 </div>
                 <div className="db-raise-track">
-                  <div className="db-raise-fill" style={{ width: `${(t.raised / t.target) * 100}%` }} />
+                  <div className="db-raise-fill" style={{ width: `${Math.min((t.raised / t.target) * 100, 100)}%` }} />
                 </div>
                 <div className="db-raise-meta">
-                  <span>${(t.raised / 1000).toFixed(0)}K raised</span>
-                  <span>Target ${(t.target / 1000).toFixed(0)}K</span>
+                  <span>{t.raised >= 1000000 ? `${(t.raised/1000000).toFixed(2)}M` : `${(t.raised/1000).toFixed(0)}K`} {t.ticker} sold</span>
+                  <span>{t.target >= 1000000 ? `${(t.target/1000000).toFixed(0)}M` : `${(t.target/1000).toFixed(0)}K`} total supply</span>
                 </div>
-                <div className="db-raise-investors">{t.investors} investors · spots remaining</div>
+                <div className="db-raise-investors">
+                  {t.availSupply != null
+                    ? `${t.availSupply >= 1000000 ? `${(t.availSupply/1000000).toFixed(2)}M` : `${(t.availSupply/1000).toFixed(0)}K`} ${t.ticker} available`
+                    : 'Spots remaining'}
+                  {t.investors > 0 ? ` · ${t.investors} investors` : ''}
+                </div>
               </div>
               <div className="db-token-card__stats">
-                <div className="db-token-stat"><span>Price</span><strong>{t.price}</strong></div>
+                <div className="db-token-stat">
+                  <span>Price</span>
+                  <strong>
+                    <span className="db-price-offer-wrap">
+                        <span className="db-price-new">{t.price}</span>
+                        {IS_PRELAUNCH && <span className="db-price-50off">50% OFF</span>}
+                      </span>
+                  </strong>
+                </div>
+                <div className="db-token-stat">
+                  <span>Total Supply</span>
+                  <strong>{t.totalTokens ? (t.totalTokens >= 1000000 ? `${(t.totalTokens/1000000).toFixed(0)}M` : `${(t.totalTokens/1000).toFixed(0)}K`) : '—'} {t.ticker}</strong>
+                </div>
                 <div className="db-token-stat"><span>Min.</span><strong>{t.minInvest}</strong></div>
                 <div className="db-token-stat"><span>Lock</span><strong>{t.lock}</strong></div>
+                {t.network && <div className="db-token-stat"><span>Network</span><strong style={{textTransform:'capitalize'}}>{t.network}</strong></div>}
               </div>
               <div className={`db-token-card__select-indicator ${selectedToken?.id === t.id ? 'active' : ''}`}>
                 {selectedToken?.id === t.id ? '✓ Selected' : 'Click to select'}
@@ -931,23 +1138,28 @@ function TabInvest({ investor }) {
         ))}
       </div>
 
-      {/* Investment intent form */}
-      {selectedToken && (
+      {/* ── Step 1: Amount + method ── */}
+      {selectedToken && payStep === 'form' && (
         <div className="db-intent-form-wrap" ref={formRef}>
           <div className="db-intent-form-header">
             <div className="db-intent-form-header__token">
               <img src={selectedToken.logo} alt="" className="db-intent-form-header__logo" onError={e => { e.target.style.display='none'; }} />
               <div>
                 <div className="db-intent-form-header__name">{selectedToken.name}</div>
-                <div className="db-intent-form-header__ticker">{selectedToken.ticker} · {selectedToken.price} per token</div>
+                <div className="db-intent-form-header__ticker">
+                  {selectedToken.ticker}
+                  {IS_PRELAUNCH ? (
+                    <> · <span style={{color:'#4ade80',fontWeight:700}}>{selectedToken.price}</span> <span className="db-price-50off" style={{fontSize:'10px'}}>50% OFF</span></>
+                  ) : <> · {selectedToken.price} per token</>}
+                </div>
               </div>
             </div>
             <button type="button" className="db-intent-form-header__close" onClick={() => setSelectedToken(null)}>✕</button>
           </div>
-          <form onSubmit={handleSubmit} className="db-intent-form">
+          <form onSubmit={handleProceedToPayment} className="db-intent-form">
             <div className="db-form-row">
               <div className="db-form-group">
-                <label className="db-form-label">Investment Amount (USD)</label>
+                <label className="db-form-label">Investment Amount (USDT)</label>
                 <div className="db-input-prefix-wrap">
                   <span className="db-input-prefix">$</span>
                   <input
@@ -966,45 +1178,200 @@ function TabInvest({ investor }) {
               <div className="db-form-group">
                 <label className="db-form-label">Estimated Token Allocation</label>
                 <div className="db-token-calc">
-                  {amount && !isNaN(amount) && Number(amount) >= 500
-                    ? <><strong>{(Number(amount) / 0.01).toLocaleString()}</strong> {selectedToken.ticker}</>
+                  {tokenQty > 0
+                    ? <><strong>{tokenQty.toLocaleString()}</strong> {selectedToken.ticker}</>
                     : <span className="db-muted">Enter amount above</span>
                   }
                 </div>
               </div>
             </div>
 
-            <div className="db-form-group">
-              <label className="db-form-label">Payment Method</label>
-              <div className="db-payment-methods">
-                {[
-                  { id: 'bank', label: 'Bank Transfer', desc: 'SWIFT / SEPA wire transfer. 1–3 business days.' },
-                  { id: 'usdt', label: 'USDT (TRC20)', desc: 'Stable-coin transfer. Tron network. 1 hour settlement.' },
-                ].map(m => (
-                  <label key={m.id} className={`db-payment-option ${method === m.id ? 'db-payment-option--selected' : ''}`}>
-                    <input type="radio" name="method" value={m.id} checked={method === m.id} onChange={() => setMethod(m.id)} style={{ display: 'none' }} />
-                    <div className="db-payment-option__check">{method === m.id && <Icon.check />}</div>
-                    <div>
-                      <div className="db-payment-option__label">{m.label}</div>
-                      <div className="db-payment-option__desc">{m.desc}</div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Terms notice */}
             <div className="db-alert db-alert--info">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <div>
-                By submitting, you confirm you have read the <strong>Risk Disclosure Statement</strong> and <strong>Subscription Agreement</strong>. Tokens will be locked for <strong>{selectedToken.lock}</strong> from minting date. This is a non-refundable private placement.
+                Payment is via <strong>USDT (TRC20)</strong>. After proceeding, you will see the Growith wallet QR code and address to send the exact amount.
               </div>
             </div>
 
-            <button type="submit" className="db-btn db-btn--primary" disabled={loading || !amount || Number(amount) < 500}>
-              {loading ? <><span className="db-spinner" /> Processing...</> : `Submit Investment Intent for $${amount || '—'}`}
+            <button type="submit" className="db-btn db-btn--primary" disabled={!amount || Number(amount) < 500}>
+              Proceed to Payment →
             </button>
           </form>
+        </div>
+      )}
+
+      {/* ── Step 2: USDT QR payment ── */}
+      {selectedToken && payStep === 'payment' && (
+        <div style={{ position: 'relative' }} ref={formRef}>
+        {/* KYC lock overlay */}
+        {investor?.kycStatus !== 'approved' && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 10,
+            backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+            background: 'rgba(10,8,28,0.72)',
+            borderRadius: 16,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 16, padding: '32px 24px', textAlign: 'center',
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'rgba(245,158,11,0.12)',
+              border: '1.5px solid rgba(245,158,11,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 18, color: '#fff', marginBottom: 8 }}>
+                KYC Verification Required
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, maxWidth: 340, lineHeight: 1.6 }}>
+                {investor?.kycStatus === 'rejected'
+                  ? 'Your KYC was rejected. Please resubmit your documents in the Verification tab before completing payment.'
+                  : 'Your KYC is currently under review. You will be able to complete your payment once your identity is verified.'}
+              </div>
+            </div>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '6px 14px', borderRadius: 20,
+              background: investor?.kycStatus === 'rejected' ? 'rgba(248,113,113,0.12)' : 'rgba(245,158,11,0.12)',
+              border: `1px solid ${investor?.kycStatus === 'rejected' ? 'rgba(248,113,113,0.3)' : 'rgba(245,158,11,0.3)'}`,
+              color: investor?.kycStatus === 'rejected' ? '#F87171' : '#F59E0B',
+              fontSize: 13, fontWeight: 600,
+            }}>
+              {investor?.kycStatus === 'rejected' ? '✕ KYC Rejected' : '⏳ KYC Under Review'}
+            </div>
+          </div>
+        )}
+        <div className="db-intent-form-wrap db-intent-form-wrap--dark" style={{ filter: investor?.kycStatus !== 'approved' ? 'blur(3px)' : 'none', pointerEvents: investor?.kycStatus !== 'approved' ? 'none' : 'auto', userSelect: investor?.kycStatus !== 'approved' ? 'none' : 'auto' }}>
+          <div className="db-intent-form-header">
+            <div className="db-intent-form-header__token">
+              <img src={selectedToken.logo} alt="" className="db-intent-form-header__logo" onError={e => { e.target.style.display='none'; }} />
+              <div>
+                <div className="db-intent-form-header__name">Pay with USDT (TRC20)</div>
+                <div className="db-intent-form-header__ticker">Scan QR or copy address · TRC20 / Tron only</div>
+              </div>
+            </div>
+            <button type="button" className="db-intent-form-header__close" onClick={() => setPayStep('form')}>← Back</button>
+          </div>
+
+          <div className="db-usdt-payment">
+            {/* Top: QR + details side by side */}
+            <div className="db-usdt-pay-row">
+              <div className="db-usdt-qr-col">
+                <div className="db-usdt-qr-box">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(USDT_TRC20_ADDRESS)}&bgcolor=ffffff&color=000000&margin=2`}
+                    alt="USDT TRC20 QR"
+                    className="db-usdt-qr-img"
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                </div>
+                <div className="db-usdt-network-badge">TRC20 · Tron</div>
+              </div>
+              <div className="db-usdt-info-col">
+                <div className="db-usdt-send-amount-row">
+                  <span className="db-usdt-send-amount">{amount}</span>
+                  <span className="db-usdt-send-currency">USDT</span>
+                </div>
+                <div className="db-usdt-send-hint">Send exactly this amount · TRC20 / Tron only</div>
+                <div className="db-usdt-addr-block">
+                  <div className="db-usdt-addr-label">Wallet Address</div>
+                  <div className="db-usdt-addr-row">
+                    <span className="db-usdt-addr">{USDT_TRC20_ADDRESS}</span>
+                    <button className="db-wallet-copy-btn" onClick={() => copy(USDT_TRC20_ADDRESS, 'usdt')}>
+                      <Icon.copy /> {copied === 'usdt' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+                <div className="db-usdt-receive-line">
+                  <span className="db-usdt-detail-label">You Receive</span>
+                  <span className="db-usdt-detail-value">{tokenQty.toLocaleString()} {selectedToken.ticker} <span className="db-usdt-pending-tag">Pending</span></span>
+                </div>
+                <div className="db-usdt-receive-line">
+                  <span className="db-usdt-detail-label">Ref</span>
+                  <span className="db-usdt-detail-value db-muted" style={{ fontSize: '12px' }}>{purchaseId}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="db-alert db-alert--warning db-alert--compact" style={{ margin: '12px 0' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>TRC20 / Tron only — wrong network = permanent loss of funds.</div>
+            </div>
+
+            {/* Screenshot upload */}
+            <div className="db-usdt-screenshot-section">
+              <div className="db-usdt-screenshot-title">
+                Payment Screenshot <span className="db-usdt-optional">· optional, upload later from Transactions</span>
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleScreenshotChange}
+              />
+              {screenshotPreview ? (
+                <div className="db-usdt-screenshot-preview">
+                  <img src={screenshotPreview} alt="screenshot preview" />
+                  <button
+                    type="button"
+                    className="db-usdt-screenshot-remove"
+                    onClick={() => { setScreenshot(null); setScreenshotPreview(null); fileRef.current.value = ''; }}
+                  >✕ Remove</button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className={`db-kyc-upload-box db-usdt-screenshot-upload${screenshotError ? ' db-usdt-screenshot-upload--error' : ''}`}
+                    onClick={() => { setScreenshotError(false); fileRef.current?.click(); }}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Click to upload screenshot</span>
+                  </button>
+                  {screenshotError && (
+                    <div className="db-usdt-screenshot-error">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      Please upload your payment screenshot to continue.
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="db-usdt-actions">
+              {apiError && (
+                <div className="db-api-error">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {apiError}
+                </div>
+              )}
+              <button
+                type="button"
+                className={`db-btn db-btn--primary${uploading ? ' db-btn--loading' : ''}`}
+                disabled={uploading}
+                onClick={handleMarkComplete}
+              >
+                {uploading ? <><span className="db-spinner" /> Submitting...</> : 'Mark Payment Complete'}
+              </button>
+              <button
+                type="button"
+                className={`db-btn db-btn--ghost${uploading ? ' db-btn--loading' : ''}`}
+                disabled={uploading}
+                onClick={handleSkipScreenshot}
+              >
+                {uploading ? <><span className="db-spinner" /> Saving...</> : 'Skip — upload later'}
+              </button>
+            </div>
+          </div>
+        </div>
         </div>
       )}
     </div>
@@ -1012,8 +1379,13 @@ function TabInvest({ investor }) {
 }
 
 /* ── Transactions ───────────────────────────────── */
-function TabTransactions() {
+function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUploadScreenshot }) {
   const [filter, setFilter] = useState('all');
+  const [uploadingId, setUploadingId] = useState(null);
+  const [localPreviews, setLocalPreviews] = useState({});
+  const [uploadErrors, setUploadErrors] = useState({});
+  const fileRefs = useRef({});
+
   const statusStyles = {
     confirmed: { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   label: 'Confirmed' },
     approved:  { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   label: 'Approved' },
@@ -1029,7 +1401,39 @@ function TabTransactions() {
     onboarding: { label: 'Onboarding',           icon: '#DEC7FF', iconBg: 'rgba(222,199,255,0.1)', iconBorder: 'rgba(222,199,255,0.25)', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DEC7FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
   };
   const filters = ['all', 'investment', 'affiliate', 'redeem', 'kyc'];
-  const filtered = filter === 'all' ? TRANSACTIONS : TRANSACTIONS.filter(t => t.type === filter);
+  const txRows = walletTransactions.length > 0 ? walletTransactions : [];
+  const filtered = filter === 'all' ? txRows : txRows.filter(t => t.type === filter);
+
+  const awaitingScreenshot = pendingPurchases.filter(p => p.paymentStatus === 'awaiting_screenshot');
+  const uploadedPurchases  = pendingPurchases.filter(p => p.paymentStatus === 'screenshot_uploaded');
+
+  const handleScreenshotUpload = async (purchaseId, file, purchase) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setLocalPreviews(prev => ({ ...prev, [purchaseId]: ev.target.result }));
+    reader.readAsDataURL(file);
+    setUploadingId(purchaseId);
+    setUploadErrors(prev => ({ ...prev, [purchaseId]: null }));
+    try {
+      const fd = new FormData();
+      fd.append('purchaseRef', purchase?.purchaseRef || String(purchaseId));
+      if (purchase?.tokenId) fd.append('tokenId', purchase.tokenId);
+      fd.append('tokenName',   purchase?.token  || '');
+      fd.append('ticker',      purchase?.ticker || '');
+      fd.append('amountUsd',   String(purchase?.amountUsd || 0));
+      fd.append('tokenQty',    String(purchase?.tokenQty  || 0));
+      fd.append('method',      purchase?.method || 'USDT (TRC20)');
+      fd.append('screenshot',  file);
+      await apiService.createTokenRequest(fd);
+    } catch (err) {
+      console.warn('screenshot upload failed:', err?.message);
+      setUploadErrors(prev => ({ ...prev, [purchaseId]: 'Upload failed. Please try again.' }));
+      setUploadingId(null);
+      return;
+    }
+    onUploadScreenshot?.(purchaseId, file);
+    setUploadingId(null);
+  };
 
   return (
     <div className="db-tab-content">
@@ -1040,19 +1444,71 @@ function TabTransactions() {
         </div>
       </div>
 
-      {/* Summary tiles */}
-      <div className="db-tx-summary">
-        {[
-          { label: 'Total Invested', value: `$${TRANSACTIONS.filter(t=>t.type==='investment').reduce((s,t)=>s+(t.amount||0),0).toLocaleString()}`, color: '#22C55E' },
-          { label: 'Commissions Earned', value: `$${TRANSACTIONS.filter(t=>t.type==='affiliate').reduce((s,t)=>s+(t.amount||0),0).toLocaleString()}`, color: '#9D6FFF' },
-          { label: 'Total Redeemed', value: `$${TRANSACTIONS.filter(t=>t.type==='redeem').reduce((s,t)=>s+(t.amount||0),0).toLocaleString()}`, color: '#F59E0B' },
-        ].map(s => (
-          <div key={s.label} className="db-tx-summary-card">
-            <span className="db-tx-summary-label">{s.label}</span>
-            <span className="db-tx-summary-value" style={{ color: s.color }}>{s.value}</span>
+      {/* ── Pending Purchases section ── */}
+      {pendingPurchases.length > 0 && (
+        <>
+          <div className="db-section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            Pending Purchases
+            <span className="db-pending-count-badge">{pendingPurchases.length}</span>
           </div>
-        ))}
-      </div>
+          <div className="db-pending-purchases">
+            {pendingPurchases.map(p => (
+              <div key={p.id} className="db-pending-card">
+                <div className="db-pending-card__top">
+                  <div className="db-pending-card__token">
+                    <img src={p.logo} alt="" className="db-pending-card__logo" onError={e => { e.target.style.display='none'; }} />
+                    <div>
+                      <div className="db-pending-card__name">{p.token} <span className="db-usdt-pending-tag">Pending Verification</span></div>
+                      <div className="db-pending-card__meta">{p.tokenQty?.toLocaleString()} {p.ticker} · ${p.amountUsd?.toLocaleString()} USDT · {p.date}</div>
+                    </div>
+                  </div>
+                  <div className="db-pending-card__ref">Ref: {p.purchaseRef}</div>
+                </div>
+
+                {p.paymentStatus === 'awaiting_screenshot' ? (
+                  <div className="db-pending-card__upload">
+                    <div className="db-pending-card__upload-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      Payment screenshot not yet uploaded
+                    </div>
+                    <input
+                      ref={el => { fileRefs.current[p.id] = el; }}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={e => handleScreenshotUpload(p.id, e.target.files?.[0], p)}
+                    />
+                    {localPreviews[p.id] ? (
+                      <div className="db-usdt-screenshot-preview" style={{ marginTop: 8 }}>
+                        <img src={localPreviews[p.id]} alt="preview" />
+                        {uploadingId === p.id && <span className="db-pending-uploading"><span className="db-spinner" /> Uploading…</span>}
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          className="db-btn db-btn--outline-sm"
+                          disabled={uploadingId === p.id}
+                          onClick={() => fileRefs.current[p.id]?.click()}
+                        >
+                          {uploadingId === p.id ? <><span className="db-spinner" /> Uploading…</> : 'Upload Screenshot'}
+                        </button>
+                        {uploadErrors[p.id] && (
+                          <div style={{ fontSize: 11, color: '#f87171', marginTop: 4 }}>{uploadErrors[p.id]}</div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="db-pending-card__uploaded">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Screenshot uploaded — awaiting admin approval
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Filter pills */}
       <div className="db-tx-filters">
@@ -1068,11 +1524,13 @@ function TabTransactions() {
         <table className="db-tx-table">
           <thead>
             <tr>
-              <th>#</th><th>Type</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th><th>Reference</th>
+              <th>#</th><th>Type</th><th>Amount</th><th>Description</th><th>Date</th><th>Status</th><th>Ref ID</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((tx, idx) => {
+            {filtered.length === 0 ? (
+              <tr><td colSpan={7} style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No transactions yet</td></tr>
+            ) : filtered.map((tx, idx) => {
               const s = statusStyles[tx.status] || statusStyles.pending;
               const tc = typeConfig[tx.type] || typeConfig.onboarding;
               return (
@@ -1084,11 +1542,14 @@ function TabTransactions() {
                       <span className="db-tx-type-label">{tc.label}</span>
                     </div>
                   </td>
-                  <td className="db-tx-amount" style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#5B21B6' }}>
-                    {tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()}` : <span className="db-muted">—</span>}
+                  <td className="db-tx-amount" style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>
+                    {tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : <span className="db-muted">—</span>}
                   </td>
-                  <td className="db-tx-method">{tx.method}</td>
-                  <td className="db-tx-date">{tx.date}</td>
+                  <td className="db-tx-method" style={{ maxWidth: 220, whiteSpace: 'normal', fontSize: 12, color: 'rgba(255,255,255,0.55)' }} title={tx.desc}>{tx.desc || tx.method || '—'}</td>
+                  <td className="db-tx-date">
+                    <div>{tx.date}</div>
+                    {tx.time && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{tx.time}</div>}
+                  </td>
                   <td>
                     <span className="db-tx-status" style={{ color: s.color, background: s.bg }}>
                       <span className="db-tx-status-dot" style={{ background: s.color }} />{s.label}
@@ -1104,7 +1565,9 @@ function TabTransactions() {
 
       {/* Mobile cards */}
       <div className="db-tx-cards-mobile">
-        {filtered.map(tx => {
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No transactions yet</div>
+        ) : filtered.map(tx => {
           const s = statusStyles[tx.status] || statusStyles.pending;
           const tc = typeConfig[tx.type] || typeConfig.onboarding;
           return (
@@ -1114,7 +1577,7 @@ function TabTransactions() {
                   <div className="db-tx-icon" style={{ background: tc.iconBg, borderColor: tc.iconBorder }}>{tc.svg}</div>
                   <div>
                     <div className="db-tx-mcard__label">{tc.label}</div>
-                    <div className="db-tx-mcard__date">{tx.date}</div>
+                    <div className="db-tx-mcard__date">{tx.date}{tx.time ? ` · ${tx.time}` : ''}</div>
                   </div>
                 </div>
                 <span className="db-tx-status" style={{ color: s.color, background: s.bg }}>
@@ -1122,8 +1585,8 @@ function TabTransactions() {
                 </span>
               </div>
               <div className="db-tx-mcard__details">
-                <div className="db-tx-mcard__row"><span>Amount</span><strong style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#0D0B22' }}>{tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()}` : '—'}</strong></div>
-                <div className="db-tx-mcard__row"><span>Method</span><strong>{tx.method}</strong></div>
+                <div className="db-tx-mcard__row"><span>Amount</span><strong style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>{tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : '—'}</strong></div>
+                <div className="db-tx-mcard__row"><span>Details</span><strong style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>{tx.desc || tx.method || '—'}</strong></div>
                 <div className="db-tx-mcard__row"><span>Reference</span><strong className="db-tx-hash">{tx.hash}</strong></div>
               </div>
             </div>
@@ -1140,174 +1603,330 @@ function TabTransactions() {
 }
 
 /* ── Wallet ─────────────────────────────────────── */
-function TabWallet({ investor }) {
-  const [redeemAmount, setRedeemAmount] = useState('');
-  const [redeemMethod, setRedeemMethod] = useState('usdt_trc20');
-  const [redeemAddress, setRedeemAddress] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], walletData = null, walletRequests = [], directAirdrops = [], dataLoading = false, lastRefreshed = null, onRefresh, onNav }) {
   const { copy, copied } = useCopyText();
+  const [viewToken, setViewToken] = useState(null);
+  const walletAddr = walletData?.walletAddress || investor?.walletAddress || INVESTOR.walletAddress;
+  const shortAddr = walletAddr.slice(0, 12) + '…' + walletAddr.slice(-6);
 
-  const walletAddr = investor?.walletAddress || INVESTOR.walletAddress;
-  const shortAddr = walletAddr.slice(0, 14) + '…' + walletAddr.slice(-6);
-  const minAmounts = { usdt_trc20: 20, usdt_erc20: 50, bank: 200 };
-  const selectedMin = minAmounts[redeemMethod] || 20;
-
-  const handleRedeem = async e => {
-    e.preventDefault();
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setLoading(false);
-    setSubmitted(true);
+  // ── Map API wallet holdings → internal shape ──
+  const buildApprovedRows = () => {
+    const raw = walletData?.holdings ?? walletData?.tokens ?? walletData?.approvedTokens ?? null;
+    const fromWallet = Array.isArray(raw) && raw.length > 0
+      ? raw.map((h, i) => ({
+          id:           h.id || h._id || i,
+          token:        h.tokenName   || h.token  || h.name  || '',
+          ticker:       h.ticker      || h.symbol || '',
+          logo:         h.logo        || h.logoUrl || '/assets/images/icon/shivAiToken.png',
+          amount:       Number(h.tokenQty  || h.amount   || h.qty    || 0),
+          invested:     Number(h.amountUsd || h.invested  || h.paid   || 0),
+          currentValue: Number(h.currentValue || h.value  || h.amountUsd || h.invested || 0),
+          lockExpiry:   h.lockExpiry  || h.expiresAt || '—',
+          status:       'active',
+        }))
+      : [];
+    // Merge wallet holdings + approved purchase requests, deduplicate by id
+    const seen = new Set(fromWallet.map(h => String(h.id)));
+    const fromRequests = approvedPurchases.filter(p => !seen.has(String(p.id)));
+    return [...fromWallet, ...fromRequests];
   };
 
-  const payoutHistory = TRANSACTIONS.filter(t => t.type === 'redeem' || t.type === 'affiliate');
+  // All token transaction rows: pending purchases + approved holdings + airdrops
+  const pendingRows   = pendingPurchases;
+  const approvedRows  = buildApprovedRows();
+  // Use dedicated API airdrops; fall back to walletData if API returns nothing
+  const rawWalletAirdrops = walletData?.airdrops ?? walletData?.airdropTokens ?? walletData?.airdrop ?? null;
+  const airdropRows = directAirdrops.length > 0
+    ? directAirdrops
+    : Array.isArray(rawWalletAirdrops)
+      ? rawWalletAirdrops.map((a, i) => ({
+          id:          a.id || a._id || `airdrop-${i}`,
+          token:       a.tokenName || a.token || a.name || '',
+          ticker:      a.ticker   || a.symbol || '',
+          logo:        a.logo     || a.logoUrl || '/assets/images/icon/shivAiToken.png',
+          tokenQty:    Number(a.tokenQty || a.qty || a.quantity || 0),
+          amountUsd:   Number(a.amountUsd || a.amount || 0),
+          reference:   a.reference || a.ref || '',
+          airdropType: a.airdropType || a.type || '',
+          adminNote:   a.adminNote || a.reason || a.description || '',
+          status:      (a.status || 'completed').toLowerCase(),
+          date:        (a.createdAt || a.date)
+            ? new Date(a.createdAt || a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—',
+          completedAt: a.completedAt
+            ? new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : null,
+        }))
+      : [];
 
   return (
     <div className="db-tab-content">
       <div className="db-welcome-bar">
         <div>
-          <h1 className="db-h1">Wallet & Earnings</h1>
-          <p className="db-muted">Your cash balance, token custody info, and redemption history.</p>
+          <h1 className="db-h1">My Wallet</h1>
+          <p className="db-muted">Your token holdings, pending purchases and wallet requests.</p>
         </div>
-      </div>
-
-      {/* Balance cards */}
-      <div className="db-wallet-balance-grid">
-        <div className="db-wallet-balance-card db-wallet-balance-card--main">
-          <div className="db-wallet-balance-card__label">Available Balance</div>
-          <div className="db-wallet-balance-card__value">${WALLET_DATA.cashBalance.toLocaleString()}</div>
-          <div className="db-wallet-balance-card__sub">Ready to redeem</div>
-        </div>
-        <div className="db-wallet-balance-card">
-          <div className="db-wallet-balance-card__label">Pending Clearance</div>
-          <div className="db-wallet-balance-card__value" style={{ color: '#F59E0B' }}>${WALLET_DATA.pendingPayout}</div>
-          <div className="db-wallet-balance-card__sub">Clears in 1–3 days</div>
-        </div>
-        <div className="db-wallet-balance-card">
-          <div className="db-wallet-balance-card__label">Lifetime Earned</div>
-          <div className="db-wallet-balance-card__value" style={{ color: '#22C55E' }}>${WALLET_DATA.lifetimeEarned.toLocaleString()}</div>
-          <div className="db-wallet-balance-card__sub">Affiliates + bonuses</div>
-        </div>
-      </div>
-
-      {/* Custodial wallet info */}
-      <div className="db-section-title">Custodial Wallet</div>
-      <div className="db-wallet-addr-card">
-        <div className="db-wallet-addr-card__inner">
-          <div className="db-wallet-addr-card__net">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 22 22 7 12 2"/></svg>
-            Polygon Network · HSM Custodial
-          </div>
-          <div className="db-wallet-addr-card__addr">{shortAddr}</div>
-          <button className="db-wallet-copy-btn" onClick={() => copy(walletAddr, 'addr')}>
-            <Icon.copy /> {copied === 'addr' ? 'Copied!' : 'Copy address'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {lastRefreshed && (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+              Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            className="db-btn db-btn--ghost"
+            style={{ padding: '6px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={onRefresh}
+            disabled={dataLoading}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={dataLoading ? { animation: 'spin 1s linear infinite' } : {}}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            {dataLoading ? 'Loading…' : 'Refresh'}
           </button>
         </div>
-        <div className="db-wallet-addr-card__badge">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Secured
-        </div>
       </div>
 
-      {/* Redemption form */}
-      <div className="db-section-title">Redeem Earnings</div>
-      {submitted ? (
-        <div className="db-success-box" style={{ marginBottom: 24 }}>
-          <div className="db-success-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <h2 className="db-h2">Redemption Submitted</h2>
-          <p className="db-muted" style={{ maxWidth: 400, margin: '0 auto 20px' }}>
-            Your request to withdraw <strong style={{ color: '#DEC7FF' }}>${Number(redeemAmount).toLocaleString()}</strong> via {WALLET_DATA.payoutMethods.find(m => m.id === redeemMethod)?.label} has been received. Processing within {redeemMethod === 'bank' ? '2–5 business days' : '1–2 hours'}.
-          </p>
-          <button className="db-btn db-btn--primary" onClick={() => { setSubmitted(false); setRedeemAmount(''); setRedeemAddress(''); }}>
-            Submit Another Request
-          </button>
+      {/* ── Approved Tokens ── */}
+      <div className="db-wallet-section-header">
+        <div className="db-wallet-section-title">
+          <span className="db-wallet-section-dot db-wallet-section-dot--green" />
+          Approved Tokens
         </div>
+        <span className="db-wallet-section-count">{approvedRows.length}</span>
+      </div>
+      {approvedRows.length === 0 ? (
+        <div className="db-wallet-empty">No approved token holdings yet.</div>
       ) : (
-        <div className="db-intent-form-wrap">
-          <form onSubmit={handleRedeem} className="db-intent-form">
-            <div className="db-form-group">
-              <label className="db-form-label">Payout Method</label>
-              <div className="db-payout-methods">
-                {WALLET_DATA.payoutMethods.map(m => (
-                  <label key={m.id} className={`db-payout-option ${redeemMethod === m.id ? 'db-payout-option--selected' : ''}`}>
-                    <input type="radio" name="redeemMethod" value={m.id} checked={redeemMethod === m.id} onChange={() => setRedeemMethod(m.id)} style={{ display: 'none' }} />
-                    <span className="db-payout-option__icon">{m.icon}</span>
-                    <div>
-                      <div className="db-payout-option__label">{m.label}</div>
-                      <div className="db-payout-option__desc">{m.desc}</div>
-                    </div>
-                    {redeemMethod === m.id && <span className="db-payout-option__check"><Icon.check /></span>}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="db-form-row">
-              <div className="db-form-group">
-                <label className="db-form-label">Amount (USD)</label>
-                <div className="db-input-prefix-wrap">
-                  <span className="db-input-prefix">$</span>
-                  <input type="number" className="db-form-input db-form-input--prefixed" placeholder={selectedMin} min={selectedMin} max={WALLET_DATA.cashBalance} value={redeemAmount} onChange={e => setRedeemAmount(e.target.value)} required />
+        <div className="db-wallet-token-grid">
+          {approvedRows.map(h => (
+            <div key={h.id} className="db-wallet-token-card">
+              <div className="db-wallet-token-card__top">
+                <img src={h.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
+                <div className="db-wallet-token-card__info">
+                  <span className="db-wallet-token-card__name">{h.token}</span>
+                  <span className="db-wallet-token-card__ticker">{h.ticker}</span>
                 </div>
-                <span className="db-form-hint">Available: ${WALLET_DATA.cashBalance} · Min: ${selectedMin}</span>
+                <span className="db-wallet-tag db-wallet-tag--green">Active</span>
               </div>
-              <div className="db-form-group">
-                <label className="db-form-label">
-                  {redeemMethod === 'bank' ? 'Bank IBAN / Account No.' : 'Destination Wallet Address'}
-                </label>
-                <input
-                  type="text"
-                  className="db-form-input"
-                  placeholder={redeemMethod === 'bank' ? 'IBAN / Account number' : 'TRC20 / ERC20 address'}
-                  value={redeemAddress}
-                  onChange={e => setRedeemAddress(e.target.value)}
-                  required
-                />
-                <span className="db-form-hint">Double-check — payouts cannot be reversed.</span>
+              <div className="db-wallet-token-card__stats">
+                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{h.amount?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Invested</span><strong>${h.invested?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Current Value</span><strong style={{ color: '#22C55E' }}>${h.currentValue?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Lock Expiry</span><strong>{h.lockExpiry}</strong></div>
               </div>
+              <button
+                className="db-wallet-view-btn"
+                onClick={() => setViewToken(h)}
+              >
+                View Details
+              </button>
             </div>
-
-            <div className="db-alert db-alert--info">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <div>Redemptions are processed manually and verified against your KYC identity. All payouts are final once confirmed.</div>
-            </div>
-
-            <button type="submit" className="db-btn db-btn--primary" disabled={loading || !redeemAmount || Number(redeemAmount) < selectedMin || !redeemAddress}>
-              {loading ? <><span className="db-spinner" /> Processing...</> : `Redeem $${redeemAmount || '—'}`}
-            </button>
-          </form>
+          ))}
         </div>
       )}
 
-      {/* Payout history */}
-      <div className="db-section-title">Payout / Commission History</div>
-      {payoutHistory.length === 0 ? (
-        <div className="db-empty-state">No transactions yet.</div>
+      {/* ── Approved Token Detail Modal ── */}
+      {viewToken && (
+        <div className="db-modal-overlay" onClick={() => setViewToken(null)}>
+          <div className="db-modal-box" onClick={e => e.stopPropagation()}>
+            <div className="db-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <img src={viewToken.logo} alt="" style={{ width: 36, height: 36, borderRadius: 8, background: '#1a1a2e' }} onError={e => { e.target.style.display='none'; }} />
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{viewToken.token}</div>
+                  <div style={{ fontSize: 12, color: '#888' }}>{viewToken.ticker}</div>
+                </div>
+              </div>
+              <button className="db-modal-close" onClick={() => setViewToken(null)}>✕</button>
+            </div>
+            <div className="db-modal-body">
+              <div className="db-modal-row">
+                <span>Status</span>
+                <span className="db-wallet-tag db-wallet-tag--green" style={{ padding: '2px 10px', fontSize: 12 }}>Active</span>
+              </div>
+              <div className="db-modal-row">
+                <span>Token Name</span>
+                <strong>{viewToken.token}</strong>
+              </div>
+              <div className="db-modal-row">
+                <span>Ticker</span>
+                <strong>{viewToken.ticker || '—'}</strong>
+              </div>
+              <div className="db-modal-row">
+                <span>Token Qty</span>
+                <strong>{viewToken.amount?.toLocaleString() ?? '—'}</strong>
+              </div>
+              <div className="db-modal-row">
+                <span>Amount Invested</span>
+                <strong>${viewToken.invested?.toLocaleString() ?? '—'} USD</strong>
+              </div>
+              <div className="db-modal-row">
+                <span>Current Value</span>
+                <strong style={{ color: '#22C55E' }}>${viewToken.currentValue?.toLocaleString() ?? '—'} USD</strong>
+              </div>
+              {viewToken.lockExpiry && viewToken.lockExpiry !== '—' && (
+                <div className="db-modal-row">
+                  <span>Lock Expiry</span>
+                  <strong>{viewToken.lockExpiry}</strong>
+                </div>
+              )}
+              {viewToken.date && (
+                <div className="db-modal-row">
+                  <span>Approved On</span>
+                  <strong>{viewToken.date}</strong>
+                </div>
+              )}
+              {viewToken.purchaseRef && (
+                <div className="db-modal-row">
+                  <span>Purchase Ref</span>
+                  <strong style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all' }}>{viewToken.purchaseRef}</strong>
+                </div>
+              )}
+              {viewToken.method && (
+                <div className="db-modal-row">
+                  <span>Payment Method</span>
+                  <strong>{viewToken.method}</strong>
+                </div>
+              )}
+              {viewToken.id && (
+                <div className="db-modal-row">
+                  <span>ID</span>
+                  <strong style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all' }}>{viewToken.id}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Airdrop Tokens ── */}
+      <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
+        <div className="db-wallet-section-title">
+          <span className="db-wallet-section-dot db-wallet-section-dot--purple" />
+          Airdrop Tokens
+        </div>
+        <span className="db-wallet-section-count">{airdropRows.length}</span>
+      </div>
+      {airdropRows.length === 0 ? (
+        <div className="db-wallet-empty">No airdrops received yet.</div>
       ) : (
-        <div className="db-tx-table-wrap">
-          <table className="db-tx-table">
-            <thead><tr><th>Type</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead>
-            <tbody>
-              {payoutHistory.map(tx => {
-                const statusColors = { confirmed: { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', label: 'Confirmed' }, pending: { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', label: 'Pending' } };
-                const s = statusColors[tx.status] || statusColors.pending;
-                return (
-                  <tr key={tx.id}>
-                    <td><span style={{ fontWeight: 600, color: tx.type === 'affiliate' ? '#9D6FFF' : '#F59E0B' }}>{tx.type === 'affiliate' ? 'Affiliate Commission' : 'Redemption'}</span></td>
-                    <td className="db-tx-amount" style={{ color: tx.type === 'redeem' ? '#F59E0B' : '#9D6FFF' }}>{tx.type === 'redeem' ? '−' : '+'}${tx.amount?.toLocaleString()}</td>
-                    <td className="db-tx-method">{tx.method}</td>
-                    <td className="db-tx-date">{tx.date}</td>
-                    <td><span className="db-tx-status" style={{ color: s.color, background: s.bg }}><span className="db-tx-status-dot" style={{ background: s.color }} />{s.label}</span></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="db-wallet-token-grid">
+          {airdropRows.map(a => (
+            <div key={a.id} className="db-wallet-token-card">
+              <div className="db-wallet-token-card__top">
+                <img src={a.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
+                <div className="db-wallet-token-card__info">
+                  <span className="db-wallet-token-card__name">{a.token}</span>
+                  <span className="db-wallet-token-card__ticker">{a.ticker}</span>
+                </div>
+                <span className="db-wallet-tag db-wallet-tag--purple" style={{ textTransform: 'capitalize' }}>
+                  {a.airdropType ? `${a.airdropType} Airdrop` : 'Airdrop'}
+                </span>
+              </div>
+              <div className="db-wallet-token-card__stats">
+                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{a.tokenQty?.toLocaleString()} {a.ticker}</strong></div>
+                <div className="db-wallet-token-stat"><span>Value</span><strong style={{ color: '#22C55E' }}>${a.amountUsd?.toLocaleString()} USD</strong></div>
+                <div className="db-wallet-token-stat"><span>Date</span><strong>{a.date}</strong></div>
+                {a.completedAt && <div className="db-wallet-token-stat"><span>Completed</span><strong>{a.completedAt}</strong></div>}
+                {a.adminNote && <div className="db-wallet-token-stat" style={{ gridColumn: '1/-1' }}><span>Note</span><strong>{a.adminNote}</strong></div>}
+                {a.reference && <div className="db-wallet-token-stat" style={{ gridColumn: '1/-1' }}><span>Reference</span><strong style={{ fontFamily: 'monospace', fontSize: 11 }}>{a.reference}</strong></div>}
+              </div>
+            </div>
+          ))}
         </div>
       )}
+
+      {/* ── Pending Tokens ── */}
+      <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
+        <div className="db-wallet-section-title">
+          <span className="db-wallet-section-dot db-wallet-section-dot--amber" />
+          Pending Tokens
+        </div>
+        <span className="db-wallet-section-count">{pendingRows.length}</span>
+      </div>
+      {pendingRows.length === 0 ? (
+        <div className="db-wallet-empty">
+          No pending token purchases.{' '}
+          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
+        </div>
+      ) : (
+        <div className="db-wallet-token-grid">
+          {pendingRows.map(p => (
+            <div key={p.id} className="db-wallet-token-card">
+              <div className="db-wallet-token-card__top">
+                <img src={p.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
+                <div className="db-wallet-token-card__info">
+                  <span className="db-wallet-token-card__name">{p.token}</span>
+                  <span className="db-wallet-token-card__ticker">{p.ticker}</span>
+                </div>
+                <span className="db-wallet-tag db-wallet-tag--amber">Pending</span>
+              </div>
+              <div className="db-wallet-token-card__stats">
+                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{p.tokenQty?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Paid</span><strong>${p.amountUsd?.toLocaleString()} USDT</strong></div>
+                <div className="db-wallet-token-stat"><span>Date</span><strong>{p.date}</strong></div>
+                <div className="db-wallet-token-stat">
+                  <span>Payment Proof</span>
+                  <strong style={{ color: p.paymentStatus === 'screenshot_uploaded' ? '#22C55E' : '#F59E0B' }}>
+                    {p.paymentStatus === 'screenshot_uploaded' ? '✓ Uploaded' : 'Awaiting screenshot'}
+                  </strong>
+                </div>
+              </div>
+              {p.paymentStatus !== 'screenshot_uploaded' && (
+                <button className="db-wallet-upload-hint" onClick={() => onNav?.('transactions')}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload screenshot in Transactions →
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Wallet Requests ── */}
+      <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
+        <div className="db-wallet-section-title">
+          <span className="db-wallet-section-dot" style={{ background: '#60A5FA', boxShadow: '0 0 8px #60A5FA88' }} />
+          Wallet Requests
+        </div>
+        <span className="db-wallet-section-count">{walletRequests.length}</span>
+      </div>
+      {walletRequests.length === 0 ? (
+        <div className="db-wallet-empty">No wallet requests yet.</div>
+      ) : (
+        <div className="db-wallet-tx-list">
+          {walletRequests.map(r => {
+            const statusColor = r.status === 'approved' || r.status === 'completed' ? '#22C55E'
+              : r.status === 'rejected' || r.status === 'failed' ? '#F87171'
+              : '#F59E0B';
+            const statusBg = r.status === 'approved' || r.status === 'completed' ? 'rgba(34,197,94,0.1)'
+              : r.status === 'rejected' || r.status === 'failed' ? 'rgba(248,113,113,0.1)'
+              : 'rgba(245,158,11,0.1)';
+            const statusLabel = r.status.charAt(0).toUpperCase() + r.status.slice(1);
+            return (
+              <div key={r.id} className="db-wallet-tx-row">
+                <div className="db-wallet-tx-icon" style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 7v13a2 2 0 0 0 2 2h16v-5"/><path d="M18 12h3v4h-3a2 2 0 0 1 0-4z"/></svg>
+                </div>
+                <div className="db-wallet-tx-info">
+                  <span className="db-wallet-tx-name" style={{ textTransform: 'capitalize' }}>{r.type.replace(/_/g, ' ')}</span>
+                  <span className="db-wallet-tx-date">{r.date}{r.reviewedAt ? ` · Reviewed ${r.reviewedAt}` : ''}</span>
+                  {r.notes ? <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2, display: 'block' }}>{r.notes}</span> : null}
+                </div>
+                <div className="db-wallet-tx-mid">
+                  <strong className="db-wallet-tx-qty">${r.amount?.toLocaleString()} {r.currency}</strong>
+                  {r.walletAddr && r.walletAddr !== '—' && (
+                    <span className="db-wallet-tx-amt" style={{ fontFamily: 'monospace', fontSize: 11 }}>
+                      {r.walletAddr.length > 20 ? r.walletAddr.slice(0, 10) + '…' + r.walletAddr.slice(-6) : r.walletAddr}
+                    </span>
+                  )}
+                </div>
+                <span className="db-wallet-tx-status" style={{ color: statusColor, background: statusBg }}>{statusLabel}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
     </div>
   );
 }
@@ -1711,61 +2330,166 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
   );
 }
 
-function TabVerification({ investor }) {
-  const [stage, setStage] = useState('info');   // 'info' | 'iframe' | 'pending'
+const COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua & Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia & Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (DRC)","Congo (Republic)","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts & Nevis","Saint Lucia","Saint Vincent & Grenadines","Samoa","San Marino","São Tomé & Príncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad & Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+
+function KycFileUploadBox({ field, label, preview, error, accept = 'image/*', onChange }) {
+  // preview can be null or { url, isPdf, name }
+  const isPdf = preview?.isPdf;
+  const previewUrl = preview?.url ?? null;
+  const fileName = preview?.name ?? '';
+  return (
+    <div className={`kyc-upload-box${error ? ' kyc-upload-box--err' : ''}`}>
+      <input
+        type="file" accept={accept} id={`kf-${field}`}
+        style={{ display: 'none' }}
+        onChange={onChange}
+      />
+      <label htmlFor={`kf-${field}`} className="kyc-upload-label">
+        {previewUrl ? (
+          isPdf ? (
+            <div className="kyc-upload-preview kyc-upload-preview--pdf">
+              <div className="kyc-pdf-card">
+                <div className="kyc-pdf-card__icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </div>
+                <div className="kyc-pdf-card__info">
+                  <span className="kyc-pdf-card__badge">PDF</span>
+                  <span className="kyc-pdf-card__name" title={fileName}>
+                    {fileName.length > 28 ? fileName.slice(0, 25) + '…' : fileName}
+                  </span>
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="kyc-pdf-card__view"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    View PDF
+                  </a>
+                </div>
+              </div>
+              <div className="kyc-upload-replace">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Replace
+              </div>
+            </div>
+          ) : (
+            <div className="kyc-upload-preview">
+              <img src={previewUrl} alt={label} />
+              <div className="kyc-upload-replace">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Replace
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="kyc-upload-empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span className="kyc-upload-cta">Click to upload</span>
+            <span className="kyc-upload-hint">{label}</span>
+            <span className="kyc-upload-size">JPG, PNG or PDF · Max 10 MB</span>
+          </div>
+        )}
+      </label>
+      <span className="kyc-form__error" style={{ marginTop: 4 }}>{error || ''}</span>
+    </div>
+  );
+}
+
+function TabVerification({ investor, onNav }) {
+  const [stage, setStage] = useState('terms');  // 'terms' | 'info' | 'docs' | 'pending'
+  const [termsScrolled, setTermsScrolled] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
-  const [diditUrl, setDiditUrl] = useState('');
+  const [toast, setToast] = useState({ open: false, message: '', type: 'error' });
+  const showToast = (message, type = 'error') => setToast({ open: true, message, type });
+  const closeToast = () => setToast(t => ({ ...t, open: false }));
   const [form, setForm] = useState({
     fullName:    investor.name || '',
     dob:         '',
     nationality: '',
     country:     '',
+    city:        '',
+    state:       '',
     phone:       '',
     address:     '',
   });
   const [errors, setErrors] = useState({});
 
-  // Offline approval modal
-  const [offlineModal, setOfflineModal] = useState({
-    open: false,
-    name: investor.name || '',
-    email: investor.email || '',
-    message: '',
-    loading: false,
-    success: false,
-    error: '',
+  // ── Document upload state ──
+  const [docs, setDocs] = useState({
+    primaryType:    '',
+    primaryFront:   null,
+    primaryBack:    null,
+    secondaryName:  '',
+    secondaryFile:  null,
+    // India-specific (both compulsory)
+    aadhaarNumber:  '',
+    aadhaarFront:   null,
+    aadhaarBack:    null,
+    panNumber:      '',
+    panFront:       null,
+  });
+  const [docErrors, setDocErrors] = useState({});
+  const [docPreviews, setDocPreviews] = useState({
+    primaryFront: null, primaryBack: null, secondaryFile: null,
+    aadhaarFront: null, aadhaarBack: null, panFront: null,
   });
 
-  const openOfflineModal = () =>
-    setOfflineModal(prev => ({ ...prev, open: true, success: false, error: '' }));
-
-  const closeOfflineModal = () =>
-    setOfflineModal(prev => ({ ...prev, open: false }));
-
-  const handleOfflineChange = (e) => {
-    const { name, value } = e.target;
-    setOfflineModal(prev => ({ ...prev, [name]: value, error: '' }));
+  // ── Country → document config ──
+  const DOC_CONFIG = {
+    India: {
+      label: 'Primary Identity Document',
+      types: [
+        { id: 'aadhaar', label: 'Aadhaar Card', number: '12-digit Aadhaar number', sides: ['front', 'back'], hint: 'Upload clear photos of both sides of your Aadhaar card.' },
+        { id: 'pan',     label: 'PAN Card',     number: '10-character PAN number',  sides: ['front'],         hint: 'Upload a clear photo of the front of your PAN card.' },
+      ],
+    },
+    'United States': {
+      label: 'Primary ID',
+      types: [
+        { id: 'drivers_license', label: "Driver's License",     number: 'License number',              sides: ['front', 'back'], hint: "Upload both sides of your US driver's license." },
+        { id: 'ssn_card',        label: 'Social Security Card', number: 'Last 4 digits of SSN',        sides: ['front'],         hint: 'Upload a clear photo of your Social Security card.' },
+        { id: 'passport',        label: 'US Passport',          number: 'Passport number',             sides: ['front'],         hint: 'Upload the bio-data page of your passport.' },
+      ],
+    },
+    'United Arab Emirates': {
+      label: 'Primary ID',
+      types: [
+        { id: 'emirates_id', label: 'Emirates ID', number: 'Emirates ID number (784-XXXX-XXXXXXX-X)', sides: ['front', 'back'], hint: 'Upload both sides of your Emirates ID card.' },
+        { id: 'passport',    label: 'UAE Passport', number: 'Passport number',                         sides: ['front'],         hint: 'Upload the bio-data page of your passport.' },
+      ],
+    },
+    'United Kingdom': {
+      label: 'Primary ID',
+      types: [
+        { id: 'passport',        label: 'UK Passport',          number: 'Passport number',   sides: ['front'],         hint: 'Upload the bio-data page of your passport.' },
+        { id: 'drivers_license', label: "Driver's Licence",     number: 'Licence number',    sides: ['front', 'back'], hint: "Upload both sides of your UK driving licence." },
+        { id: 'national_id',     label: 'National Identity Card', number: 'Card number',     sides: ['front', 'back'], hint: 'Upload both sides of your national ID card.' },
+      ],
+    },
+    _default: {
+      label: 'Primary ID',
+      types: [
+        { id: 'passport',        label: 'Passport',            number: 'Passport number', sides: ['front'],         hint: 'Upload the bio-data page of your passport.' },
+        { id: 'national_id',     label: 'National ID Card',    number: 'ID card number',  sides: ['front', 'back'], hint: 'Upload both sides of your national ID card.' },
+        { id: 'drivers_license', label: "Driver's License",    number: 'License number',  sides: ['front', 'back'], hint: "Upload both sides of your driver's license." },
+      ],
+    },
   };
 
-  const handleOfflineSubmit = async (e) => {
-    e.preventDefault();
-    const { name, email, message } = offlineModal;
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      setOfflineModal(prev => ({ ...prev, error: 'All fields are required.' }));
-      return;
-    }
-    setOfflineModal(prev => ({ ...prev, loading: true, error: '' }));
-    try {
-      await apiService.post('/kyc/offline-request', { name, email, message });
-      setOfflineModal(prev => ({ ...prev, loading: false, success: true }));
-    } catch (err) {
-      setOfflineModal(prev => ({
-        ...prev,
-        loading: false,
-        error: err.message || 'Failed to send request. Please try again.',
-      }));
-    }
+  const getDocConfig = (country) => DOC_CONFIG[country] || DOC_CONFIG._default;
+  const getSelectedType = () => {
+    const cfg = getDocConfig(form.country);
+    return cfg.types.find(t => t.id === docs.primaryType) || null;
   };
 
   // Already approved — show status only
@@ -1813,6 +2537,148 @@ function TabVerification({ investor }) {
             <div className="kyc-ps kyc-ps--active"><span className="kyc-ps__dot" />Under Review</div>
             <div className="kyc-ps"><span className="kyc-ps__dot" />Approval</div>
           </div>
+          <div className="kyc-pending-actions">
+            <button
+              className="db-btn db-btn--primary kyc-pending-invest-btn"
+              onClick={() => onNav?.('invest')}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              Start Investing Now!
+            </button>
+            <p className="kyc-pending-invest-hint">You can purchase tokens while your KYC is under review. Tokens will be activated once your verification is approved.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Stage 0: Terms & Consent ──
+  if (stage === 'terms') {
+    const handleTermsScroll = (e) => {
+      const el = e.currentTarget;
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+        setTermsScrolled(true);
+      }
+    };
+
+    return (
+      <div className="db-tab-content">
+        <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
+          <div>
+            <h1 className="db-h1">Identity Verification</h1>
+            <p className="db-muted">Read and accept the terms before you proceed.</p>
+          </div>
+          <KycBadge status={investor.kycStatus || 'not_started'} />
+        </div>
+
+        <div className="kyc-stepper">
+          <div className="kyc-stepper__step kyc-stepper__step--active">
+            <span className="kyc-stepper__num">1</span>
+            <span className="kyc-stepper__label">Consent</span>
+          </div>
+          <div className="kyc-stepper__line" />
+          <div className="kyc-stepper__step">
+            <span className="kyc-stepper__num">2</span>
+            <span className="kyc-stepper__label">Personal Info</span>
+          </div>
+          <div className="kyc-stepper__line" />
+          <div className="kyc-stepper__step">
+            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__label">Documents</span>
+          </div>
+          <div className="kyc-stepper__line" />
+          <div className="kyc-stepper__step">
+            <span className="kyc-stepper__num">4</span>
+            <span className="kyc-stepper__label">Review</span>
+          </div>
+        </div>
+
+        <div className="kyc-terms-container">
+          <div className="kyc-terms__scroll" onScroll={handleTermsScroll}>
+            <h2 className="kyc-terms__heading">KYC Verification — Consent &amp; Terms of Use</h2>
+            <p className="kyc-terms__intro">Please read the following carefully. By proceeding, you grant Growith (the Platform) your explicit consent to collect, process, and verify your personal data as described below, in compliance with applicable data protection and anti-money-laundering legislation.</p>
+
+            <h3 className="kyc-terms__section-title">1. Purpose of Identity Verification</h3>
+            <p className="kyc-terms__body">We are required by law to verify the identity of all investors on our platform before they may invest. This is to comply with Know Your Customer (KYC) and Anti-Money Laundering (AML) regulations, including but not limited to the Prevention of Money Laundering Act (PMLA), SEBI guidelines, FinCEN requirements, and applicable GDPR/PDPA obligations depending on your jurisdiction.</p>
+
+            <h3 className="kyc-terms__section-title">2. Personal Data We Collect</h3>
+            <p className="kyc-terms__body">As part of the KYC process, we will collect the following categories of personal data:</p>
+            <ul className="kyc-terms__list">
+              <li>Full legal name, date of birth, and nationality</li>
+              <li>Country of residence, city, state/province, and street address</li>
+              <li>Phone number and email address</li>
+              <li>Government-issued identity documents (e.g. Aadhaar, PAN, Passport, Driver's Licence, National ID)</li>
+              <li>Identity document numbers (e.g. Aadhaar number, PAN number, Passport number)</li>
+              <li>Supporting documents (e.g. utility bills, bank statements, rental agreements as proof of address)</li>
+              <li>Facial biometric data, where applicable, used solely for liveness and identity matching</li>
+            </ul>
+
+            <h3 className="kyc-terms__section-title">3. How Your Data Is Processed</h3>
+            <p className="kyc-terms__body">Your personal data and submitted documents will be securely transmitted to and processed by our compliance team and authorised third-party identity verification service providers. These providers operate under strict data-processing agreements and are bound by applicable data-protection laws. Your data will be used exclusively for:</p>
+            <ul className="kyc-terms__list">
+              <li>Verifying your identity against government records and public databases</li>
+              <li>Conducting sanctions and politically exposed person (PEP) screening</li>
+              <li>Fulfilling our legal obligations under AML/CTF and KYC regulations</li>
+              <li>Fraud prevention and platform security</li>
+            </ul>
+
+            <h3 className="kyc-terms__section-title">4. Document Submission and Authenticity</h3>
+            <p className="kyc-terms__body">By submitting documents through this process, you confirm that:</p>
+            <ul className="kyc-terms__list">
+              <li>All submitted documents are genuine, authentic, and legally issued to you</li>
+              <li>The information provided is accurate, complete, and not misleading</li>
+              <li>You have not altered, edited, or tampered with any document in any way</li>
+              <li>Submission of false or altered documents may result in immediate account suspension and may be reported to relevant law enforcement authorities</li>
+            </ul>
+
+            <h3 className="kyc-terms__section-title">5. Data Storage and Security</h3>
+            <p className="kyc-terms__body">Your submitted data is stored on encrypted servers with industry-standard security protocols (AES-256 encryption at rest, TLS 1.3 in transit). Access is strictly restricted to authorised compliance personnel only. We do not sell your personal data to any third party for commercial purposes.</p>
+
+            <h3 className="kyc-terms__section-title">6. Third-Party Verification Providers</h3>
+            <p className="kyc-terms__body">Growith may share your submitted documents and personal information with licensed third-party KYC/AML verification providers for identity validation purposes. These providers are contractually obligated to maintain confidentiality and comply with applicable data-protection regulations.</p>
+
+            <h3 className="kyc-terms__section-title">7. Data Retention</h3>
+            <p className="kyc-terms__body">Your KYC data and documents will be retained for the minimum period required by applicable law, typically 5–7 years following the end of the business relationship. After this period, data will be securely deleted or anonymised in accordance with our data retention policy.</p>
+
+            <h3 className="kyc-terms__section-title">8. Your Rights</h3>
+            <p className="kyc-terms__body">Subject to applicable laws, you have the right to access the personal data we hold about you, request correction of inaccurate data, request deletion of your data (subject to legal retention obligations), object to or restrict certain types of processing, and withdraw consent at any time — though this may affect your ability to use the platform. To exercise these rights, contact our Data Protection Officer at <strong>privacy@growith.io</strong>.</p>
+
+            <h3 className="kyc-terms__section-title">9. Regulatory Compliance</h3>
+            <p className="kyc-terms__body">Growith operates in compliance with applicable laws and regulations, including SEBI (India), SEC (USA), CBUAE (UAE), FCA (UK), and other relevant regulatory bodies depending on jurisdiction. Our KYC process is periodically audited by independent compliance professionals to ensure continued adherence to regulatory standards.</p>
+
+            <h3 className="kyc-terms__section-title">10. Consent Declaration</h3>
+            <p className="kyc-terms__body">By scrolling through and accepting this declaration, you confirm that you have read and fully understood all of the above terms. You voluntarily and explicitly consent to Growith collecting, processing, storing, and sharing your personal data and identity documents for the purposes described herein. You acknowledge that refusing consent will prevent you from completing the KYC process and accessing investment features on the platform.</p>
+
+            <div className="kyc-terms__scroll-indicator">
+              {termsScrolled
+                ? <span className="kyc-terms__si kyc-terms__si--done">✓ You have read the full document</span>
+                : <span className="kyc-terms__si">↓ Scroll to the bottom to continue</span>
+              }
+            </div>
+          </div>
+
+          <div className="kyc-terms__accept">
+            <label className={`kyc-terms__checkbox-label${!termsScrolled ? ' kyc-terms__checkbox-label--disabled' : ''}`}>
+              <input
+                type="checkbox"
+                className="kyc-terms__checkbox"
+                checked={termsAccepted}
+                disabled={!termsScrolled}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+              />
+              <span>I have read the above terms and conditions in full. I give my explicit, informed consent to Growith to collect, process, verify, and store my personal data and identity documents for KYC/AML compliance purposes as described above.</span>
+            </label>
+          </div>
+
+          <button
+            type="button"
+            className="kyc-form__submit"
+            disabled={!termsAccepted}
+            onClick={() => setStage('info')}
+          >
+            I Agree — Continue to Personal Info
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
         </div>
       </div>
     );
@@ -1832,6 +2698,8 @@ function TabVerification({ investor }) {
       if (!form.dob)                errs.dob         = 'Date of birth is required';
       if (!form.nationality.trim()) errs.nationality = 'Nationality is required';
       if (!form.country.trim())     errs.country     = 'Country of residence is required';
+      if (!form.city.trim())        errs.city        = 'City is required';
+      if (!form.state.trim())       errs.state       = 'State / Province is required';
       if (!form.phone.trim())       errs.phone       = 'Phone number is required';
       if (!form.address.trim())     errs.address     = 'Residential address is required';
       setErrors(errs);
@@ -1840,23 +2708,16 @@ function TabVerification({ investor }) {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      if (!validate()) return;
-      setIsLoading(true);
-      setApiError('');
-      try {
-        const res = await apiService.post('/kyc/session', { ...form });
-        const url = res?.data?.url || res?.url || '';
-        setDiditUrl(url);
-        setStage('iframe');
-      } catch (err) {
-        setApiError(err.message || 'Failed to start verification. Please try again.');
-      } finally {
-        setIsLoading(false);
+      if (!validate()) {
+        showToast('Please fix the errors highlighted below before continuing.');
+        return;
       }
+      setStage('docs');
     };
 
     return (
       <div className="db-tab-content">
+        <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
             <h1 className="db-h1">Identity Verification</h1>
@@ -1867,23 +2728,29 @@ function TabVerification({ investor }) {
 
         {/* Progress stepper */}
         <div className="kyc-stepper">
+          <div className="kyc-stepper__step kyc-stepper__step--done">
+            <span className="kyc-stepper__num">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span className="kyc-stepper__label">Consent</span>
+          </div>
+          <div className="kyc-stepper__line kyc-stepper__line--done" />
           <div className="kyc-stepper__step kyc-stepper__step--active">
-            <span className="kyc-stepper__num">1</span>
+            <span className="kyc-stepper__num">2</span>
             <span className="kyc-stepper__label">Personal Info</span>
           </div>
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
-            <span className="kyc-stepper__num">2</span>
-            <span className="kyc-stepper__label">Document Scan</span>
+            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__label">Documents</span>
           </div>
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
-            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__num">4</span>
             <span className="kyc-stepper__label">Review</span>
           </div>
         </div>
 
-        {/* Info banner */}
         <div className="kyc-info-banner">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span>Please enter your details exactly as they appear on your government-issued ID. This information is encrypted and securely processed.</span>
@@ -1894,37 +2761,58 @@ function TabVerification({ investor }) {
             <div className="kyc-form__group">
               <label className="kyc-form__label">Full Legal Name <span className="kyc-form__req">*</span></label>
               <input className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`} name="fullName" value={form.fullName} onChange={handleChange} placeholder="As on your passport/ID" />
-              {errors.fullName && <span className="kyc-form__error">{errors.fullName}</span>}
+              <span className="kyc-form__error">{errors.fullName || ''}</span>
             </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">Date of Birth <span className="kyc-form__req">*</span></label>
               <input className={`kyc-form__input${errors.dob ? ' kyc-form__input--err' : ''}`} type="date" name="dob" value={form.dob} onChange={handleChange} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
-              {errors.dob && <span className="kyc-form__error">{errors.dob}</span>}
+              <span className="kyc-form__error">{errors.dob || ''}</span>
             </div>
           </div>
           <div className="kyc-form__row">
             <div className="kyc-form__group">
               <label className="kyc-form__label">Nationality <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Pakistani" />
-              {errors.nationality && <span className="kyc-form__error">{errors.nationality}</span>}
+              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Indian" />
+              <span className="kyc-form__error">{errors.nationality || ''}</span>
             </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">Country of Residence <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.country ? ' kyc-form__input--err' : ''}`} name="country" value={form.country} onChange={handleChange} placeholder="e.g. United Kingdom" />
-              {errors.country && <span className="kyc-form__error">{errors.country}</span>}
+              <select className={`kyc-form__input kyc-form__select${errors.country ? ' kyc-form__input--err' : ''}`} name="country" value={form.country} onChange={handleChange}>
+                <option value="">Select country…</option>
+                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <span className="kyc-form__error">{errors.country || ''}</span>
+            </div>
+          </div>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">City <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.city ? ' kyc-form__input--err' : ''}`} name="city" value={form.city} onChange={handleChange} placeholder="e.g. London" />
+              <span className="kyc-form__error">{errors.city || ''}</span>
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">State / Province <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.state ? ' kyc-form__input--err' : ''}`} name="state" value={form.state} onChange={handleChange} placeholder="e.g. England, Punjab" />
+              <span className="kyc-form__error">{errors.state || ''}</span>
             </div>
           </div>
           <div className="kyc-form__row">
             <div className="kyc-form__group">
               <label className="kyc-form__label">Phone Number <span className="kyc-form__req">*</span></label>
               <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" />
-              {errors.phone && <span className="kyc-form__error">{errors.phone}</span>}
+              <span className="kyc-form__error">{errors.phone || ''}</span>
             </div>
             <div className="kyc-form__group">
-              <label className="kyc-form__label">Residential Address <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street, City, Postcode" />
-              {errors.address && <span className="kyc-form__error">{errors.address}</span>}
+              <label className="kyc-form__label">Street Address <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street number and name, Postcode" />
+              <span className="kyc-form__error">{errors.address || ''}</span>
             </div>
+          </div>
+
+          {/* Address disclaimer */}
+          <div className="kyc-address-disclaimer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>The address details you provide must exactly match those on your legally verified government-issued documents (passport, national ID, or utility bill). Mismatches may result in verification failure.</span>
           </div>
 
           {apiError && <div className="kyc-form__api-error">{apiError}</div>}
@@ -1932,114 +2820,134 @@ function TabVerification({ investor }) {
           <button type="submit" className="kyc-form__submit" disabled={isLoading}>
             {isLoading ? <span className="login-spinner" /> : (
               <>
-                Continue to Document Scan
+                Continue to Documents
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </>
             )}
           </button>
-
-          <div className="kyc-offline-divider"><span>or</span></div>
-
-          <button type="button" className="kyc-offline-btn" onClick={openOfflineModal}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Request Offline Approval
-          </button>
         </form>
-
-        {/* Offline Approval Modal */}
-        {offlineModal.open && (
-          <div className="kyc-modal-overlay" onClick={closeOfflineModal}>
-            <div className="kyc-modal" onClick={e => e.stopPropagation()}>
-              <div className="kyc-modal__header">
-                <div className="kyc-modal__title-group">
-                  <div className="kyc-modal__icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  </div>
-                  <div>
-                    <h3 className="kyc-modal__title">Request Offline Approval</h3>
-                    <p className="kyc-modal__subtitle">Our compliance team will contact you within 1–2 business days.</p>
-                  </div>
-                </div>
-                <button className="kyc-modal__close" onClick={closeOfflineModal} aria-label="Close">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
-
-              {offlineModal.success ? (
-                <div className="kyc-modal__success">
-                  <div className="kyc-modal__success-icon">
-                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="11" stroke="#5C27FE" strokeWidth="1.5"/>
-                      <polyline points="7 12 10.5 15.5 17 8.5" stroke="#9D6FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <h4 className="kyc-modal__success-title">Request Sent!</h4>
-                  <p className="kyc-modal__success-msg">We've received your request and will reach out to you at <strong>{offlineModal.email}</strong> soon.</p>
-                  <button className="kyc-modal__done-btn" onClick={closeOfflineModal}>Done</button>
-                </div>
-              ) : (
-                <form className="kyc-modal__form" onSubmit={handleOfflineSubmit} noValidate>
-                  <div className="kyc-modal__field">
-                    <label className="kyc-modal__label">Full Name <span className="kyc-form__req">*</span></label>
-                    <input
-                      className="kyc-modal__input"
-                      name="name"
-                      value={offlineModal.name}
-                      onChange={handleOfflineChange}
-                      placeholder="Your full name"
-                    />
-                  </div>
-                  <div className="kyc-modal__field">
-                    <label className="kyc-modal__label">Email Address <span className="kyc-form__req">*</span></label>
-                    <input
-                      className="kyc-modal__input"
-                      name="email"
-                      type="email"
-                      value={offlineModal.email}
-                      onChange={handleOfflineChange}
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                  <div className="kyc-modal__field">
-                    <label className="kyc-modal__label">Message <span className="kyc-form__req">*</span></label>
-                    <textarea
-                      className="kyc-modal__textarea"
-                      name="message"
-                      value={offlineModal.message}
-                      onChange={handleOfflineChange}
-                      placeholder="Briefly describe your situation or preferred contact time…"
-                      rows={4}
-                    />
-                  </div>
-                  {offlineModal.error && <div className="kyc-form__api-error">{offlineModal.error}</div>}
-                  <div className="kyc-modal__actions">
-                    <button type="button" className="kyc-modal__cancel-btn" onClick={closeOfflineModal}>Cancel</button>
-                    <button type="submit" className="kyc-modal__submit-btn" disabled={offlineModal.loading}>
-                      {offlineModal.loading ? <span className="login-spinner" /> : 'Send Request'}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     );
   }
 
-  // ── Stage 2: Didit iframe ──
-  if (stage === 'iframe') {
+  // ── Stage 2: Document Upload ──
+  if (stage === 'docs') {
+    const cfg = getDocConfig(form.country);
+    const selectedType = getSelectedType();
+    const needsBack = selectedType?.sides?.includes('back');
+
+    const handleFileChange = (field) => (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const preview = { url: URL.createObjectURL(file), isPdf: file.type === 'application/pdf', name: file.name };
+      setDocs(prev => ({ ...prev, [field]: file }));
+      setDocPreviews(prev => ({ ...prev, [field]: preview }));
+      if (docErrors[field]) setDocErrors(prev => ({ ...prev, [field]: '' }));
+    };
+
+    const handleDocChange = (e) => {
+      const { name, value } = e.target;
+      setDocs(prev => ({ ...prev, [name]: value }));
+      if (name === 'primaryType') {
+        // reset uploads when type changes
+        setDocs(prev => ({ ...prev, primaryType: value, primaryFront: null, primaryBack: null }));
+        setDocPreviews(prev => ({ ...prev, primaryFront: null, primaryBack: null }));
+      }
+      if (docErrors[name]) setDocErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const validateDocs = () => {
+      const errs = {};
+      const isIndia = form.country === 'India';
+      if (isIndia) {
+        if (!/^\d{12}$/.test(docs.aadhaarNumber.replace(/[\s-]/g, '')))
+          errs.aadhaarNumber = 'Must be 12 digits (no letters or symbols)';
+        if (!docs.aadhaarFront) errs.aadhaarFront = 'Aadhaar front image is required';
+        if (!docs.aadhaarBack)  errs.aadhaarBack  = 'Aadhaar back image is required';
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(docs.panNumber.trim()))
+          errs.panNumber = 'Invalid PAN — format must be ABCDE1234F';
+        if (!docs.panFront) errs.panFront = 'PAN front image is required';
+      } else {
+        if (!docs.primaryType)  errs.primaryType  = 'Please select a document type';
+        if (!docs.primaryFront) errs.primaryFront = 'Front image is required';
+        if (needsBack && !docs.primaryBack) errs.primaryBack = 'Back image is required';
+      }
+      // supporting doc (name + file) is optional — no validation needed
+      setDocErrors(errs);
+      return Object.keys(errs).length === 0;
+    };
+
+    const handleDocSubmit = async (e) => {
+      e.preventDefault();
+      if (!validateDocs()) {
+        showToast('Some required fields or documents are missing. Please check the errors below.');
+        return;
+      }
+      setIsLoading(true);
+      setApiError('');
+      try {
+        const fd = new FormData();
+
+        // ── Personal info — exact API field names ──
+        fd.append('fullLegalName',       form.fullName.trim());
+        // Convert dob from YYYY-MM-DD (input[date]) → DD-MM-YYYY (API)
+        const [y, mo, d] = form.dob.split('-');
+        fd.append('dateOfBirth',         `${d}-${mo}-${y}`);
+        fd.append('nationality',         form.nationality.trim());
+        fd.append('countryOfResidence',  form.country);
+        fd.append('city',                form.city.trim());
+        fd.append('stateProvince',       form.state.trim());
+        fd.append('phoneNumber',         form.phone.trim());
+        fd.append('streetAddress',       form.address.trim());
+
+        // ── Consent flag ──
+        fd.append('termsAgreed', 'true');
+
+        // ── Documents ──
+        if (form.country === 'India') {
+          fd.append('aadhaarNumber', docs.aadhaarNumber.replace(/[\s-]/g, ''));
+          fd.append('aadhaarFront',  docs.aadhaarFront);
+          fd.append('aadhaarBack',   docs.aadhaarBack);
+          fd.append('panNumber',     docs.panNumber.trim().toUpperCase());
+          fd.append('panFront',      docs.panFront);
+          if (docs.secondaryName.trim()) fd.append('supportingDocName', docs.secondaryName.trim());
+          if (docs.secondaryFile)        fd.append('supportingDoc',     docs.secondaryFile);
+        } else {
+          fd.append('primaryDocumentType', docs.primaryType.toUpperCase());
+          fd.append('primaryDocFront',     docs.primaryFront);
+          if (docs.primaryBack)          fd.append('primaryDocBack',    docs.primaryBack);
+          if (docs.secondaryName.trim()) fd.append('supportingDocName', docs.secondaryName.trim());
+          if (docs.secondaryFile)        fd.append('supportingDoc',     docs.secondaryFile);
+        }
+
+        await apiService.submitKyc(fd);
+        setStage('pending');
+      } catch (err) {
+        setApiError(err.message || 'Upload failed. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     return (
       <div className="db-tab-content">
+        <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
             <h1 className="db-h1">Identity Verification</h1>
-            <p className="db-muted">Scan your document and take a selfie.</p>
+            <p className="db-muted">Upload your identity documents.</p>
           </div>
-          <KycBadge status="pending" />
+          <KycBadge status={investor.kycStatus || 'not_started'} />
         </div>
 
         <div className="kyc-stepper">
+          <div className="kyc-stepper__step kyc-stepper__step--done">
+            <span className="kyc-stepper__num">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span className="kyc-stepper__label">Consent</span>
+          </div>
+          <div className="kyc-stepper__line kyc-stepper__line--done" />
           <div className="kyc-stepper__step kyc-stepper__step--done">
             <span className="kyc-stepper__num">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2048,44 +2956,183 @@ function TabVerification({ investor }) {
           </div>
           <div className="kyc-stepper__line kyc-stepper__line--done" />
           <div className="kyc-stepper__step kyc-stepper__step--active">
-            <span className="kyc-stepper__num">2</span>
-            <span className="kyc-stepper__label">Document Scan</span>
+            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__label">Documents</span>
           </div>
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
-            <span className="kyc-stepper__num">3</span>
+            <span className="kyc-stepper__num">4</span>
             <span className="kyc-stepper__label">Review</span>
           </div>
         </div>
 
-        <div className="kyc-iframe-wrap">
-          {diditUrl ? (
-            <iframe
-              src={diditUrl}
-              title="Didit Identity Verification"
-              className="kyc-iframe"
-              allow="camera; microphone"
-              onLoad={() => {}}
-            />
-          ) : (
-            /* Fallback if no URL returned from backend yet */
-            <div className="kyc-iframe-placeholder">
-              <div className="kyc-iframe-placeholder__inner">
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="12" cy="9" r="2.5"/>
-                </svg>
-                <p>Didit verification session is loading…</p>
-                <div className="login-spinner" style={{ margin: '0 auto' }} />
+        <form className="kyc-form" onSubmit={handleDocSubmit} noValidate>
+
+          {/* ── Primary ID Sections ── */}
+          {form.country === 'India' ? (
+            <>
+              {/* Section 1: Aadhaar Card — compulsory */}
+              <div className="kyc-doc-section">
+                <div className="kyc-doc-section__header">
+                  <div className="kyc-doc-section__num">1</div>
+                  <div>
+                    <h3 className="kyc-doc-section__title">Aadhaar Card <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 500 }}>Compulsory</span></h3>
+                    <p className="kyc-doc-section__sub">Enter your Aadhaar number and upload both sides of your Aadhaar card.</p>
+                  </div>
+                </div>
+                <div className="kyc-info-banner" style={{ marginBottom: 16 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>Aadhaar is mandatory for Indian investors. Upload clear photos of both the front and back sides.</span>
+                </div>
+                <div className="kyc-form__group" style={{ marginBottom: 16 }}>
+                  <label className="kyc-form__label">Aadhaar Number <span className="kyc-form__req">*</span></label>
+                  <input
+                    className={`kyc-form__input${docErrors.aadhaarNumber ? ' kyc-form__input--err' : ''}`}
+                    name="aadhaarNumber"
+                    value={docs.aadhaarNumber}
+                    onChange={handleDocChange}
+                    placeholder="XXXX XXXX XXXX"
+                    maxLength={14}
+                  />
+                  <span className="kyc-form__error">{docErrors.aadhaarNumber || ''}</span>
+                </div>
+                <div className="kyc-upload-row kyc-upload-row--two">
+                  <div className="kyc-upload-col">
+                    <p className="kyc-upload-col__label">Front Side</p>
+                    <KycFileUploadBox field="aadhaarFront" label="Aadhaar front" preview={docPreviews.aadhaarFront} error={docErrors.aadhaarFront} onChange={handleFileChange('aadhaarFront')} />
+                  </div>
+                  <div className="kyc-upload-col">
+                    <p className="kyc-upload-col__label">Back Side</p>
+                    <KycFileUploadBox field="aadhaarBack" label="Aadhaar back" preview={docPreviews.aadhaarBack} error={docErrors.aadhaarBack} onChange={handleFileChange('aadhaarBack')} />
+                  </div>
+                </div>
               </div>
+
+              {/* Section 2: PAN Card — compulsory */}
+              <div className="kyc-doc-section">
+                <div className="kyc-doc-section__header">
+                  <div className="kyc-doc-section__num">2</div>
+                  <div>
+                    <h3 className="kyc-doc-section__title">PAN Card <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 500 }}>Compulsory</span></h3>
+                    <p className="kyc-doc-section__sub">Enter your PAN number and upload the front of your PAN card.</p>
+                  </div>
+                </div>
+                <div className="kyc-info-banner" style={{ marginBottom: 16 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>PAN is mandatory for Indian investors. Upload a clear photo of the front side of your PAN card.</span>
+                </div>
+                <div className="kyc-form__group" style={{ marginBottom: 16 }}>
+                  <label className="kyc-form__label">PAN Number <span className="kyc-form__req">*</span></label>
+                  <input
+                    className={`kyc-form__input${docErrors.panNumber ? ' kyc-form__input--err' : ''}`}
+                    name="panNumber"
+                    value={docs.panNumber}
+                    onChange={handleDocChange}
+                    placeholder="ABCDE1234F"
+                    maxLength={10}
+                    style={{ textTransform: 'uppercase' }}
+                  />
+                  <span className="kyc-form__error">{docErrors.panNumber || ''}</span>
+                </div>
+                <KycFileUploadBox field="panFront" label="PAN card front" preview={docPreviews.panFront} error={docErrors.panFront} onChange={handleFileChange('panFront')} />
+              </div>
+            </>
+          ) : (
+            /* Non-India: choose one primary ID type */
+            <div className="kyc-doc-section">
+              <div className="kyc-doc-section__header">
+                <div className="kyc-doc-section__num">1</div>
+                <div>
+                  <h3 className="kyc-doc-section__title">{cfg.label}</h3>
+                  <p className="kyc-doc-section__sub">Select the type of ID you'll be uploading.</p>
+                </div>
+              </div>
+
+              <div className="kyc-doc-types">
+                {cfg.types.map(t => (
+                  <label key={t.id} className={`kyc-doc-type${docs.primaryType === t.id ? ' kyc-doc-type--active' : ''}`}>
+                    <input type="radio" name="primaryType" value={t.id} checked={docs.primaryType === t.id} onChange={handleDocChange} style={{ display: 'none' }} />
+                    <span className="kyc-doc-type__radio" />
+                    <div>
+                      <span className="kyc-doc-type__label">{t.label}</span>
+                      <span className="kyc-doc-type__sides">{t.sides.length === 2 ? 'Front & Back' : 'Front only'}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <span className="kyc-form__error" style={{ marginTop: 4, display: 'block' }}>{docErrors.primaryType || ''}</span>
+
+              {selectedType && (
+                <div className="kyc-upload-area">
+                  <div className="kyc-info-banner" style={{ marginBottom: 16 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>{selectedType.hint} Ensure the image is clear, focused, and all corners are visible.</span>
+                  </div>
+                  <div className={`kyc-upload-row${needsBack ? ' kyc-upload-row--two' : ''}`}>
+                    <div className="kyc-upload-col">
+                      <p className="kyc-upload-col__label">Front Side</p>
+                      <KycFileUploadBox field="primaryFront" label="Front of document" preview={docPreviews.primaryFront} error={docErrors.primaryFront} onChange={handleFileChange('primaryFront')} />
+                    </div>
+                    {needsBack && (
+                      <div className="kyc-upload-col">
+                        <p className="kyc-upload-col__label">Back Side</p>
+                        <KycFileUploadBox field="primaryBack" label="Back of document" preview={docPreviews.primaryBack} error={docErrors.primaryBack} onChange={handleFileChange('primaryBack')} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <button className="kyc-done-btn" onClick={() => setStage('pending')}>
-            I've completed the scan →
-          </button>
-        </div>
+          {/* ── Supporting Document ── */}
+          <div className="kyc-doc-section">
+            <div className="kyc-doc-section__header">
+              <div className="kyc-doc-section__num">{form.country === 'India' ? 3 : 2}</div>
+              <div>
+                <h3 className="kyc-doc-section__title">Supporting Document <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>Optional</span></h3>
+                <p className="kyc-doc-section__sub">Proof of address or additional verification (e.g. utility bill, bank statement).</p>
+              </div>
+            </div>
+
+            <div className="kyc-form__group" style={{ marginBottom: 14 }}>
+              <label className="kyc-form__label">Document Name</label>
+              <input
+                className={`kyc-form__input${docErrors.secondaryName ? ' kyc-form__input--err' : ''}`}
+                name="secondaryName"
+                value={docs.secondaryName}
+                onChange={handleDocChange}
+                placeholder="e.g. Utility Bill, Bank Statement, Rental Agreement"
+              />
+              <span className="kyc-form__error">{docErrors.secondaryName || ''}</span>
+            </div>
+
+            <KycFileUploadBox field="secondaryFile" label="Upload document" preview={docPreviews.secondaryFile} error={docErrors.secondaryFile} accept="image/*,application/pdf" onChange={handleFileChange('secondaryFile')} />
+          </div>
+
+          {/* ── Image quality notice ── */}
+          <div className="kyc-address-disclaimer" style={{ marginBottom: 16 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>All uploaded images must be clear, well-lit, and unedited. Blurry, cropped, or altered documents will be rejected and may delay your verification.</span>
+          </div>
+
+          {apiError && <div className="kyc-form__api-error">{apiError}</div>}
+
+          <div className="kyc-doc-actions">
+            <button type="button" className="kyc-back-btn" onClick={() => setStage('info')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              Back
+            </button>
+            <button type="submit" className="kyc-form__submit" style={{ flex: 1 }} disabled={isLoading}>
+              {isLoading ? <span className="login-spinner" /> : (
+                <>
+                  Submit for Review
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     );
   }
@@ -2295,7 +3342,7 @@ const NAV_ITEMS = [
   { id: 'portfolio',     label: 'Portfolio',      Icon: Icon.portfolio },
   { id: 'invest',        label: 'Invest',         Icon: Icon.invest },
   { id: 'transactions',  label: 'Transactions',   Icon: Icon.transactions },
-  { id: 'wallet',        label: 'Wallet',         Icon: Icon.wallet,    badge: '$520' },
+  { id: 'wallet',        label: 'Wallet',         Icon: Icon.wallet },
   { id: 'affiliate',     label: 'Affiliate',      Icon: Icon.affiliate, badge: 'EARN' },
   { id: 'verification',  label: 'Verification',   Icon: Icon.verification },
   { id: 'settings',      label: 'Settings',       Icon: Icon.settings },
@@ -2311,6 +3358,284 @@ const Dashboard = () => {
   const [enrolledPrograms, setEnrolledPrograms] = useState({});  // programId → true
   /* When set, the affiliate tab opens directly to this program's detail view */
   const [directAffProgId, setDirectAffProgId] = useState(null);
+  /* Pending purchases from invest tab (not yet admin-approved) */
+  const [pendingPurchases, setPendingPurchases] = useState([]);
+  /* Approved purchases from API (status === 'approved') */
+  const [approvedPurchases, setApprovedPurchases] = useState([]);
+  /* Wallet info from API — approved token holdings, balances */
+  const [walletData, setWalletData] = useState(null);
+  /* Available tokens for investment — fetched from real API */
+  const [availableTokens, setAvailableTokens] = useState(AVAILABLE_TOKENS);
+  /* Wallet transaction history from API */
+  const [walletTransactions, setWalletTransactions] = useState([]);
+  /* Wallet requests (withdrawal / redemption) from API */
+  const [walletRequests, setWalletRequests] = useState([]);
+  /* Direct airdrops from API */
+  const [directAirdrops, setDirectAirdrops] = useState([]);
+  /* Loading state for initial fetch */
+  const [dataLoading, setDataLoading] = useState(true);
+  /* Last refreshed timestamp */
+  const [lastRefreshed, setLastRefreshed] = useState(null);
+
+  const fetchLiveData = useCallback(() => {
+    const token = getToken();
+    if (token) apiService.setToken(token);
+    return Promise.allSettled([
+      apiService.getTokenRequests(),
+      apiService.getToken('69dcdd839e731266a8732e54'),
+      apiService.getMyPurchases(),
+      apiService.getWalletTransactions(),
+      apiService.getWalletRequests(),
+      apiService.getDirectAirdrops(),
+    ]).then(([requestsResult, tokenResult, myPurchasesResult, walletTxResult, walletReqResult, airdropsResult]) => {
+      // ── Wallet info (approved holdings, balance, address) ──
+      // No longer fetched separately; approved requests are extracted below
+
+      // ── Pending purchase requests ──
+      if (requestsResult.status === 'fulfilled') {
+        const res = requestsResult.value;
+        const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+
+        // Approved requests → show in Approved Tokens section
+        const approved = list
+          .filter(r => r.status === 'approved' || r.status === 'APPROVED')
+          .map(r => ({
+            id:           r.id || r._id,
+            token:        r.tokenName  || r.token  || '',
+            ticker:       r.ticker     || '',
+            logo:         r.logo       || '/assets/images/icon/shivAiToken.png',
+            amount:       Number(r.tokenQty  || r.qty    || 0),
+            invested:     Number(r.amountUsd || r.amount || 0),
+            currentValue: Number(r.amountUsd || r.amount || 0),
+            lockExpiry:   '—',
+            status:       'active',
+            date:         r.reviewedAt || r.updatedAt || r.createdAt
+              ? new Date(r.reviewedAt || r.updatedAt || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : '',
+          }));
+        if (approved.length > 0) setApprovedPurchases(approved);
+
+        const mapped = list
+          .filter(r => r.status !== 'approved' && r.status !== 'APPROVED')
+          .map(r => ({
+            id:            r.id || r._id || Date.now() + Math.random(),
+            apiId:         r.id || r._id,
+            purchaseRef:   r.purchaseRef || r.reference || r.ref || '',
+            token:         r.tokenName   || r.token     || '',
+            ticker:        r.ticker      || '',
+            logo:          r.logo        || '/assets/images/icon/shivAiToken.png',
+            amountUsd:     Number(r.amountUsd  || r.amount || 0),
+            tokenQty:      Number(r.tokenQty   || r.qty    || 0),
+            date:          r.date        || r.createdAt
+                             ? new Date(r.date || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                             : '',
+            status:        'pending_verification',
+            paymentStatus: r.screenshot || r.screenshotUrl
+                             ? 'screenshot_uploaded'
+                             : 'awaiting_screenshot',
+            method:        r.method || 'USDT (TRC20)',
+          }));
+        if (mapped.length > 0) setPendingPurchases(mapped);
+      } else {
+        console.warn('getTokenRequests failed:', requestsResult.reason?.message);
+      }
+
+      // ── ShivAI token data from investor API ──
+      if (tokenResult.status === 'fulfilled') {
+        const raw = tokenResult.value?.data ?? tokenResult.value;
+        if (raw) {
+          // priceUsd is the token price in USD directly (priceUsd: 5 → $5 per token)
+          const prelaunchPrice = raw.priceUsd != null ? Number(raw.priceUsd) : 5;
+          const normalPrice    = prelaunchPrice * 2;
+          const effectivePrice = IS_PRELAUNCH ? prelaunchPrice : normalPrice;
+          const totalSupply    = Number(raw.totalSupply    || 1000000);
+          const avSupply       = Number(raw.availableSupply || 900000);
+          const sold           = totalSupply - avSupply;
+          setAvailableTokens([{
+            id:          raw._id || raw.id || 1,
+            slug:        raw.slug || 'shivai',
+            name:        raw.name || 'ShivAI Token',
+            ticker:      raw.symbol || raw.ticker || 'SHIV',
+            logo:        raw.logo || raw.logoUrl || '/assets/images/icon/shivAiToken.png',
+            image:       raw.image || raw.bannerImage || '/assets/images/partner/HeroShivaAI.jpeg',
+            price:       `$${effectivePrice.toFixed(2)}`,
+            normalPrice: `$${normalPrice.toFixed(2)}`,
+            minInvest:   raw.minInvestment ? `$${Number(raw.minInvestment).toLocaleString()}` : '$500',
+            maxInvest:   raw.maxInvestment ? `$${Number(raw.maxInvestment).toLocaleString()}` : '$50,000',
+            lock:        raw.lockPeriod || raw.lockDuration || '12 months',
+            status:      raw.status || 'LIVE',
+            raised:      sold,          // token count sold
+            target:      totalSupply,   // total token supply
+            totalTokens: totalSupply,
+            availSupply: avSupply,
+            soldTokens:  sold,
+            investors:   Number(raw.investors || raw.investorCount || raw.totalInvestors || 0),
+            desc:        raw.description || raw.desc || 'Next-generation AI compute infrastructure token.',
+            network:     raw.network || 'ethereum',
+          }]);
+        }
+      } else {
+        console.warn('getToken failed:', tokenResult.reason?.message);
+      }
+
+      // ── My Purchases (dedicated endpoint, complements getTokenRequests) ──
+      if (myPurchasesResult.status === 'fulfilled') {
+        const res = myPurchasesResult.value;
+        const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+        if (list.length > 0) {
+          const extraApproved = list
+            .filter(r => r.status === 'approved' || r.status === 'APPROVED')
+            .map(r => ({
+              id:           r.id || r._id,
+              token:        r.tokenName  || r.token  || '',
+              ticker:       r.ticker     || r.symbol || '',
+              logo:         r.logo       || '/assets/images/icon/shivAiToken.png',
+              amount:       Number(r.tokenQty  || r.qty    || 0),
+              invested:     Number(r.amountUsd || r.amount || 0),
+              currentValue: Number(r.amountUsd || r.amount || 0),
+              lockExpiry:   r.lockExpiry || '—',
+              status:       'active',
+              date:         r.reviewedAt || r.updatedAt || r.createdAt
+                ? new Date(r.reviewedAt || r.updatedAt || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '',
+            }));
+          setApprovedPurchases(prev => {
+            const seen = new Set(prev.map(p => String(p.id)));
+            const fresh = extraApproved.filter(p => !seen.has(String(p.id)));
+            return fresh.length ? [...prev, ...fresh] : prev;
+          });
+          const extraPending = list
+            .filter(r => r.status !== 'approved' && r.status !== 'APPROVED')
+            .map(r => ({
+              id:            r.id || r._id || Date.now() + Math.random(),
+              apiId:         r.id || r._id,
+              purchaseRef:   r.purchaseRef || r.reference || r.ref || '',
+              token:         r.tokenName   || r.token     || '',
+              ticker:        r.ticker      || r.symbol    || '',
+              logo:          r.logo        || '/assets/images/icon/shivAiToken.png',
+              amountUsd:     Number(r.amountUsd  || r.amount || 0),
+              tokenQty:      Number(r.tokenQty   || r.qty    || 0),
+              date:          r.date || r.createdAt
+                ? new Date(r.date || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '',
+              status:        'pending_verification',
+              paymentStatus: r.screenshot || r.screenshotUrl ? 'screenshot_uploaded' : 'awaiting_screenshot',
+              method:        r.method || 'USDT (TRC20)',
+            }));
+          setPendingPurchases(prev => {
+            const seen = new Set(prev.map(p => String(p.id)));
+            const fresh = extraPending.filter(p => !seen.has(String(p.id)));
+            return fresh.length ? [...prev, ...fresh] : prev;
+          });
+        }
+      } else {
+        console.warn('getMyPurchases failed:', myPurchasesResult.reason?.message);
+      }
+
+      // ── Wallet Transactions ──
+      if (walletTxResult.status === 'fulfilled') {
+        const res = walletTxResult.value;
+        // Response shape: { data: { transactions: [...], pagination: {...} }, success: true }
+        const raw = res?.data?.transactions ?? res?.transactions ?? (Array.isArray(res?.data) ? res.data : null) ?? (Array.isArray(res) ? res : []);
+        const list = Array.isArray(raw) ? raw : [];
+        // Normalize API type names → typeConfig keys
+        const typeMap = { purchase: 'investment', token_purchase: 'investment', commission: 'affiliate', withdrawal: 'redeem', kyc: 'kyc', onboarding: 'onboarding' };
+        const mapped = list.map((tx, i) => {
+          const rawType = (tx.type || tx.transactionType || tx.category || 'purchase').toLowerCase();
+          const rawDate = tx.date || tx.createdAt;
+          return {
+            id:     tx.id || tx._id || i,
+            type:   typeMap[rawType] || rawType || 'investment',
+            amount: Number(tx.amount || tx.amountUsd || tx.value || 0) || null,
+            currency: tx.currency || 'USD',
+            desc:   tx.description || '',
+            date:   rawDate
+              ? new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : '—',
+            time:   rawDate
+              ? new Date(rawDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+              : '',
+            status: (tx.status || 'pending').toLowerCase(),
+            hash:   tx.hash || tx.txHash || tx.reference || tx.ref || tx.purchaseRef || tx.id || '—',
+            method: tx.method || tx.paymentMethod || (`${tx.currency || 'USD'} · ${tx.description || ''}`.trim().replace(/·\s*$/, '')),
+          };
+        });
+        setWalletTransactions(mapped);
+      } else {
+        console.warn('getWalletTransactions failed:', walletTxResult.reason?.message);
+      }
+
+      // ── Wallet Requests (withdrawal / redemption requests) ──
+      if (walletReqResult.status === 'fulfilled') {
+        const res = walletReqResult.value;
+        const list = Array.isArray(res) ? res
+          : (Array.isArray(res?.data) ? res.data
+          : (Array.isArray(res?.data?.requests) ? res.data.requests
+          : (Array.isArray(res?.requests) ? res.requests : [])));
+        const mapped = list.map((r, i) => ({
+          id:        r.id || r._id || i,
+          type:      r.type || r.requestType || 'withdrawal',
+          amount:    Number(r.amount || r.amountUsd || r.value || 0),
+          currency:  r.currency || 'USD',
+          status:    (r.status || 'pending').toLowerCase(),
+          walletAddr: r.walletAddress || r.toAddress || r.address || '—',
+          notes:     r.notes || r.description || r.reason || '',
+          date:      (r.date || r.createdAt)
+            ? new Date(r.date || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—',
+          reviewedAt: (r.reviewedAt || r.updatedAt)
+            ? new Date(r.reviewedAt || r.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : null,
+        }));
+        setWalletRequests(mapped);
+      } else {
+        console.warn('getWalletRequests failed:', walletReqResult.reason?.message);
+      }
+
+      // ── Direct Airdrops ──
+      if (airdropsResult.status === 'fulfilled') {
+        const res = airdropsResult.value;
+        const list = Array.isArray(res) ? res
+          : (Array.isArray(res?.data) ? res.data
+          : (Array.isArray(res?.data?.airdrops) ? res.data.airdrops
+          : (Array.isArray(res?.airdrops) ? res.airdrops : [])));
+        const mapped = list.map((a, i) => ({
+          id:          a.id || a._id || `airdrop-${i}`,
+          token:       a.tokenName  || a.token || a.name || '',
+          ticker:      a.ticker     || a.symbol || '',
+          logo:        a.logo       || a.logoUrl || '/assets/images/icon/shivAiToken.png',
+          tokenQty:    Number(a.tokenQty || a.qty || a.quantity || 0),
+          amountUsd:   Number(a.amountUsd || a.amount || 0),
+          reference:   a.reference  || a.ref || '',
+          airdropType: a.airdropType || a.type || '',
+          adminNote:   a.adminNote  || a.reason || a.description || a.notes || '',
+          status:      (a.status || 'completed').toLowerCase(),
+          date:        (a.createdAt || a.date)
+            ? new Date(a.createdAt || a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—',
+          completedAt: a.completedAt
+            ? new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : null,
+        }));
+        setDirectAirdrops(mapped);
+      } else {
+        console.warn('getDirectAirdrops failed:', airdropsResult.reason?.message);
+      }
+
+      setLastRefreshed(new Date());
+      setDataLoading(false);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // On mount: initial fetch
+  useEffect(() => {
+    fetchLiveData();
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => { fetchLiveData(); }, 30000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Real user: Recoil atom (live) with direct secureStorage read as instant fallback ──
   const recoilUser = useRecoilValue(userState);
@@ -2322,10 +3647,28 @@ const Dashboard = () => {
 
   // Normalise API response to the shape the dashboard expects, keeping mock
   // values as fallbacks so nothing breaks while backend fields are rolled out.
+
+  // Map backend uppercase enum values → internal lowercase keys
+  const KYC_STATUS_MAP = {
+    PENDING_APPROVAL: 'pending',
+    APPROVED:         'approved',
+    REJECTED:         'rejected',
+    UNDER_REVIEW:     'under_review',
+    NOT_STARTED:      'not_started',
+    // pass-through lowercase values unchanged
+    pending:          'pending',
+    approved:         'approved',
+    rejected:         'rejected',
+    under_review:     'under_review',
+    not_started:      'not_started',
+  };
+  const rawKycStatus = u?.kycStatus || u?.kyc_status || INVESTOR.kycStatus;
+  const normalizedKycStatus = KYC_STATUS_MAP[rawKycStatus] || rawKycStatus;
+
   const investor = {
     name:                  u?.name        || u?.fullName   || INVESTOR.name,
     email:                 u?.email                       || INVESTOR.email,
-    kycStatus:             u?.kycStatus   || u?.kyc_status || INVESTOR.kycStatus,
+    kycStatus:             normalizedKycStatus,
     walletAddress:         u?.walletAddress               || INVESTOR.walletAddress,
     joinedDate:            u?.joinedDate  || u?.createdAt  || INVESTOR.joinedDate,
     tier:                  u?.tier                        || INVESTOR.tier,
@@ -2348,15 +3691,18 @@ const Dashboard = () => {
   const tabFromUrl = pathname.split('/dashboard')[1]?.replace('/', '') || 'overview';
   const activeTab = VALID_TABS.has(tabFromUrl) ? tabFromUrl : 'overview';
 
-  // KYC gate — tabs locked until email is verified KYC approved
+  // KYC gate — tabs locked until KYC approved, EXCEPT invest/wallet/transactions are open
   const kycApproved = investor.kycStatus === 'approved';
-  const KYC_FREE_TABS = new Set(['verification', 'settings']);
+  const KYC_FREE_TABS = new Set(['verification', 'settings', 'invest', 'wallet', 'transactions']);
   const isTabLocked = (id) => !kycApproved && !KYC_FREE_TABS.has(id);
 
   // On mount: if not KYC-approved and trying to access a locked tab → redirect to verification
+  // Also redirect away from verification tab if KYC is already approved
   useEffect(() => {
     if (!kycApproved && !KYC_FREE_TABS.has(activeTab)) {
       navigate('/dashboard/verification', { replace: true });
+    } else if (kycApproved && activeTab === 'verification') {
+      navigate('/dashboard', { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kycApproved]);
@@ -2369,17 +3715,20 @@ const Dashboard = () => {
 
   const renderTab = () => {
     // Safety: if tab is locked (shouldn't happen after redirect), show verification
-    if (isTabLocked(activeTab)) return <TabVerification investor={investor} />;
+    if (isTabLocked(activeTab)) return <TabVerification investor={investor} onNav={handleNav} />;
+    const addPendingPurchase = (p) => setPendingPurchases(prev => [p, ...prev]);
     switch (activeTab) {
-      case 'overview':     return <TabOverview investor={investor} onNav={handleNav} />;
-      case 'portfolio':    return <TabPortfolio />;
-      case 'invest':       return <TabInvest investor={investor} />;
-      case 'transactions': return <TabTransactions />;
-      case 'wallet':       return <TabWallet investor={investor} />;
+      case 'overview':     return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} onNav={handleNav} />;
+      case 'portfolio':    return <TabPortfolio onNav={handleNav} />;
+      case 'invest':       return <TabInvest investor={investor} availableTokens={availableTokens} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onAddPendingPurchase={addPendingPurchase} />;
+      case 'transactions': return <TabTransactions pendingPurchases={pendingPurchases} walletTransactions={walletTransactions} onUploadScreenshot={(id, file) => {
+        setPendingPurchases(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'screenshot_uploaded', screenshotFile: file } : p));
+      }} />;
+      case 'wallet':       return <TabWallet investor={investor} pendingPurchases={pendingPurchases} approvedPurchases={approvedPurchases} walletData={walletData} walletRequests={walletRequests} directAirdrops={directAirdrops} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onNav={handleNav} />;
       case 'affiliate':    return <TabAffiliate investor={investor} enrolled={enrolledPrograms} setEnrolled={setEnrolledPrograms} directProgramId={directAffProgId} onClearDirect={() => setDirectAffProgId(null)} />;
-      case 'verification': return <TabVerification investor={investor} />;
+      case 'verification': return <TabVerification investor={investor} onNav={handleNav} />;
       case 'settings':     return <TabSettings investor={investor} />;
-      default:             return <TabOverview investor={investor} onNav={handleNav} />;
+      default:             return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} onNav={handleNav} />;
     }
   };
 
@@ -2403,7 +3752,7 @@ const Dashboard = () => {
 
         {/* Nav */}
         <nav className="db-sidebar-nav">
-          {NAV_ITEMS.map(item => {
+          {NAV_ITEMS.filter(item => !(item.id === 'verification' && kycApproved)).map(item => {
             const enrolledList = item.id === 'affiliate'
               ? AFFILIATE_PROGRAMS.filter(p => enrolledPrograms[p.id])
               : [];
