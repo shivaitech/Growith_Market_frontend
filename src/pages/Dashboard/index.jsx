@@ -749,8 +749,20 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
 }
 
 /* ── Portfolio ──────────────────────────────────── */
-function TabPortfolio({ onNav }) {
-  const total = HOLDINGS.reduce((s, h) => s + h.currentValue, 0);
+function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurchases = [] }) {
+  const token = availableTokens[0] || AVAILABLE_TOKENS[0];
+  const totalInvested  = approvedPurchases.reduce((s, h) => s + (h.invested || 0), 0);
+  const totalTokensHeld = approvedPurchases.reduce((s, h) => s + (h.amount || 0), 0);
+  const totalValue     = approvedPurchases.reduce((s, h) => s + (h.currentValue || h.invested || 0), 0);
+  const tokenPrice     = token?.price ? parseFloat(token.price.replace('$', '')) : EFFECTIVE_TOKEN_PRICE;
+  const liveValue      = totalTokensHeld > 0 ? totalTokensHeld * tokenPrice : 0;
+  const effectiveValue = liveValue > 0 ? liveValue : totalValue;
+  const pnl            = effectiveValue - totalInvested;
+  const pnlPct         = totalInvested > 0 ? ((pnl / totalInvested) * 100).toFixed(1) : '0.0';
+
+  const soldPct  = token.target > 0 ? Math.min((token.raised / token.target) * 100, 100) : 0;
+  const fmtNum   = n => n >= 1000000 ? `${(n/1000000).toFixed(2)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(n);
+
   const allocSegments = [
     { label: 'Public Sale',              pct: 40, color: '#6B35FF' },
     { label: 'Ecosystem Fund',           pct: 20, color: '#9D6FFF' },
@@ -769,78 +781,108 @@ function TabPortfolio({ onNav }) {
       </div>
       <PrelaunchOfferBanner onNav={onNav} />
 
-      {HOLDINGS.map(h => {
-        const lockProgress = Math.max(0, Math.min(100, 100 - (h.daysLeft / 365) * 100));
-        return (
-          <div key={h.id} className="db-portfolio-card">
-            <div className="db-portfolio-card__header">
-              <div className="db-portfolio-card__logo">
-                <img src={h.logo} alt={h.token} onError={e => { e.target.style.display='none'; }} />
-              </div>
-              <div className="db-portfolio-card__title-block">
-                <div className="db-portfolio-card__name">{h.token} <span className="db-ticker">{h.ticker}</span></div>
-                <div className="db-portfolio-card__chain">{h.blockchain} · <span style={{ fontFamily: 'Courier New', fontSize: 11 }}>{h.contract.slice(0,14)}…</span></div>
-              </div>
-              <span className="db-lock-badge"><Icon.lock /> {h.status === 'locked' ? 'Locked' : 'Unlocked'}</span>
-            </div>
-
-            <div className="db-portfolio-stat-row">
-              <div className="db-p-stat"><span className="db-p-stat__label">Token Balance</span><span className="db-p-stat__value">{h.amount.toLocaleString()} {h.ticker}</span></div>
-              <div className="db-p-stat"><span className="db-p-stat__label">Invested</span><span className="db-p-stat__value">${h.invested.toLocaleString()}</span></div>
-              <div className="db-p-stat"><span className="db-p-stat__label">Current Value</span><span className="db-p-stat__value">${h.currentValue.toLocaleString()}</span></div>
-              <div className="db-p-stat"><span className="db-p-stat__label">Unrealized P&amp;L</span><span className="db-p-stat__value db-green">+${h.pnl} (+{h.pnlPct}%)</span></div>
-            </div>
-
-            {/* Price sparkline */}
-            <div className="db-section-title" style={{ marginTop: 0, marginBottom: 10 }}>Token Price History (12w)</div>
-            <div className="db-price-chart-wrap">
-              <div className="db-price-chart-y">
-                <span>{(Math.max(...h.priceHistory) * 1.01).toFixed(4)}</span>
-                <span>{((Math.max(...h.priceHistory) + Math.min(...h.priceHistory)) / 2).toFixed(4)}</span>
-                <span>{(Math.min(...h.priceHistory) * 0.99).toFixed(4)}</span>
-              </div>
-              <div style={{ flex: 1 }}>
-                <Sparkline data={h.priceHistory} width="100%" height={72} color="#6B35FF" fill />
-              </div>
-            </div>
-
-            {/* Lock bar */}
-            <div className="db-lock-section" style={{ marginTop: 20 }}>
-              <div className="db-lock-section__label">
-                <span>Lock Period Progress</span>
-                <span className="db-muted">{h.daysLeft} days remaining · Expires {h.lockExpiry}</span>
-              </div>
-              <div className="db-lock-track"><div className="db-lock-fill" style={{ width: `${lockProgress}%` }} /></div>
-              <div className="db-lock-section__legend"><span>Minted Mar 10, 2026</span><span>Unlocks {h.lockExpiry}</span></div>
-            </div>
-
-            {/* Donut + allocation */}
-            <div className="db-alloc-layout">
-              <div className="db-alloc-donut-wrap">
-                <DonutChart segments={allocSegments} size={160} thickness={28} />
-                <div className="db-alloc-donut-center">
-                  <span className="db-alloc-donut-label">Allocation</span>
-                </div>
-              </div>
-              <div className="db-alloc-bars">
-                <div className="db-section-title" style={{ marginTop: 0, marginBottom: 14 }}>Token Allocation Breakdown</div>
-                {allocSegments.map(a => (
-                  <div key={a.label} className="db-alloc-row">
-                    <div className="db-alloc-row__label">
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, display: 'inline-block', flexShrink: 0 }} />
-                        {a.label}
-                      </span>
-                      <span className="db-alloc-pct">{a.pct}%</span>
-                    </div>
-                    <div className="db-alloc-track"><div className="db-alloc-fill" style={{ width: `${a.pct}%`, background: a.color }} /></div>
-                  </div>
-                ))}
-              </div>
+      {/* ── Token Summary Card ── */}
+      <div className="db-portfolio-card">
+        <div className="db-portfolio-card__header">
+          <div className="db-portfolio-card__logo">
+            <img src={token.logo} alt={token.name} onError={e => { e.target.style.display='none'; }} />
+          </div>
+          <div className="db-portfolio-card__title-block">
+            <div className="db-portfolio-card__name">{token.name} <span className="db-ticker">{token.ticker}</span></div>
+            <div className="db-portfolio-card__chain">
+              {token.network ? token.network.charAt(0).toUpperCase() + token.network.slice(1) : 'Ethereum'}
+              {token.status && <span style={{ marginLeft: 8, background: 'rgba(34,197,94,0.12)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>{token.status}</span>}
             </div>
           </div>
-        );
-      })}
+          <span className="db-lock-badge"><Icon.lock /> {token.lock || '12 months'}</span>
+        </div>
+
+        {/* Token sale progress */}
+        <div className="db-raise-progress" style={{ marginBottom: 20 }}>
+          <div className="db-raise-progress__header">
+            <span className="db-raise-label">Tokens Sold</span>
+            <span className="db-raise-pct">{soldPct.toFixed(0)}%</span>
+          </div>
+          <div className="db-raise-track"><div className="db-raise-fill" style={{ width: `${soldPct}%` }} /></div>
+          <div className="db-raise-meta">
+            <span>{fmtNum(token.raised || 0)} {token.ticker} sold</span>
+            <span>{fmtNum(token.target || 0)} total supply</span>
+          </div>
+          {token.investors > 0 && (
+            <div className="db-raise-investors">{token.investors} investors · {fmtNum(token.availSupply || 0)} {token.ticker} available</div>
+          )}
+        </div>
+
+        {/* Token price + supply stats */}
+        <div className="db-portfolio-stat-row">
+          <div className="db-p-stat"><span className="db-p-stat__label">Token Price</span><span className="db-p-stat__value" style={{ color: '#6B35FF' }}>{token.price}</span></div>
+          <div className="db-p-stat"><span className="db-p-stat__label">Total Supply</span><span className="db-p-stat__value">{fmtNum(token.totalTokens || token.target || 0)} {token.ticker}</span></div>
+          <div className="db-p-stat"><span className="db-p-stat__label">Min. Investment</span><span className="db-p-stat__value">{token.minInvest || '$500'}</span></div>
+          <div className="db-p-stat"><span className="db-p-stat__label">Lock Period</span><span className="db-p-stat__value">{token.lock || '12 months'}</span></div>
+        </div>
+
+        {token.desc && (
+          <p style={{ fontSize: 13, color: 'rgba(13,11,34,0.6)', margin: '4px 0 20px', lineHeight: 1.6 }}>{token.desc}</p>
+        )}
+
+        {/* Donut + allocation */}
+        <div className="db-alloc-layout">
+          <div className="db-alloc-donut-wrap">
+            <DonutChart segments={allocSegments} size={160} thickness={28} />
+            <div className="db-alloc-donut-center">
+              <span className="db-alloc-donut-label">Allocation</span>
+            </div>
+          </div>
+          <div className="db-alloc-bars">
+            <div className="db-section-title" style={{ marginTop: 0, marginBottom: 14 }}>Token Allocation Breakdown</div>
+            {allocSegments.map(a => (
+              <div key={a.label} className="db-alloc-row">
+                <div className="db-alloc-row__label">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, display: 'inline-block', flexShrink: 0 }} />
+                    {a.label}
+                  </span>
+                  <span className="db-alloc-pct">{a.pct}%</span>
+                </div>
+                <div className="db-alloc-track"><div className="db-alloc-fill" style={{ width: `${a.pct}%`, background: a.color }} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── My Holdings ── */}
+      <div className="db-section-title">My Holdings</div>
+      {approvedPurchases.length === 0 ? (
+        <div className="db-wallet-empty" style={{ padding: '20px 0' }}>
+          No approved token holdings yet.{' '}
+          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
+        </div>
+      ) : (
+        <>
+          {/* Individual holding rows */}
+          {approvedPurchases.map((h, i) => (
+            <div key={h.id || i} className="db-portfolio-card" style={{ marginBottom: 16 }}>
+              <div className="db-portfolio-card__header">
+                <div className="db-portfolio-card__logo">
+                  <img src={h.logo || token.logo} alt={h.token} onError={e => { e.target.style.display='none'; }} />
+                </div>
+                <div className="db-portfolio-card__title-block">
+                  <div className="db-portfolio-card__name">{h.token} <span className="db-ticker">{h.ticker}</span></div>
+                  {h.date && <div className="db-portfolio-card__chain">Approved: {h.date}</div>}
+                </div>
+                <span className="db-wallet-tag db-wallet-tag--green" style={{ fontSize: 11 }}>Active</span>
+              </div>
+              <div className="db-portfolio-stat-row">
+                <div className="db-p-stat"><span className="db-p-stat__label">Token Balance</span><span className="db-p-stat__value">{(h.amount || 0).toLocaleString()} {h.ticker}</span></div>
+                <div className="db-p-stat"><span className="db-p-stat__label">Invested</span><span className="db-p-stat__value">${(h.invested || 0).toLocaleString()}</span></div>
+                <div className="db-p-stat"><span className="db-p-stat__label">Live Value</span><span className="db-p-stat__value" style={{ color: '#22C55E' }}>${((h.amount || 0) * tokenPrice).toLocaleString()}</span></div>
+                <div className="db-p-stat"><span className="db-p-stat__label">Lock Expiry</span><span className="db-p-stat__value">{token.lock || '12 months'}</span></div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
@@ -3483,27 +3525,8 @@ const Dashboard = () => {
         const res = myPurchasesResult.value;
         const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
         if (list.length > 0) {
-          const extraApproved = list
-            .filter(r => r.status === 'approved' || r.status === 'APPROVED')
-            .map(r => ({
-              id:           r.id || r._id,
-              token:        r.tokenName  || r.token  || '',
-              ticker:       r.ticker     || r.symbol || '',
-              logo:         r.logo       || '/assets/images/icon/shivAiToken.png',
-              amount:       Number(r.tokenQty  || r.qty    || 0),
-              invested:     Number(r.amountUsd || r.amount || 0),
-              currentValue: Number(r.amountUsd || r.amount || 0),
-              lockExpiry:   r.lockExpiry || '—',
-              status:       'active',
-              date:         r.reviewedAt || r.updatedAt || r.createdAt
-                ? new Date(r.reviewedAt || r.updatedAt || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : '',
-            }));
-          setApprovedPurchases(prev => {
-            const seen = new Set(prev.map(p => String(p.id)));
-            const fresh = extraApproved.filter(p => !seen.has(String(p.id)));
-            return fresh.length ? [...prev, ...fresh] : prev;
-          });
+          // NOTE: approved purchases are already handled by getTokenRequests above.
+          // getMyPurchases only supplements PENDING entries to avoid double-counting approved ones.
           const extraPending = list
             .filter(r => r.status !== 'approved' && r.status !== 'APPROVED')
             .map(r => ({
@@ -3719,7 +3742,7 @@ const Dashboard = () => {
     const addPendingPurchase = (p) => setPendingPurchases(prev => [p, ...prev]);
     switch (activeTab) {
       case 'overview':     return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} onNav={handleNav} />;
-      case 'portfolio':    return <TabPortfolio onNav={handleNav} />;
+      case 'portfolio':    return <TabPortfolio onNav={handleNav} availableTokens={availableTokens} approvedPurchases={approvedPurchases} />;
       case 'invest':       return <TabInvest investor={investor} availableTokens={availableTokens} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onAddPendingPurchase={addPendingPurchase} />;
       case 'transactions': return <TabTransactions pendingPurchases={pendingPurchases} walletTransactions={walletTransactions} onUploadScreenshot={(id, file) => {
         setPendingPurchases(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'screenshot_uploaded', screenshotFile: file } : p));

@@ -52,6 +52,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-start;
 }
 
 .db-brand-logo {
@@ -60,8 +61,6 @@
   width: auto;
   max-width: 145px;
   object-fit: contain;
-  position: relative;
-  left: -12px;
 }
 
 .db-brand-sub {
@@ -69,6 +68,7 @@
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  padding-left: 2px;
 }
 
 .db-sidebar-close {
@@ -868,8 +868,8 @@
 /* ── Token grid (Invest) ─────────────────────────────────── */
 .db-token-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 22px;
   margin-bottom: 32px;
 }
 
@@ -973,8 +973,9 @@
 }
 
 .db-token-card__stats {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
   margin-bottom: 14px;
 }
 
@@ -982,6 +983,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 }
 
 .db-token-stat span {
@@ -996,6 +998,9 @@
   font-size: 14px;
   color: #0D0B22;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .db-token-card__select-indicator {
@@ -1117,6 +1122,11 @@
 }
 .db-intent-form-header__close:hover {
   background: rgba(255,255,255,0.25);
+}
+
+/* Override white muted text inside the light intent form */
+.db-intent-form-wrap .db-muted {
+  color: rgba(13, 11, 34, 0.45);
 }
 
 /* Form body padding */
@@ -1297,11 +1307,11 @@
 }
 
 .db-btn--primary:hover:not(:disabled) {
-  background: transparent;
-  border-color: #fff;
+  background: linear-gradient(135deg, #5a28e8 0%, #8a5aee 100%);
+  border-color: transparent;
   color: #fff;
-  box-shadow: none;
-  transform: none;
+  box-shadow: 0 6px 24px rgba(107, 53, 255, 0.55);
+  transform: translateY(-1px);
 }
 
 .db-btn--secondary {
@@ -1311,8 +1321,8 @@
 }
 
 .db-btn--secondary:hover {
-  background: transparent;
-  border-color: #fff;
+  background: rgba(157, 111, 255, 0.2);
+  border-color: rgba(157, 111, 255, 0.6);
   color: #fff;
 }
 
@@ -2298,13 +2308,23 @@
 
   /* ── Token grid compact ── */
   .db-token-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
   }
 
-  .db-token-card__image { height: 120px; }
+  .db-token-card__image { height: 140px; }
 
   .db-token-card__body { padding: 14px; }
+
+  .db-token-card__stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+  }
+
+  /* Force single column on very small screens */
+  @media (max-width: 400px) {
+    .db-token-grid { grid-template-columns: 1fr; }
+  }
 
   /* ── Intent form compact ── */
   .db-intent-form-wrap {
