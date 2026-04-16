@@ -19,7 +19,11 @@ export default function StepOne({ onRegistered }) {
 
   const validate = () => {
     const errs = {};
-    if (!formData.fullName.trim()) errs.fullName = 'Full name is required';
+    if (!formData.fullName.trim()) {
+      errs.fullName = 'Full name is required';
+    } else if (!/^[a-zA-Z\s'\-\.]{2,80}$/.test(formData.fullName.trim())) {
+      errs.fullName = 'Name can only contain letters, spaces, hyphens and apostrophes';
+    }
     if (!formData.email.trim()) {
       errs.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -86,6 +90,7 @@ export default function StepOne({ onRegistered }) {
           onChange={handleChange}
           placeholder="John Doe"
           error={errors.fullName}
+          maxLength={80}
         />
         <FormInput
           label="Email Address"

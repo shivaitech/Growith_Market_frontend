@@ -2374,7 +2374,7 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
 
 const COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua & Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia & Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (DRC)","Congo (Republic)","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts & Nevis","Saint Lucia","Saint Vincent & Grenadines","Samoa","San Marino","São Tomé & Príncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad & Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
-function KycFileUploadBox({ field, label, preview, error, accept = 'image/*', onChange }) {
+function KycFileUploadBox({ field, label, preview, error, accept = 'image/*,application/pdf', onChange }) {
   // preview can be null or { url, isPdf, name }
   const isPdf = preview?.isPdf;
   const previewUrl = preview?.url ?? null;
@@ -2736,14 +2736,45 @@ function TabVerification({ investor, onNav }) {
 
     const validate = () => {
       const errs = {};
-      if (!form.fullName.trim())    errs.fullName    = 'Full name is required';
-      if (!form.dob)                errs.dob         = 'Date of birth is required';
-      if (!form.nationality.trim()) errs.nationality = 'Nationality is required';
-      if (!form.country.trim())     errs.country     = 'Country of residence is required';
-      if (!form.city.trim())        errs.city        = 'City is required';
-      if (!form.state.trim())       errs.state       = 'State / Province is required';
-      if (!form.phone.trim())       errs.phone       = 'Phone number is required';
-      if (!form.address.trim())     errs.address     = 'Residential address is required';
+      // Full name: letters, spaces, apostrophes, hyphens only; 2–80 chars
+      if (!form.fullName.trim()) {
+        errs.fullName = 'Full name is required';
+      } else if (!/^[a-zA-Z\s'\-\.]{2,80}$/.test(form.fullName.trim())) {
+        errs.fullName = 'Name can only contain letters, spaces, hyphens and apostrophes (2–80 chars)';
+      }
+      // DOB
+      if (!form.dob) errs.dob = 'Date of birth is required';
+      // Nationality
+      if (!form.nationality.trim()) {
+        errs.nationality = 'Nationality is required';
+      } else if (!/^[a-zA-Z\s\-]{2,60}$/.test(form.nationality.trim())) {
+        errs.nationality = 'Enter a valid nationality (letters only)';
+      }
+      if (!form.country.trim()) errs.country = 'Country of residence is required';
+      // City
+      if (!form.city.trim()) {
+        errs.city = 'City is required';
+      } else if (form.city.trim().length > 100) {
+        errs.city = 'City name too long (max 100 characters)';
+      }
+      // State
+      if (!form.state.trim()) {
+        errs.state = 'State / Province is required';
+      } else if (form.state.trim().length > 100) {
+        errs.state = 'State name too long (max 100 characters)';
+      }
+      // Phone: optional leading +, 7–15 digits (spaces/dashes allowed between digits)
+      if (!form.phone.trim()) {
+        errs.phone = 'Phone number is required';
+      } else if (!/^\+?[\d\s\-]{7,20}$/.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 7) {
+        errs.phone = 'Enter a valid phone number (e.g. +44 7700 900000)';
+      }
+      // Address
+      if (!form.address.trim()) {
+        errs.address = 'Residential address is required';
+      } else if (form.address.trim().length > 200) {
+        errs.address = 'Address too long (max 200 characters)';
+      }
       setErrors(errs);
       return Object.keys(errs).length === 0;
     };
@@ -2802,7 +2833,7 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-form__row">
             <div className="kyc-form__group">
               <label className="kyc-form__label">Full Legal Name <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`} name="fullName" value={form.fullName} onChange={handleChange} placeholder="As on your passport/ID" />
+              <input className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`} name="fullName" value={form.fullName} onChange={handleChange} placeholder="As on your passport/ID" maxLength={80} />
               <span className="kyc-form__error">{errors.fullName || ''}</span>
             </div>
             <div className="kyc-form__group">
@@ -2814,7 +2845,7 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-form__row">
             <div className="kyc-form__group">
               <label className="kyc-form__label">Nationality <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Indian" />
+              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Indian" maxLength={60} />
               <span className="kyc-form__error">{errors.nationality || ''}</span>
             </div>
             <div className="kyc-form__group">
@@ -2829,24 +2860,24 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-form__row">
             <div className="kyc-form__group">
               <label className="kyc-form__label">City <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.city ? ' kyc-form__input--err' : ''}`} name="city" value={form.city} onChange={handleChange} placeholder="e.g. London" />
+              <input className={`kyc-form__input${errors.city ? ' kyc-form__input--err' : ''}`} name="city" value={form.city} onChange={handleChange} placeholder="e.g. London" maxLength={100} />
               <span className="kyc-form__error">{errors.city || ''}</span>
             </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">State / Province <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.state ? ' kyc-form__input--err' : ''}`} name="state" value={form.state} onChange={handleChange} placeholder="e.g. England, Punjab" />
+              <input className={`kyc-form__input${errors.state ? ' kyc-form__input--err' : ''}`} name="state" value={form.state} onChange={handleChange} placeholder="e.g. England, Punjab" maxLength={100} />
               <span className="kyc-form__error">{errors.state || ''}</span>
             </div>
           </div>
           <div className="kyc-form__row">
             <div className="kyc-form__group">
               <label className="kyc-form__label">Phone Number <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" />
+              <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" maxLength={20} />
               <span className="kyc-form__error">{errors.phone || ''}</span>
             </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">Street Address <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street number and name, Postcode" />
+              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street number and name, Postcode" maxLength={200} />
               <span className="kyc-form__error">{errors.address || ''}</span>
             </div>
           </div>
