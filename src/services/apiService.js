@@ -10,6 +10,8 @@ class ApiService {
   _handleUnauthorized() {
     this.token = null;
     clearAuth();
+    // Don't redirect if already on the login page (avoids infinite refresh)
+    if (window.location.pathname === '/login') return;
     // Small delay so any in-flight state updates finish before redirect
     setTimeout(() => { window.location.replace('/login'); }, 100);
   }
