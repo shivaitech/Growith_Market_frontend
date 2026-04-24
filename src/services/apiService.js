@@ -231,6 +231,14 @@ class ApiService {
   }
 
   /**
+   * GET /api/v1/auth/me
+   * Returns the current logged-in investor's profile.
+   */
+  getProfile() {
+    return this.get('/auth/me');
+  }
+
+  /**
    * POST /api/v1/investor/wallet/requests
    * Create a new wallet request (withdrawal / redemption).
    * Body: { type, amount, currency, walletAddress, notes? }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { authTokenState, userState } from '../../recoil/auth';
@@ -18,6 +18,11 @@ export default function Onboarding() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [currentStep, showSuccess]);
 
   // Called by StepOne after successful register — silently log the user in
   const handleRegistered = (email, token, refresh, user) => {
@@ -31,11 +36,7 @@ export default function Onboarding() {
     if (user) { setUser(user); ssSetUser(user); }
     setRegisteredEmail(email);
     setCurrentStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const [showSuccess, setShowSuccess] = useState(false);
-
   // Called by StepTwo after successful email verification — silently log the user in
   const handleVerified = (token, refresh, user) => {
     // 1. Persist to secure storage first (so ProtectedRoute reads it on navigate)

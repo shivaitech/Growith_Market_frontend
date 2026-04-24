@@ -21,10 +21,12 @@ import RiskDisclosure from './pages/Legal/RiskDisclosure'
 import CookiePolicy from './pages/Legal/CookiePolicy'
 import KycAml from './pages/Legal/KycAml'
 import ProtectedRoute from './components/ProtectedRoute'
+import ScrollToTop from './components/ScrollToTop'
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Standalone routes (no layout) */}
         <Route path="/login" element={<Login />} />

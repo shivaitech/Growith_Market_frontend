@@ -4,7 +4,7 @@ import Toast from '../../components/Toast';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
-import { clearAuth, getUser, getToken } from '../../utils/secureStorage';
+import { clearAuth, getUser, getToken, setUser as saveUser } from '../../utils/secureStorage';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
@@ -1733,7 +1733,6 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
           Approved Tokens
         </div>
-        <span className="db-wallet-section-count">{approvedRows.length}</span>
       </div>
       {approvedRows.length === 0 ? (
         <div className="db-wallet-empty">No approved token holdings yet.</div>
@@ -1846,7 +1845,6 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
           <span className="db-wallet-section-dot db-wallet-section-dot--purple" />
           Airdrop Tokens
         </div>
-        <span className="db-wallet-section-count">{airdropRows.length}</span>
       </div>
       {airdropRows.length === 0 ? (
         <div className="db-wallet-empty">No airdrops received yet.</div>
@@ -1883,7 +1881,6 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
           <span className="db-wallet-section-dot db-wallet-section-dot--amber" />
           Pending Tokens
         </div>
-        <span className="db-wallet-section-count">{pendingRows.length}</span>
       </div>
       {pendingRows.length === 0 ? (
         <div className="db-wallet-empty">
@@ -1930,7 +1927,6 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
           <span className="db-wallet-section-dot" style={{ background: '#60A5FA', boxShadow: '0 0 8px #60A5FA88' }} />
           Wallet Requests
         </div>
-        <span className="db-wallet-section-count">{walletRequests.length}</span>
       </div>
       {walletRequests.length === 0 ? (
         <div className="db-wallet-empty">No wallet requests yet.</div>
@@ -2364,10 +2360,66 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
   };
 
   return (
-    <div className="db-tab-content">
-      {step === 'tokens'   && <StepTokens />}
-      {step === 'programs' && selectedToken   && <StepPrograms />}
-      {step === 'detail'   && selectedProgram && <StepDetail />}
+    <div className="db-tab-content" style={{ position: 'relative' }}>
+      {/* Blurred content */}
+      <div style={{ filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.45 }}>
+        {step === 'tokens'   && <StepTokens />}
+        {step === 'programs' && selectedToken   && <StepPrograms />}
+        {step === 'detail'   && selectedProgram && <StepDetail />}
+      </div>
+
+      {/* Coming Soon overlay */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10,
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(20,16,50,0.96) 0%, rgba(30,18,70,0.96) 100%)',
+          border: '1.5px solid rgba(157,111,255,0.35)',
+          borderRadius: 20,
+          padding: '44px 48px',
+          textAlign: 'center',
+          maxWidth: 420,
+          width: '90%',
+          boxShadow: '0 8px 48px rgba(107,53,255,0.25)',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(157,111,255,0.12)',
+            border: '1.5px solid rgba(157,111,255,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(157,111,255,0.12)',
+            border: '1px solid rgba(157,111,255,0.3)',
+            borderRadius: 20,
+            padding: '4px 14px',
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#9D6FFF',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginBottom: 16,
+          }}>Coming Soon</div>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 12px' }}>
+            Affiliate Program
+          </h2>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0 }}>
+            Our affiliate program is launching very soon. Earn commissions by referring investors — stay tuned for updates.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2486,6 +2538,10 @@ function TabVerification({ investor, onNav }) {
     aadhaarFront: null, aadhaarBack: null, panFront: null,
   });
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [stage]);
+
   // ── Country → document config ──
   const DOC_CONFIG = {
     India: {
@@ -2603,6 +2659,16 @@ function TabVerification({ investor, onNav }) {
       }
     };
 
+    const handleTermsAcceptedChange = (e) => {
+      if (!termsScrolled) {
+        e.preventDefault();
+        showToast('Please read the whole document before accepting the terms.', 'info');
+        return;
+      }
+
+      setTermsAccepted(e.target.checked);
+    };
+
     return (
       <div className="db-tab-content">
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
@@ -2705,8 +2771,7 @@ function TabVerification({ investor, onNav }) {
                 type="checkbox"
                 className="kyc-terms__checkbox"
                 checked={termsAccepted}
-                disabled={!termsScrolled}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
+                onChange={handleTermsAcceptedChange}
               />
               <span>I have read the above terms and conditions in full. I give my explicit, informed consent to Growith to collect, process, verify, and store my personal data and identity documents for KYC/AML compliance purposes as described above.</span>
             </label>
@@ -3517,10 +3582,9 @@ const Dashboard = () => {
       if (tokenResult.status === 'fulfilled') {
         const raw = tokenResult.value?.data ?? tokenResult.value;
         if (raw) {
-          // priceUsd is the token price in USD directly (priceUsd: 5 → $5 per token)
-          const prelaunchPrice = raw.priceUsd != null ? Number(raw.priceUsd) : 5;
-          const normalPrice    = prelaunchPrice * 2;
-          const effectivePrice = IS_PRELAUNCH ? prelaunchPrice : normalPrice;
+          // priceUsd is the actual current token price from the API — use it directly
+          const effectivePrice = raw.priceUsd != null ? Number(raw.priceUsd) : EFFECTIVE_TOKEN_PRICE;
+          const normalPrice    = raw.normalPriceUsd != null ? Number(raw.normalPriceUsd) : effectivePrice;
           const totalSupply    = Number(raw.totalSupply    || 1000000);
           const avSupply       = Number(raw.availableSupply || 900000);
           const sold           = totalSupply - avSupply;
@@ -3682,6 +3746,9 @@ const Dashboard = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* Track whether this is the first render to avoid double-fetching on mount */
+  const isInitialTabMount = useRef(true);
+
   // On mount: initial fetch
   useEffect(() => {
     fetchLiveData();
@@ -3766,6 +3833,28 @@ const Dashboard = () => {
     navigate(`/dashboard${id === 'overview' ? '' : '/' + id}`);
     setSidebarOpen(false);
   };
+
+  // Refresh all data + profile on every tab switch (skip first render — mount effect handles it)
+  useEffect(() => {
+    if (isInitialTabMount.current) {
+      isInitialTabMount.current = false;
+      return;
+    }
+    // Re-fetch all investor data
+    fetchLiveData();
+    // Also refresh profile so KYC status / name / tier stay up to date
+    const tok = getToken();
+    if (tok) {
+      apiService.get('/auth/me').then(res => {
+        const profile = res?.data || res;
+        if (profile && typeof profile === 'object' && profile.email) {
+          setUser(profile);
+          saveUser(profile);
+        }
+      }).catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const renderTab = () => {
     // Safety: if tab is locked (shouldn't happen after redirect), show verification
