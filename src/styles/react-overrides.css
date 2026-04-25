@@ -5193,6 +5193,37 @@ select.form-input option {
 }
 
 /* =====================================================
+   ONBOARDING — live password rules checklist
+   ===================================================== */
+.ob-pw-rules {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ob-pw-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+  transition: color 0.2s ease;
+}
+
+.ob-pw-rule svg {
+  flex-shrink: 0;
+  color: #475569;
+  transition: color 0.2s ease;
+}
+
+.ob-pw-rule--pass {
+  color: #22c55e;
+}
+
+/* =====================================================
    RESET PASSWORD — password strength meter
    ===================================================== */
 .rp-strength {
