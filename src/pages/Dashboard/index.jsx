@@ -3024,41 +3024,69 @@ function TabVerification({ investor, onNav }) {
       setIsLoading(true);
       setApiError('');
       try {
-        const fd = new FormData();
-
-        // ── Personal info — exact API field names ──
-        fd.append('fullLegalName',       form.fullName.trim());
-        // Convert dob from YYYY-MM-DD (input[date]) → DD-MM-YYYY (API)
-        const [y, mo, d] = form.dob.split('-');
-        fd.append('dateOfBirth',         `${d}-${mo}-${y}`);
-        fd.append('nationality',         form.nationality.trim());
-        fd.append('countryOfResidence',  form.country);
-        fd.append('city',                form.city.trim());
-        fd.append('stateProvince',       form.state.trim());
-        fd.append('phoneNumber',         form.phone.trim());
-        fd.append('streetAddress',       form.address.trim());
-
-        // ── Consent flag ──
-        fd.append('termsAgreed', 'true');
-
-        // ── Documents ──
+        // ── Build file map — same fields as the old FormData ──
+        const filesToUpload = {};
         if (form.country === 'India') {
-          fd.append('aadhaarNumber', docs.aadhaarNumber.replace(/[\s-]/g, ''));
-          fd.append('aadhaarFront',  docs.aadhaarFront);
-          fd.append('aadhaarBack',   docs.aadhaarBack);
-          fd.append('panNumber',     docs.panNumber.trim().toUpperCase());
-          fd.append('panFront',      docs.panFront);
-          if (docs.secondaryName.trim()) fd.append('supportingDocName', docs.secondaryName.trim());
-          if (docs.secondaryFile)        fd.append('supportingDoc',     docs.secondaryFile);
+          filesToUpload.aadhaarFront = docs.aadhaarFront;
+          filesToUpload.aadhaarBack  = docs.aadhaarBack;
+          filesToUpload.panFront     = docs.panFront;
+          if (docs.secondaryFile) filesToUpload.supportingDoc = docs.secondaryFile;
         } else {
-          fd.append('primaryDocumentType', docs.primaryType.toUpperCase());
-          fd.append('primaryDocFront',     docs.primaryFront);
-          if (docs.primaryBack)          fd.append('primaryDocBack',    docs.primaryBack);
-          if (docs.secondaryName.trim()) fd.append('supportingDocName', docs.secondaryName.trim());
-          if (docs.secondaryFile)        fd.append('supportingDoc',     docs.secondaryFile);
+          filesToUpload.aadhaarFront = docs.primaryFront;
+          filesToUpload.aadhaarBack  = docs.primaryBack || docs.primaryFront;
+          filesToUpload.panFront     = docs.primaryFront;
+          if (docs.secondaryFile) filesToUpload.supportingDoc = docs.secondaryFile;
         }
 
-        await apiService.submitKyc(fd);
+        // ── Step 1: Get pre-signed S3 upload URLs ──
+        const fieldNames = Object.keys(filesToUpload);
+        const urlRes = await apiService.getKycUploadUrls(fieldNames);
+        const uploadData = urlRes.data;
+
+        // ── Step 2: Upload files directly to S3 (supports up to 20 MB each) ──
+        await Promise.all(
+          fieldNames.map((field) =>
+            apiService.uploadFileToS3(uploadData[field].uploadUrl, filesToUpload[field])
+          )
+        );
+
+        // ── Step 3: Submit KYC with S3 keys — same fields as before ──
+        const [y, mo, d] = form.dob.split('-');
+        const payload = {
+          fullLegalName:      form.fullName.trim(),
+          dateOfBirth:        `${d}-${mo}-${y}`,
+          nationality:        form.nationality.trim(),
+          countryOfResidence: form.country,
+          city:               form.city.trim(),
+          stateProvince:      form.state.trim(),
+          phoneNumber:        form.phone.trim(),
+          streetAddress:      form.address.trim(),
+          termsAgreed:        true,
+          aadhaarFrontKey:    uploadData.aadhaarFront.key,
+          aadhaarFrontUrl:    uploadData.aadhaarFront.publicUrl,
+          aadhaarBackKey:     uploadData.aadhaarBack.key,
+          aadhaarBackUrl:     uploadData.aadhaarBack.publicUrl,
+          panFrontKey:        uploadData.panFront.key,
+          panFrontUrl:        uploadData.panFront.publicUrl,
+        };
+
+        if (form.country === 'India') {
+          payload.aadhaarNumber = docs.aadhaarNumber.replace(/[\s-]/g, '');
+          payload.panNumber     = docs.panNumber.trim().toUpperCase();
+        } else {
+          payload.aadhaarNumber = docs.primaryNumber || 'N/A';
+          payload.panNumber     = docs.primaryType ? docs.primaryType.toUpperCase() : 'N/A';
+        }
+
+        if (uploadData.supportingDoc) {
+          payload.supportingDocKey = uploadData.supportingDoc.key;
+          payload.supportingDocUrl = uploadData.supportingDoc.publicUrl;
+        }
+        if (docs.secondaryName?.trim()) {
+          payload.supportingDocName = docs.secondaryName.trim();
+        }
+
+        await apiService.submitKycWithKeys(payload);
         setStage('pending');
       } catch (err) {
         setApiError(err.message || 'Upload failed. Please try again.');

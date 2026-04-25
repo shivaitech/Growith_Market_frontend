@@ -104,15 +104,39 @@ class ApiService {
   // ── KYC ──────────────────────────────────────────────────
 
   /**
-   * POST /api/v1/investor/kyc
-   * Submit KYC — multipart/form-data
-   * Text fields: fullLegalName, dateOfBirth (DD-MM-YYYY), nationality,
-   *   countryOfResidence, city, stateProvince, phoneNumber, streetAddress,
-   *   aadhaarNumber, panNumber, supportingDocName (optional), termsAgreed
-   * File fields: aadhaarFront, aadhaarBack, panFront, supportingDoc (optional)
+   * GET /api/v1/investor/kyc/upload-url
+   * Get pre-signed S3 upload URLs for KYC documents.
+   * @param {string[]} fileFields - e.g. ['aadhaarFront', 'aadhaarBack', 'panFront']
+   * @returns {{ data: { [field]: { uploadUrl, key, publicUrl } }, expiresInSeconds }}
    */
-  submitKyc(formData) {
-    return this.postForm('/kyc', formData);
+  getKycUploadUrls(fileFields) {
+    const params = new URLSearchParams({ files: fileFields.join(',') });
+    return this.get(`/kyc/upload-url?${params}`);
+  }
+
+  /**
+   * PUT <uploadUrl> — upload a file directly to S3 (bypasses Lambda, supports up to 20 MB)
+   * @param {string} uploadUrl - pre-signed S3 URL from getKycUploadUrls
+   * @param {File} file - the file object
+   */
+  async uploadFileToS3(uploadUrl, file) {
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    });
+    if (!response.ok) {
+      throw new Error(`S3 upload failed (${response.status})`);
+    }
+  }
+
+  /**
+   * POST /api/v1/investor/kyc/submit
+   * Submit KYC with S3 keys (JSON body, no file upload through Lambda).
+   * Supports documents up to 20 MB.
+   */
+  submitKycWithKeys(data) {
+    return this.post('/kyc/submit', data);
   }
 
   /**
