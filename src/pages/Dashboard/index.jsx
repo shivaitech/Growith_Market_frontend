@@ -2909,9 +2909,18 @@ function TabVerification({ investor, onNav }) {
     const selectedType = getSelectedType();
     const needsBack = selectedType?.sides?.includes('back');
 
+    const ALLOWED_KYC_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
+
     const handleFileChange = (field) => (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
+
+      if (!ALLOWED_KYC_TYPES.includes(file.type) && !file.type.startsWith('image/')) {
+        setDocErrors(prev => ({ ...prev, [field]: 'Only images (JPG, PNG, WEBP) and PDF files are allowed.' }));
+        e.target.value = '';
+        return;
+      }
+
       const preview = { url: URL.createObjectURL(file), isPdf: file.type === 'application/pdf', name: file.name };
       setDocs(prev => ({ ...prev, [field]: file }));
       setDocPreviews(prev => ({ ...prev, [field]: preview }));
