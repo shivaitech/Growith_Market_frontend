@@ -4,11 +4,20 @@ import FormInput from '../../../components/FormInput';
 import authService from '../../../services/authService';
 import apiService from '../../../services/apiService';
 
+const PASSWORD_RULES = [
+  { id: 'len',   label: '8+ characters',                      test: p => p.length >= 8 },
+  { id: 'lower', label: 'Include a lowercase letter',         test: p => /[a-z]/.test(p) },
+  { id: 'upper', label: 'Include an uppercase letter',        test: p => /[A-Z]/.test(p) },
+  { id: 'num',   label: 'Include a number',                   test: p => /\d/.test(p) },
+  { id: 'spec',  label: 'Include a special character (@, #, $, etc.)', test: p => /[@#$!%*?&^()_\-+=\[\]{};':"\\|,.<>\/`~]/.test(p) },
+];
+
 export default function StepOne({ onRegistered }) {
   const [formData, setFormData] = useState({ email: '', fullName: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [pwFocused, setPwFocused] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,7 +119,27 @@ export default function StepOne({ onRegistered }) {
           placeholder="Min. 8 characters"
           error={errors.password}
           showPasswordToggle
+          onFocus={() => setPwFocused(true)}
+          onBlur={() => setPwFocused(false)}
         />
+        {(pwFocused || formData.password) && (
+          <ul className="ob-pw-rules">
+            {PASSWORD_RULES.map(rule => {
+              const passed = rule.test(formData.password);
+              return (
+                <li key={rule.id} className={`ob-pw-rule ${passed ? 'ob-pw-rule--pass' : ''}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    {passed
+                      ? <><circle cx="12" cy="12" r="11" fill="#22c55e"/><polyline points="7 12 10.5 15.5 17 9" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></>
+                      : <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.5"/>
+                    }
+                  </svg>
+                  {rule.label}
+                </li>
+              );
+            })}
+          </ul>
+        )}
         <FormInput
           label="Confirm Password"
           type="password"
