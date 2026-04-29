@@ -81,7 +81,11 @@ class ApiService {
     const response = await fetch(url, { method: 'POST', headers, body: formData });
     if (!response.ok) {
       let errMessage = `HTTP error! status: ${response.status}`;
-      try { const b = await response.json(); if (b?.message) errMessage = b.message; } catch {}
+      if (response.status === 413) {
+        errMessage = 'One or more files exceed the maximum allowed size of 8 MB. Please reduce the file size and try again.';
+      } else {
+        try { const b = await response.json(); if (b?.message) errMessage = b.message; } catch {}
+      }
       if (this._isTokenError(response.status, errMessage)) {
         this._handleUnauthorized();
       }
@@ -126,6 +130,9 @@ class ApiService {
       body: file,
     });
     if (!response.ok) {
+      if (response.status === 413) {
+        throw new Error(`File "${file.name}" is too large to upload. Please ensure each document is under 8 MB and try again.`);
+      }
       throw new Error(`S3 upload failed (${response.status})`);
     }
   }

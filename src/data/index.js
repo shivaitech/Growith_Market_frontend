@@ -45,8 +45,8 @@ export const tokenOfferings = [
     blockchain: 'Polygon',
     tokenStandard: 'ERC-20',
     founderName: 'ShivAI Foundation',
-    founderBio: 'ShivAI is building decentralized AI compute infrastructure, enabling developers and enterprises to access scalable GPU resources via a tokenized model. The project is backed by an EU-registered issuer and operates under a compliance-first framework.',
-    companyMission: 'To democratize access to AI infrastructure through blockchain-based tokenization, making enterprise-grade compute affordable and transparent for developers worldwide.',
+    founderBio: 'ShivAI is a Voice AI platform built to help businesses automate and scale their customer communication. It enables companies to handle calls, follow-ups, and customer interactions through intelligent AI voice agents that sound natural and respond in real time. Designed for reliability and ease of use, ShivAI allows businesses to deploy AI-powered calling systems without technical complexity. From small teams to large enterprises, it brings consistent, always-on communication without increasing manpower.',
+    companyMission: 'To make business communication faster, smarter, and always available through AI-powered voice technology. ShivAI aims to ensure that every business regardless of size can deliver instant, high-quality customer interactions while reducing operational costs and improving efficiency.',
     tokenStructure: {
       whatItRepresents: 'ShivAI tokens represent a digital security issued under an EU-registered private placement structure. Each token is a fractional claim on the AI infrastructure revenue pool managed by the issuer.',
       custodialWallet: 'Upon KYC approval, investors receive a custodial wallet with encrypted key storage (HSM-backed). No self-custody required.',

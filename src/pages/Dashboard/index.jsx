@@ -2488,7 +2488,7 @@ function KycFileUploadBox({ field, label, preview, error, accept = 'image/*,appl
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             <span className="kyc-upload-cta">Click to upload</span>
             <span className="kyc-upload-hint">{label}</span>
-            <span className="kyc-upload-size">JPG, PNG or PDF · Max 10 MB</span>
+            <span className="kyc-upload-size">JPG, PNG or PDF · Max 8 MB</span>
           </div>
         )}
       </label>
@@ -2975,6 +2975,7 @@ function TabVerification({ investor, onNav }) {
     const needsBack = selectedType?.sides?.includes('back');
 
     const ALLOWED_KYC_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
+    const MAX_KYC_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
 
     const handleFileChange = (field) => (e) => {
       const file = e.target.files?.[0];
@@ -2982,6 +2983,12 @@ function TabVerification({ investor, onNav }) {
 
       if (!ALLOWED_KYC_TYPES.includes(file.type) && !file.type.startsWith('image/')) {
         setDocErrors(prev => ({ ...prev, [field]: 'Only images (JPG, PNG, WEBP) and PDF files are allowed.' }));
+        e.target.value = '';
+        return;
+      }
+
+      if (file.size > MAX_KYC_FILE_SIZE) {
+        setDocErrors(prev => ({ ...prev, [field]: `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 8 MB. Please compress or resize the file and try again.` }));
         e.target.value = '';
         return;
       }
@@ -3098,7 +3105,12 @@ function TabVerification({ investor, onNav }) {
         await apiService.submitKycWithKeys(payload);
         setStage('pending');
       } catch (err) {
-        setApiError(err.message || 'Upload failed. Please try again.');
+        const msg = err.message || '';
+        if (msg.includes('too large') || msg.includes('8 MB') || msg.includes('413')) {
+          setApiError('One or more files exceed the 8 MB limit. Please go back, reduce the file size, and try again.');
+        } else {
+          setApiError(msg || 'Upload failed. Please try again.');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -3289,6 +3301,12 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-address-disclaimer" style={{ marginBottom: 16 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <span>All uploaded images must be clear, well-lit, and unedited. Blurry, cropped, or altered documents will be rejected and may delay your verification.</span>
+          </div>
+
+          {/* ── Upload size notice ── */}
+          <div className="kyc-address-disclaimer" style={{ marginBottom: 16 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>Max file size: 8 MB per document.</strong> Accepted formats: JPG, PNG, WEBP, PDF. If your file is larger, compress it using a free online tool (e.g. ilovepdf.com for PDFs, tinypng.com for images) before uploading.</span>
           </div>
 
           {apiError && <div className="kyc-form__api-error">{apiError}</div>}
@@ -3563,6 +3581,15 @@ const Dashboard = () => {
       apiService.getWalletRequests(),
       apiService.getDirectAirdrops(),
     ]).then(([requestsResult, tokenResult, myPurchasesResult, walletTxResult, walletReqResult, airdropsResult]) => {
+      const normalizeStatus = (value) => String(value || '').toLowerCase();
+      const pendingRequestStatuses = new Set([
+        'pending',
+        'pending_verification',
+        'under_review',
+        'in_review',
+        'awaiting_screenshot',
+      ]);
+
       // ── Wallet info (approved holdings, balance, address) ──
       // No longer fetched separately; approved requests are extracted below
 
@@ -3573,7 +3600,7 @@ const Dashboard = () => {
 
         // Approved requests → show in Approved Tokens section
         const approved = list
-          .filter(r => r.status === 'approved' || r.status === 'APPROVED')
+          .filter(r => normalizeStatus(r.status) === 'approved')
           .map(r => ({
             id:           r.id || r._id,
             token:        r.tokenName  || r.token  || '',
@@ -3588,10 +3615,10 @@ const Dashboard = () => {
               ? new Date(r.reviewedAt || r.updatedAt || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
               : '',
           }));
-        if (approved.length > 0) setApprovedPurchases(approved);
+        setApprovedPurchases(approved);
 
         const mapped = list
-          .filter(r => r.status !== 'approved' && r.status !== 'APPROVED')
+          .filter(r => pendingRequestStatuses.has(normalizeStatus(r.status)))
           .map(r => ({
             id:            r.id || r._id || Date.now() + Math.random(),
             apiId:         r.id || r._id,
@@ -3610,8 +3637,10 @@ const Dashboard = () => {
                              : 'awaiting_screenshot',
             method:        r.method || 'USDT (TRC20)',
           }));
-        if (mapped.length > 0) setPendingPurchases(mapped);
+        setPendingPurchases(mapped);
       } else {
+        setApprovedPurchases([]);
+        setPendingPurchases([]);
         console.warn('getTokenRequests failed:', requestsResult.reason?.message);
       }
 
@@ -3660,7 +3689,7 @@ const Dashboard = () => {
           // NOTE: approved purchases are already handled by getTokenRequests above.
           // getMyPurchases only supplements PENDING entries to avoid double-counting approved ones.
           const extraPending = list
-            .filter(r => r.status !== 'approved' && r.status !== 'APPROVED')
+            .filter(r => pendingRequestStatuses.has(normalizeStatus(r.status)))
             .map(r => ({
               id:            r.id || r._id || Date.now() + Math.random(),
               apiId:         r.id || r._id,
