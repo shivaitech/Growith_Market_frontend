@@ -116,15 +116,7 @@ export default function Footer() {
             <p className="ft-grid__desc">
               EU-registered issuer offering private placement opportunities in tomorrow's unicorns. All investments require KYC and carry risk.
             </p>
-            <ul className="ft-grid__social">
-              {socialIcons.map((social) => (
-                <li key={social.label}>
-                  <a href={social.href} aria-label={social.label}>
-                    {social.svg}
-                  </a>
-                </li>
-              ))}
-            </ul>
+
           </div>
 
           {/* Platform links */}

@@ -4,7 +4,7 @@ import Speciality from './sections/Speciality'
 import Portfolio from './sections/Portfolio'
 import Project from './sections/Project'
 import Roadmap from './sections/Roadmap'
-import Team from './sections/Team'
+// import Team from './sections/Team'
 import Testimonials from './sections/Testimonials'
 import FAQ from './sections/FAQ'
 import Create from './sections/Create'
@@ -18,7 +18,7 @@ export default function Home() {
       <Portfolio />
       <Project />
       {/* <Roadmap /> */}
-      <Team />
+      {/* <Team /> */}
       <Testimonials />
       <FAQ />
       <Create />

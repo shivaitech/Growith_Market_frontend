@@ -764,11 +764,11 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
   const fmtNum   = n => n >= 1000000 ? `${(n/1000000).toFixed(2)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(n);
 
   const allocSegments = [
-    { label: 'Public Sale',              pct: 40, color: '#6B35FF' },
-    { label: 'Ecosystem Fund',           pct: 20, color: '#9D6FFF' },
-    { label: 'Team & Advisors',          pct: 15, color: '#60A5FA' },
-    { label: 'Treasury Reserve',         pct: 15, color: '#DEC7FF' },
-    { label: 'Liquidity & Partnerships', pct: 10, color: '#F59E0B' },
+    { label: 'Private Placement',              pct: 60, color: '#6B35FF' },
+    { label: 'Team, Advisory & Collaboration', pct: 15, color: '#60A5FA' },
+    { label: 'Treasury Reserve',               pct: 10, color: '#DEC7FF' },
+    { label: 'Ecosystem Fund',                 pct: 10, color: '#9D6FFF' },
+    { label: 'Liquidity & Partnerships',       pct:  5, color: '#F59E0B' },
   ];
 
   return (

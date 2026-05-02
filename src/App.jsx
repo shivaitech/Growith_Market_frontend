@@ -46,7 +46,7 @@ function App() {
           <Route path="blog" element={<Blog />} />
           <Route path="blog/:id" element={<BlogDetails />} />
           <Route path="roadmap" element={<RoadmapPage />} />
-          <Route path="team" element={<TeamPage />} />
+          {/* <Route path="team" element={<TeamPage />} /> */}
           <Route path="legal/privacy" element={<PrivacyPolicy />} />
           <Route path="legal/terms" element={<TermsOfUse />} />
           <Route path="legal/risk" element={<RiskDisclosure />} />

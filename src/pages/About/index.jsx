@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { stats, teamMembers } from '../../data'
+import { stats } from '../../data'
 
 const values = [
   {
@@ -42,7 +42,7 @@ const values = [
       </svg>
     ),
     title: 'Investor Access',
-    text: 'We democratise private capital markets. Verified investors can access institutional-quality deals from as low as €500 — without needing a hedge fund minimum.',
+    text: 'We democratise private capital markets. Verified investors can access institutional-quality deals from as low as $500 — without needing a hedge fund minimum.',
   },
 ]
 
@@ -70,7 +70,7 @@ export default function About() {
                   onError={(e) => { e.target.style.background = 'rgba(157,111,255,0.15)'; e.target.src = '' }}
                 />
                 <div className="about-pg__stat-badge">
-                  <span className="about-pg__stat-value">€2.4M+</span>
+                  <span className="about-pg__stat-value">$2.4M+</span>
                   <span className="about-pg__stat-label">Capital Facilitated</span>
                 </div>
               </div>
@@ -80,20 +80,28 @@ export default function About() {
             <div className="col-xl-6 col-md-12">
               <div className="block-text" data-aos="fade-left">
                 <h6 className="sub-heading"><span>Our Mission</span></h6>
-                <h3 className="heading">Regulated Private Capital Markets — Accessible to Everyone</h3>
+                <h3 className="heading">Private Market Investments Now Open to You</h3>
                 <p className="mb-17">
-                  Growith is a compliant digital securities marketplace that brings institutional-grade investment 
-                  opportunities to verified individual investors. Every offering is asset-backed, EU-regulated, and 
-                  transparently settled on Polygon.
+                  Growith gives you access to high-quality private investment opportunities typically reserved for 
+                  institutions and ultra-high-net-worth investors. All offerings are structured, compliant, and 
+                  transparently managed on-chain, ensuring clarity, security, and trust from day one.
                 </p>
                 <p className="mb-17">
-                  We built Growith because access to pre-IPO equity, structured debt, and real-asset-backed tokens 
-                  should not require a €250,000 minimum or a private banking relationship. If you pass KYC, you 
-                  access the same deals as institutional allocators.
+                  Access to pre-IPO equity, AI-led businesses, and real estate and asset-backed opportunities has 
+                  traditionally required large capital and insider networks. Growith removes that barrier. With a 
+                  simple KYC, you can participate in curated private placements designed for long-term value 
+                  creation, not short-term speculation.
                 </p>
-                <p className="mb-26">
-                  Our first live offering — <strong>ShivAI</strong> — is a UAE-headquartered deep-tech AI SaaS 
-                  company expanding across India, the Middle East, and Canada. More offerings follow in 2026.
+                <p className="mb-17">
+                  <strong>Now Live: ShivAI</strong> — A fast-growing Voice AI SaaS company powering automated 
+                  business communication across India, the Middle East, and global markets.
+                </p>
+                <p className="mb-17">
+                  <strong>Why Now Matters</strong> — AI is not a future trend—it is actively reshaping how 
+                  businesses operate. Early participation in this shift creates asymmetric opportunity.
+                </p>
+                <p className="mb-26" style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', fontSize: '0.9em' }}>
+                  Limited access. Structured participation. Long-term upside.
                 </p>
                 <Link to="/nft" className="action-btn"><span>Explore Offerings</span></Link>
               </div>
@@ -135,30 +143,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── Team Preview ─────────────────────────────────── */}
-      <section className="about-pg-team">
-        <div className="container">
-          <div className="block-text center" data-aos="fade-up">
-            <h6 className="sub-heading"><span>The Team</span></h6>
-            <h3 className="heading">People Behind Growith</h3>
-          </div>
-          <div className="about-pg-team__grid">
-            {teamMembers.map((m) => (
-              <div key={m.id} className="about-pg-team__card" data-aos="fade-up" data-aos-delay={m.id * 80}>
-                <div className="about-pg-team__avatar-wrap">
-                  <img src={m.image} alt={m.name} className="about-pg-team__avatar"
-                    onError={(e) => { e.target.style.background = 'rgba(92,39,254,0.2)'; e.target.src = '' }} />
-                </div>
-                <p className="about-pg-team__name">{m.name}</p>
-                <p className="about-pg-team__role">{m.position}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-10" style={{ marginTop: '40px', textAlign: 'center' }}>
-            <Link to="/team" className="action-btn"><span>View Full Team</span></Link>
-          </div>
-        </div>
-      </section>
+      {/* Team section hidden */}
     </>
   )
 }

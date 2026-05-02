@@ -39,7 +39,7 @@ export default function KycAml() {
                 <h5 className="legal-pg__section-title">4. Ongoing Monitoring</h5>
                 <p>Growith continuously monitors transactions and account activity for suspicious patterns. We apply a risk-based approach to customer due diligence, with enhanced screening for:</p>
                 <ul className="legal-pg__list">
-                  <li>High-value investments (above €50,000)</li>
+                  <li>High-value investments (above $50,000)</li>
                   <li>Politically Exposed Persons (PEPs)</li>
                   <li>Customers from high-risk jurisdictions</li>
                   <li>Unusual transaction patterns or behaviours</li>
