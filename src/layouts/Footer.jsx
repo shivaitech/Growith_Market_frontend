@@ -78,8 +78,8 @@ export default function Footer() {
         <div className="container">
           <div className="ft-newsletter__inner">
             <div className="ft-newsletter__text">
-              <h4 className="ft-newsletter__heading">Get Newsletter</h4>
-              <p className="ft-newsletter__sub">Stay updated with news, tips &amp; investment insights</p>
+              <h4 className="ft-newsletter__heading">Stay Ahead of Emerging Opportunities</h4>
+              <p className="ft-newsletter__sub">Receive early access updates, upcoming offerings, market insights, and investor announcements.</p>
             </div>
             <form className="ft-newsletter__form" onSubmit={handleSubscribe}>
               <input
@@ -97,7 +97,7 @@ export default function Footer() {
                     </svg>
                     Subscribed!
                   </>
-                ) : 'Subscribe'}
+                ) : 'Get Early Access'}
               </button>
             </form>
           </div>
@@ -114,7 +114,7 @@ export default function Footer() {
             </Link>
             <p className="ft-grid__slogan">INVEST. GROW. REPEAT.</p>
             <p className="ft-grid__desc">
-              EU-registered issuer offering private placement opportunities in tomorrow's unicorns. All investments require KYC and carry risk.
+              Access curated private market opportunities across AI, infrastructure, deep technology, and emerging growth sectors.
             </p>
 
           </div>
@@ -147,7 +147,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="ft-bottom-bar">
           <p>© {new Date().getFullYear()} Growith. All rights reserved.</p>
-          <p className="ft-bottom-bar__reg">EU-Registered · KYC Required · Non-Tradable Tokens</p>
+          <p className="ft-bottom-bar__reg">Transparent · Verified · Compliance-First Investing</p>
         </div>
       </div>
     </footer>

@@ -137,8 +137,8 @@ const features = [
         <polyline points="9 22 9 12 15 12 15 22" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'EU-Registered',
-    text: 'Issued through an EU-registered entity',
+    label: 'EU-Regulated',
+    text: 'Issued through a compliant EU-registered structure',
   },
   {
     icon: (
@@ -146,8 +146,8 @@ const features = [
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'KYC/AML',
-    text: 'Verified investors only',
+    label: 'KYC / AML Verified',
+    text: 'Access limited to verified participants only',
   },
   {
     icon: (
@@ -158,8 +158,8 @@ const features = [
         <line x1="16" y1="17" x2="8" y2="17" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
-    label: 'Risk Disclosures',
-    text: 'Fully documented',
+    label: 'Security-Backed Offerings',
+    text: 'Structured around real business and asset value',
   },
   {
     icon: (
@@ -167,8 +167,8 @@ const features = [
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'On-Chain',
-    text: 'Minted on Polygon',
+    label: 'Transparent & On-Chain',
+    text: 'Secure issuance and tracking on Polygon blockchain',
   },
   {
     icon: (
@@ -177,8 +177,19 @@ const features = [
         <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'Custodial Wallets',
-    text: 'Secure allocation',
+    label: 'Secure Custodial Wallets',
+    text: 'Institutional-grade digital asset protection',
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#9D6FFF" strokeWidth="2"/>
+        <line x1="2" y1="12" x2="22" y2="12" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    label: 'Private Market Access',
+    text: 'Opportunities traditionally reserved for institutional investors',
   },
 ]
 
@@ -190,8 +201,7 @@ export default function About() {
         <div className="abt__header">
           <div className="block-text center">
             <h6 className="sub-heading"><span>About Growith</span></h6>
-            <h3 className="heading">Private Capital Market Access</h3>
-            <p>A regulated digital securities marketplace for asset-backed investment opportunities.</p>
+            <h3 className="heading">Access Private Investments Before the Public Markets Do</h3>
           </div>
         </div>
 
@@ -201,10 +211,13 @@ export default function About() {
             <HexVisual />
           </div>
           <div className="abt__content">
-            <p>Growith provides access to startups, real estate, structured projects, and media ventures &mdash; all issued through a compliant EU-registered entity.</p>
-            <p>Our first live offering is <strong>ShivAI</strong>, a UAE-headquartered deep-tech AI SaaS company expanding across India, the Middle East, and Canada.</p>
+            <p>Growith is a regulated digital investment platform giving verified investors access to high-growth private opportunities across AI, startups, real-world assets, and structured ventures.</p>
+            <p>Every offering is transparently issued on-chain through a compliant framework designed for security, clarity, and long-term participation.</p>
             <span className="abt__divider" />
-            <p className="abt__note">Growith is not a crypto trading platform. It is structured digital securities infrastructure for private capital markets.</p>
+            <p><strong>Now Live: ShivAI</strong></p>
+            <p>A fast-growing Voice AI SaaS company building AI-powered business communication solutions across India, the Middle East, and global markets.</p>
+            <span className="abt__divider" />
+            <p className="abt__note">Growith is not a crypto trading platform. It is structured infrastructure for regulated private market investments.</p>
           </div>
         </div>
 

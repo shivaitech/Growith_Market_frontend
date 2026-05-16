@@ -7,14 +7,15 @@ export default function Create() {
         <div className="create__main">
           <div className="content">
             <h4 className="heading">
-              Begin Your Investment
+              Access the Next Wave of
               <br />
-              Journey Today
+              Private Market Opportunities
             </h4>
-            <p>Private placement opportunities in tomorrow's unicorns.</p>
-            <p>EU-Registered Issuer · KYC Required · Non-Tradable Tokens</p>
+            <p>Curated access to high-growth sectors including AI, deep technology, infrastructure, media, and emerging real-world asset opportunities.</p>
+            <p>Built for verified investors seeking early participation in tomorrow’s market leaders.</p>
+            <p>Verified Access • Digital Ownership • Long-Term Value</p>
             <Link to="/nft" className="action-btn">
-              <span>Enter Marketplace</span>
+              <span>Explore Marketplace</span>
             </Link>
           </div>
           <img

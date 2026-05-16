@@ -297,7 +297,8 @@ export default function TokenDetail() {
       <section className="td-section td-final-cta-section" id="td-final-cta">
         <div className="container big" style={{textAlign:'center'}}>
           <div className="td-final-cta-box">
-            <h3 className="heading font-heading text-white mb-4">Ready to Invest in {token.title.split('—')[0].trim()}?</h3>
+            <h3 className="heading font-heading text-white mb-2">Ready to Invest in the Future?</h3>
+            <h5 className="font-heading mb-4" style={{ display: 'inline-block', color: '#fff', fontSize: '1rem', fontWeight: 400, border: '1px dotted rgba(255,255,255,0.5)', borderRadius: '8px', padding: '6px 16px' }}>{token.title.split('—')[0].trim()}</h5>
             <p className="td-final-cta-box__desc">
               {isLive
                 ? 'Complete your profile, finish KYC verification, and start your investment journey today.'

@@ -8,7 +8,7 @@ const infoItems = [
       </svg>
     ),
     label: 'Office Address',
-    value: 'Herengracht 182, 1016 BP Amsterdam, Netherlands',
+    value: 'Ground Floor, The Sotheby Building, Rodney Bay, Gros-Islet, Saint Lucia P.O. Box 838, Castries, Saint Lucia',
   },
   {
     icon: (
@@ -17,7 +17,7 @@ const infoItems = [
       </svg>
     ),
     label: 'Phone',
-    value: '+31 20 123 4567',
+    value: '+971 506618 0707',
   },
   {
     icon: (
@@ -36,7 +36,7 @@ const infoItems = [
       </svg>
     ),
     label: 'Business Hours',
-    value: 'Mon – Fri, 9:00 AM – 6:00 PM CET',
+    value: 'Monday to Friday 9AM to 6:30PM GST',
   },
 ]
 

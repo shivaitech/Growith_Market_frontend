@@ -85,11 +85,11 @@ export default function Project() {
                     {/* Key metrics row */}
                     <div className="token-card-metrics">
                       <div className="token-card-metric">
-                        <span className="token-card-metric__label">Price</span>
+                        <span className="token-card-metric__label">Issuance Price</span>
                         <span className="token-card-metric__value">{item.issuancePrice || item.price}</span>
                       </div>
                       <div className="token-card-metric">
-                        <span className="token-card-metric__label">Min. Invest</span>
+                        <span className="token-card-metric__label">Minimum Participation</span>
                         <span className="token-card-metric__value">{item.minInvestment || 'TBA'}</span>
                       </div>
                       <div className="token-card-metric">
@@ -100,7 +100,7 @@ export default function Project() {
 
                     {/* CTA */}
                     <Link to={detailUrl} className="token-card-cta">
-                      {item.bid === 'LIVE' ? 'View Details' : 'Notify Me'}
+                      {item.ctaLabel || (item.bid === 'LIVE' ? 'Access Private Offering' : 'Notify Me')}
                     </Link>
                   </div>
                 </div>

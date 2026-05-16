@@ -52,7 +52,7 @@ const HOLDINGS = [
     token: 'ShivAI',
     ticker: 'SHIV',
     logo: '/assets/images/icon/shivAiToken.png',
-    image: '/assets/images/partner/HeroShivaAI.jpeg',
+    image: '/assets/images/partner/heroShivMain.png',
     amount: 250000,
     invested: 2500,
     currentValue: 2875,
@@ -89,7 +89,7 @@ const AVAILABLE_TOKENS = [
   {
     id: 1, slug: 'shivai', name: 'ShivAI Token', ticker: 'SHIV',
     logo: '/assets/images/icon/shivAiToken.png',
-    image: '/assets/images/partner/HeroShivaAI.jpeg',
+    image: '/assets/images/partner/heroShivMain.png',
     price: IS_PRELAUNCH ? '$5.00' : '$10.00',
     normalPrice: '$10.00',
     minInvest: '$500', maxInvest: '$50,000',
@@ -2359,16 +2359,19 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
     );
   };
 
+  const [showOverlay, setShowOverlay] = useState(true);
+
   return (
     <div className="db-tab-content" style={{ position: 'relative' }}>
       {/* Blurred content */}
-      <div style={{ filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.45 }}>
+      <div style={{ filter: showOverlay ? 'blur(6px)' : 'none', pointerEvents: showOverlay ? 'none' : 'auto', userSelect: showOverlay ? 'none' : 'auto', opacity: showOverlay ? 0.45 : 1 }}>
         {step === 'tokens'   && <StepTokens />}
         {step === 'programs' && selectedToken   && <StepPrograms />}
         {step === 'detail'   && selectedProgram && <StepDetail />}
       </div>
 
       {/* Coming Soon overlay */}
+      {showOverlay && (
       <div style={{
         position: 'absolute',
         inset: 0,
@@ -2378,6 +2381,7 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
         zIndex: 10,
       }}>
         <div style={{
+          position: 'relative',
           background: 'linear-gradient(135deg, rgba(20,16,50,0.96) 0%, rgba(30,18,70,0.96) 100%)',
           border: '1.5px solid rgba(157,111,255,0.35)',
           borderRadius: 20,
@@ -2387,6 +2391,17 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
           width: '90%',
           boxShadow: '0 8px 48px rgba(107,53,255,0.25)',
         }}>
+          <button
+            onClick={() => setShowOverlay(false)}
+            style={{
+              position: 'absolute', top: 14, right: 14,
+              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '50%', width: 30, height: 30,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 16, lineHeight: 1,
+            }}
+            aria-label="Close"
+          >×</button>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
             background: 'rgba(157,111,255,0.12)',
@@ -2420,6 +2435,7 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
           </p>
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -3660,7 +3676,7 @@ const Dashboard = () => {
             name:        raw.name || 'ShivAI Token',
             ticker:      raw.symbol || raw.ticker || 'SHIV',
             logo:        raw.logo || raw.logoUrl || '/assets/images/icon/shivAiToken.png',
-            image:       raw.image || raw.bannerImage || '/assets/images/partner/HeroShivaAI.jpeg',
+            image:       raw.image || raw.bannerImage || '/assets/images/partner/heroShivMain.png',
             price:       `$${effectivePrice.toFixed(2)}`,
             normalPrice: `$${normalPrice.toFixed(2)}`,
             minInvest:   raw.minInvestment ? `$${Number(raw.minInvestment).toLocaleString()}` : '$500',

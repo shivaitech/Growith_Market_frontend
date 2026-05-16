@@ -6,10 +6,10 @@ function PageTitle({ title, sub }) {
   return (
     <section
       className="page-title"
-      style={{ 
+      style={{
         background: 'linear-gradient(180deg, rgba(92,39,254,0.15) 0%, transparent 100%)',
-        paddingTop: '160px',
-        paddingBottom: '60px'
+        paddingTop: '100px',
+        paddingBottom: '40px'
       }}
     >
       <div className="container big text-center relative z-10">
@@ -124,7 +124,7 @@ export default function NFT() {
                   }}
                 >
                   {/* Image */}
-                  <div style={{ position: 'relative', overflow: 'hidden', height: '220px' }}>
+                  <div style={{ position: 'relative', overflow: 'hidden', height: '160px' }}>
                     <Link to={detailUrl}>
                       <img
                         src={token.image}
