@@ -969,7 +969,7 @@
   font-size: 13px;
   color: rgba(13, 11, 34, 0.7);
   line-height: 1.55;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .db-token-card__stats {
@@ -1021,6 +1021,62 @@
   background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%);
   border-color: transparent;
   box-shadow: 0 2px 10px rgba(107, 53, 255, 0.35);
+}
+
+/* ── Network chip (overlaid on card image bottom-left) ───── */
+.db-token-card__network-chip {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(7, 10, 41, 0.72);
+  border: 1px solid rgba(157, 111, 255, 0.35);
+  color: #C4AAFF;
+  backdrop-filter: blur(6px);
+}
+
+/* ── Compact pill stats row ──────────────────────────────── */
+.db-token-card__pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.db-token-pill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(107, 53, 255, 0.06);
+  border: 1px solid rgba(107, 53, 255, 0.14);
+  min-width: 0;
+}
+
+.db-token-pill span {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(13, 11, 34, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.db-token-pill strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0D0B22;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ── Investment intent form ──────────────────────────────── */
@@ -1912,7 +1968,13 @@
   align-items: center;
   justify-content: space-between;
   font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(13, 11, 34, 0.8);
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(13, 11, 34, 0.06);
+}
+
+.db-notif-row:last-child {
+  border-bottom: none;
 }
 
 .db-toggle {
@@ -2321,6 +2383,12 @@
     gap: 8px 12px;
   }
 
+  .db-token-card__pills { gap: 6px; }
+
+  .db-token-pill { padding: 7px 8px; }
+
+  .db-token-pill strong { font-size: 12px; }
+
   /* Force single column on very small screens */
   @media (max-width: 400px) {
     .db-token-grid { grid-template-columns: 1fr; }
@@ -2573,7 +2641,7 @@
 /* ══════════════════════════════════════════════════
    INVEST — FUNDRAISE PROGRESS
    ══════════════════════════════════════════════════ */
-.db-raise-progress { margin-top: 14px; }
+.db-raise-progress { margin-top: 10px; margin-bottom: 10px; }
 .db-raise-progress__header {
   display: flex;
   align-items: center;

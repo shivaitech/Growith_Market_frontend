@@ -70,8 +70,8 @@ export default function About() {
                   onError={(e) => { e.target.style.background = 'rgba(157,111,255,0.15)'; e.target.src = '' }}
                 />
                 <div className="about-pg__stat-badge">
-                  <span className="about-pg__stat-value">$2.4M+</span>
-                  <span className="about-pg__stat-label">Capital Facilitated</span>
+                  <span className="about-pg__stat-value">1,200+</span>
+                  <span className="about-pg__stat-label">Verified Investor Network</span>
                 </div>
               </div>
             </div>

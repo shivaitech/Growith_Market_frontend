@@ -8,10 +8,10 @@ export const teamMembers = [
 
 // ── Stats (About page) ─────────────────────────────────
 export const stats = [
-  { id: 1, value: '$2.4M+', label: 'Capital Facilitated' },
-  { id: 2, value: '1,200+', label: 'Verified Investors' },
-  { id: 3, value: '5', label: 'Live & Upcoming Tokens' },
-  { id: 4, value: '100%', label: 'EU-Regulated Issuances' },
+  { id: 1, value: '1,200+', label: 'Verified Investor Network' },
+  { id: 2, value: '50M+', label: 'Tokenized Asset Availability Pipeline' },
+  { id: 3, value: '5', label: 'Live and Upcoming Tokens' },
+  { id: 4, value: '4', label: 'High-Growth Investment Categories' },
 ]
 
 // ── Roadmap Items ───────────────────────────────────────
@@ -89,7 +89,7 @@ export const tokenOfferings = [
     slug: 'skyline-one',
     title: 'Skyline One — Dubai Luxury Residences',
     shortDescription: 'Premium Dubai residential development positioned for long-term rental yield and capital appreciation in one of the world’s fastest-growing property markets.',
-    image: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=600&q=80&auto=format&fit=crop',
+    image: '/assets/images/partner/Skyline.jpeg',
     logo: 'https://ui-avatars.com/api/?name=SO&background=0f766e&color=fff&bold=true&size=96',
     bid: 'PRE-LAUNCH',
     price: 'TBA',
@@ -112,7 +112,7 @@ export const tokenOfferings = [
     slug: 'buildsync',
     title: 'BuildSync — Smart Infrastructure Platform',
     shortDescription: 'Technology-driven real estate platform focused on intelligent infrastructure, smart building operations, and modern property management solutions.',
-    image: 'https://images.unsplash.com/photo-1494526585095-c41746248156?w=600&q=80&auto=format&fit=crop',
+    image: '/assets/images/partner/BuildSync.jpeg',
     logo: 'https://ui-avatars.com/api/?name=BS&background=134e4a&color=fff&bold=true&size=96',
     bid: 'PRE-LAUNCH',
     price: 'TBA',
@@ -135,7 +135,7 @@ export const tokenOfferings = [
     slug: 'silverframe-studios',
     title: 'SilverFrame Studios — OTT Film Project',
     shortDescription: 'Premium Bollywood film project with pre-secured OTT distribution, designed to reduce release uncertainty and expand digital audience reach.',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80&auto=format&fit=crop',
+    image: '/assets/images/partner/S;iverFrame.jpeg',
     logo: 'https://ui-avatars.com/api/?name=SF&background=7c3aed&color=fff&bold=true&size=96',
     bid: 'PRE-LAUNCH',
     price: 'TBA',
@@ -158,7 +158,7 @@ export const tokenOfferings = [
     slug: 'novafuel',
     title: 'NovaFuel — Advanced Energy Systems',
     shortDescription: 'Growth-stage energy technology company focused on next-generation fuel efficiency, clean energy systems, and industrial-scale sustainability solutions.',
-    image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=80&auto=format&fit=crop',
+    image: '/assets/images/partner/NovaFuel.jpeg',
     logo: 'https://ui-avatars.com/api/?name=NF&background=0f172a&color=fff&bold=true&size=96',
     bid: 'PRE-LAUNCH',
     price: 'TBA',

@@ -35,7 +35,7 @@ export default function Header() {
                     <li className={`menu-item${pathname === '/' ? ' menu-current-item' : ''}`}>
                       <Link to="/">Home</Link>
                     </li>
-                    <li className={`menu-item menu-item--highlight${pathname === '/nft' ? ' menu-current-item' : ''}`}><Link to="/nft">Marketplace</Link></li>
+                    <li className={`menu-item${pathname === '/nft' ? ' menu-current-item' : ''}`}><Link to="/nft">Marketplace</Link></li>
                     <li className={`menu-item${pathname === '/blog' ? ' menu-current-item' : ''}`}><Link to="/blog">Blog</Link></li>
                     <li className={`menu-item${pathname === '/about' ? ' menu-current-item' : ''}`}><Link to="/about">About</Link></li>
                     <li className={`menu-item${pathname === '/contact' ? ' menu-current-item' : ''}`}><Link to="/contact">Contact</Link></li>

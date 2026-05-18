@@ -26,7 +26,7 @@ const infoItems = [
       </svg>
     ),
     label: 'Email',
-    value: 'hello@growith.io',
+    value: 'support@growithlive.com',
   },
   {
     icon: (
@@ -74,9 +74,20 @@ export default function Contact() {
       {/* Info Cards */}
       <section className="contact-pg-info">
         <div className="container">
+          {/* Row 1: Address — full width */}
+          <div className="row mb-3">
+            <div className="col-12">
+              <div className="contact-pg-info__card contact-pg-info__card--wide">
+                <div className="contact-pg-info__icon">{infoItems[0].icon}</div>
+                <p className="contact-pg-info__label">{infoItems[0].label}</p>
+                <p className="contact-pg-info__value">{infoItems[0].value}</p>
+              </div>
+            </div>
+          </div>
+          {/* Row 2: Phone, Email, Business Hours */}
           <div className="row">
-            {infoItems.map((item, i) => (
-              <div className="col-xl-3 col-md-6 col-12" key={i}>
+            {infoItems.slice(1).map((item, i) => (
+              <div className="col-xl-4 col-md-4 col-12" key={i}>
                 <div className="contact-pg-info__card">
                   <div className="contact-pg-info__icon">{item.icon}</div>
                   <p className="contact-pg-info__label">{item.label}</p>

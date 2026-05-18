@@ -7,12 +7,9 @@ import { Link } from 'react-router-dom'
 import { tokenOfferings } from '../../../data'
 
 export default function Project() {
-  // Get ShivAI token and one random other token
   const shivaiToken = tokenOfferings.find(token => token.slug === 'shivai')
   const otherTokens = tokenOfferings.filter(token => token.slug !== 'shivai')
   const randomToken = otherTokens[Math.floor(Math.random() * otherTokens.length)]
-  
-  // Featured tokens: ShivAI + 1 random
   const featuredTokens = [shivaiToken, randomToken].filter(Boolean)
 
   return (
@@ -40,67 +37,153 @@ export default function Project() {
         >
           {featuredTokens.map((item) => {
             const detailUrl = item.bid === 'LIVE' ? `/token/${item.slug}` : '/nft'
+            const isLive = item.bid === 'LIVE'
+
             return (
               <SwiperSlide key={item.id}>
-                <div className="project-box featured-token-card">
+                <div
+                  className="featured-project-card"
+                  style={{
+                    background: 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    marginBottom: 0,
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-6px)'
+                    e.currentTarget.style.borderColor = 'rgba(92,39,254,0.3)'
+                    e.currentTarget.style.boxShadow = '0 12px 48px rgba(92,39,254,0.15)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
                   {/* Image */}
-                  <div className="image">
+                  <div style={{ position: 'relative', overflow: 'hidden', height: '180px' }}>
                     <Link to={detailUrl}>
                       <img
                         src={item.image}
                         alt={item.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
                         onError={(e) => {
                           e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'
                           e.target.src = ''
                         }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                       />
                     </Link>
-                    {/* Status badge */}
-                    <span className={`token-status-badge ${item.bid === 'LIVE' ? 'token-status-badge--live' : ''}`}>
-                      {item.bid === 'LIVE' ? '● LIVE' : item.bid}
+                    <span style={{
+                      position: 'absolute', top: '16px', right: '16px',
+                      padding: '6px 16px', borderRadius: '100px',
+                      fontSize: '11px', fontWeight: '700',
+                      fontFamily: "'Conthrax', sans-serif",
+                      background: isLive
+                        ? 'linear-gradient(135deg, rgba(92,39,254,0.9), rgba(122,69,254,0.9))'
+                        : 'rgba(255,255,255,0.12)',
+                      backdropFilter: 'blur(8px)',
+                      border: isLive ? '1px solid rgba(92,39,254,0.6)' : '1px solid rgba(255,255,255,0.2)',
+                      color: '#fff', letterSpacing: '0.05em',
+                    }}>
+                      {isLive ? '● LIVE' : item.bid}
                     </span>
                   </div>
 
                   {/* Content */}
-                  <div className="content">
-                    {/* Logo + issuer */}
-                    <div className="token-card-issuer">
+                  <div style={{ padding: '24px' }}>
+                    {/* Issuer */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
                       <img
                         src={item.logo || item.ownerImg}
                         alt={item.owner}
-                        className="token-card-issuer__img"
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(92,39,254,0.3)' }}
                         onError={(e) => { e.target.style.background = 'rgba(92,39,254,0.2)'; e.target.src = '' }}
                       />
-                      <span className="token-card-issuer__name">{item.owner}</span>
+                      <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
+                        {item.owner}
+                      </span>
                     </div>
 
-                    <Link to={detailUrl} className="font-heading text-white text-base hover:text-[#DEC7FF] transition-colors block mb-1">
-                      {item.title}
+                    {/* Title */}
+                    <Link to={detailUrl}>
+                      <h4 className="font-heading" style={{
+                        color: '#fff', fontSize: '17px', fontWeight: '600',
+                        marginBottom: '10px', lineHeight: '1.3', transition: 'color 0.2s ease',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#DEC7FF'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#fff'}
+                      >
+                        {item.title}
+                      </h4>
                     </Link>
 
+                    {/* Description */}
                     {item.shortDescription && (
-                      <p className="token-card-desc">{item.shortDescription}</p>
+                      <p style={{
+                        fontSize: '13px', lineHeight: '1.6',
+                        color: 'rgba(255,255,255,0.5)', marginBottom: '18px',
+                        display: '-webkit-box', WebkitLineClamp: '2',
+                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }}>
+                        {item.shortDescription}
+                      </p>
                     )}
 
-                    {/* Key metrics row */}
-                    <div className="token-card-metrics">
-                      <div className="token-card-metric">
-                        <span className="token-card-metric__label">Issuance Price</span>
-                        <span className="token-card-metric__value">{item.issuancePrice || item.price}</span>
+                    {/* Metrics */}
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      padding: '14px 0',
+                      borderTop: '1px solid rgba(255,255,255,0.06)',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      marginBottom: '18px',
+                    }}>
+                      <div>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Price</p>
+                        <p style={{ fontSize: '14px', fontWeight: '700', color: '#DEC7FF', fontFamily: "'Conthrax', sans-serif" }}>
+                          {item.issuancePrice || item.price}
+                        </p>
                       </div>
-                      <div className="token-card-metric">
-                        <span className="token-card-metric__label">Minimum Participation</span>
-                        <span className="token-card-metric__value">{item.minInvestment || 'TBA'}</span>
-                      </div>
-                      <div className="token-card-metric">
-                        <span className="token-card-metric__label">Lock-in</span>
-                        <span className="token-card-metric__value">{item.lockPeriod || 'TBA'}</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Min. Invest</p>
+                        <p style={{ fontSize: '14px', fontWeight: '700', color: '#fff', fontFamily: "'Conthrax', sans-serif" }}>
+                          {item.minInvestment || 'TBA'}
+                        </p>
                       </div>
                     </div>
 
                     {/* CTA */}
-                    <Link to={detailUrl} className="token-card-cta">
-                      {item.ctaLabel || (item.bid === 'LIVE' ? 'Access Private Offering' : 'Notify Me')}
+                    <Link
+                      to={detailUrl}
+                      style={{
+                        display: 'block', width: '100%', padding: '12px',
+                        borderRadius: '12px', textAlign: 'center',
+                        fontSize: '13px', fontWeight: '600',
+                        fontFamily: "'Conthrax', sans-serif",
+                        background: isLive
+                          ? 'linear-gradient(135deg, #5C27FE, #7B45FE)'
+                          : 'rgba(255,255,255,0.04)',
+                        border: isLive
+                          ? '1px solid rgba(92,39,254,0.6)'
+                          : '1px solid rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        transition: 'all 0.3s ease', textDecoration: 'none',
+                        boxShadow: isLive ? '0 4px 20px rgba(92,39,254,0.4)' : 'none',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.opacity = '0.85'
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.opacity = '1'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                      }}
+                    >
+                      {item.ctaLabel || (isLive ? 'View Live Offering' : 'Notify Me')}
                     </Link>
                   </div>
                 </div>
