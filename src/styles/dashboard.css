@@ -3,6 +3,238 @@
    INVESTOR DASHBOARD
    ══════════════════════════════════════════════════════════ */
 
+/* ── Investment CTA animations ───────────────────────────── */
+@keyframes db-invest-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(92,39,254,0.55), 0 4px 18px rgba(92,39,254,0.35); }
+  50%       { box-shadow: 0 0 0 8px rgba(92,39,254,0), 0 6px 26px rgba(92,39,254,0.6); }
+}
+@keyframes db-dot-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+.db-invest-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+  animation: db-dot-blink 1.4s ease-in-out infinite;
+}
+
+/* ── Sidebar invest CTA ──────────────────────────────────── */
+.db-sidebar-invest {
+  padding: 0 14px 14px;
+}
+
+.db-sidebar-invest-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.03em;
+  background: linear-gradient(135deg, #5C27FE 0%, #9D6FFF 100%);
+  animation: db-invest-pulse 2.2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.db-sidebar-invest-btn:hover {
+  animation: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(92,39,254,0.55);
+}
+
+.db-sidebar-invest-sub {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  margin: 6px 0 0;
+  letter-spacing: 0.04em;
+}
+
+/* ── Topbar invest button ────────────────────────────────── */
+.db-topbar-invest-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #5C27FE 0%, #9D6FFF 100%);
+  animation: db-invest-pulse 2.2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.db-topbar-invest-btn:hover {
+  animation: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(92,39,254,0.5);
+}
+
+/* ── Overview live offering card ─────────────────────────── */
+.db-live-offer-card {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(92,39,254,0.25);
+  background: linear-gradient(135deg, rgba(92,39,254,0.08) 0%, rgba(157,111,255,0.04) 100%);
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.db-live-offer-card__img {
+  width: 260px;
+  align-self: stretch;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(92,39,254,0.15);
+}
+.db-live-offer-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.db-live-offer-card__body {
+  flex: 1;
+  padding: 18px 20px;
+  min-width: 0;
+}
+
+.db-live-offer-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.db-live-offer-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #4ade80;
+  background: rgba(74,222,128,0.12);
+  border: 1px solid rgba(74,222,128,0.25);
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.db-live-offer-card__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.db-live-offer-card__desc {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.db-live-offer-card__stats {
+  display: flex;
+  gap: 20px;
+}
+.db-live-offer-card__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.db-live-offer-card__stats span {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.db-live-offer-card__stats strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #DEC7FF;
+}
+
+.db-live-offer-card__cta {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.db-live-invest-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #5C27FE 0%, #9D6FFF 100%);
+  animation: db-invest-pulse 2.2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.db-live-invest-btn:hover {
+  animation: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(92,39,254,0.55);
+}
+
+.db-live-offer-card__note {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.db-live-offer-card__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.db-live-offer-card__close:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
 /* ── Shell / layout ──────────────────────────────────────── */
 .db-shell {
   display: flex;
@@ -1004,23 +1236,32 @@
 }
 
 .db-token-card__select-indicator {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(13, 11, 34, 0.55);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
   text-align: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(13, 11, 34, 0.04);
-  border: 1px solid rgba(13, 11, 34, 0.12);
-  transition: 0.2s;
-  margin-top: 4px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #5C27FE 0%, #9D6FFF 100%);
+  border: none;
+  margin-top: 6px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  animation: db-invest-pulse 2.2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+
+.db-token-card__select-indicator:hover {
+  animation: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(92, 39, 254, 0.55);
 }
 
 .db-token-card__select-indicator.active {
-  color: #fff;
-  background: linear-gradient(135deg, #6B35FF 0%, #9D6FFF 100%);
-  border-color: transparent;
-  box-shadow: 0 2px 10px rgba(107, 53, 255, 0.35);
+  animation: none;
+  background: linear-gradient(135deg, #3d0fcc 0%, #6B35FF 100%);
+  box-shadow: 0 0 0 3px rgba(107, 53, 255, 0.25), 0 4px 16px rgba(107, 53, 255, 0.4);
+  transform: none;
 }
 
 /* ── Network chip (overlaid on card image bottom-left) ───── */
@@ -1256,6 +1497,10 @@
 .db-form-hint {
   font-size: 12px;
   color: rgba(13, 11, 34, 0.6);
+}
+.db-form-hint--error {
+  color: #EF4444;
+  font-weight: 500;
 }
 
 .db-token-calc {
@@ -2510,23 +2755,24 @@
 }
 .db-chart-card__header {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255,255,255,0.55);
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 .db-chart-card__value {
   font-size: 28px;
   font-weight: 700;
   color: #fff;
   line-height: 1;
+  margin-bottom: 4px;
 }
 .db-chart-card__change {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.4;
+  text-transform: none;
+  letter-spacing: 0;
 }
 .db-chart-card__change--up { color: #22C55E; }
 .db-chart-card__change--down { color: #EF4444; }
@@ -2539,15 +2785,27 @@
 }
 .db-chart-card__legend {
   display: flex;
-  gap: 14px;
-  margin-top: 4px;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+.db-chart-card__legend > span {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 .db-chart-legend-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 5px;
+  margin-right: 6px;
   flex-shrink: 0;
 }
 
@@ -4110,6 +4368,23 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /* ── Tablet (≤ 768px) ──────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Live offer card — no image, very compact on mobile */
+  .db-live-offer-card { flex-direction: row; align-items: stretch; padding: 0; }
+  .db-live-offer-card__img { display: none; }
+  .db-live-offer-card__body { padding: 10px 12px; flex: 1; align-self: center; }
+  .db-live-offer-card__meta { margin-bottom: 4px; }
+  .db-live-offer-card__name { font-size: 12px; }
+  .db-live-offer-card__desc { display: none; }
+  .db-live-offer-card__stats { gap: 10px; }
+  .db-live-offer-card__stats span { font-size: 9px; }
+  .db-live-offer-card__stats strong { font-size: 11px; }
+  .db-live-offer-card__cta { padding: 32px 12px 10px 0; flex-direction: column; gap: 0; flex-shrink: 0; justify-content: center; }
+  .db-live-invest-btn { padding: 9px 14px; font-size: 12px; white-space: nowrap; animation: none; }
+  .db-live-offer-card__note { display: none; }
+  .db-live-offer-card__close { top: 6px; right: 6px; z-index: 10; }
+  /* Hide topbar invest btn on mobile (sidebar has it) */
+  .db-topbar-invest-btn { display: none; }
+
   /* Stepper: shrink labels */
   .kyc-stepper { gap: 0; margin-bottom: 18px; }
   .kyc-stepper__label { font-size: 11.5px; }

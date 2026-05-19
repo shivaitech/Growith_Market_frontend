@@ -137,8 +137,8 @@ const features = [
         <polyline points="9 22 9 12 15 12 15 22" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'EU-Regulated',
-    text: 'Issued through a compliant EU-registered structure',
+    label: 'UAE-Structured',
+    text: 'Issued through a compliant RAKEZ-established holding structure',
   },
   {
     icon: (

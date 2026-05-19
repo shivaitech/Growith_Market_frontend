@@ -33,7 +33,7 @@ export default function Banner() {
             <div className="banner__left">
               <div className="block-text">
                 <h6 className="sub-heading">
-                  EU-Regulated Private Investment Platform
+                  UAE-Structured Private Investment Platform
                 </h6>
                 <h2 className="heading banner-heading">
                   Access{" "}
@@ -56,7 +56,7 @@ export default function Banner() {
                   with Confidence
                 </h2>
                 <p className="desc">
-                  Invest in structured, EU-issued digital assets backed by legal
+                  Invest in structured, UAE-Structured digital assets backed by legal
                   documentation, compliance screening, and on-chain
                   transparency.
                 </p>
@@ -107,7 +107,7 @@ export default function Banner() {
                 <div className="content">
                   <h5>ShivAI Token</h5>
                   <p>Status: LIVE</p>
-                  <span className="badge-subline">EU-Regulated Asset</span>
+                  <span className="badge-subline">UAE-Structured Asset</span>
                 </div>
               </div>
 

@@ -2,8 +2,8 @@ const features = [
   {
     id: 1,
     num: '01',
-    title: 'EU-Issued Structure',
-    desc: 'Every offering is issued through a compliant EU-registered entity with full legal documentation and regulatory alignment.',
+    title: 'UAE Holding Structure',
+    desc: 'Every offering is issued through a compliant RAKEZ-established holding entity with full legal documentation and regulatory alignment.',
     img: '/assets/images/partner/TwoPic1-removebg-preview.png',
   },
   {

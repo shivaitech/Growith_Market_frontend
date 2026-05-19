@@ -34,7 +34,7 @@ export default function BannerV2() {
           <span className="bv2__live-dot" />
           <span>ShivAI Token is now LIVE</span>
           <span className="bv2__pill-sep">&nbsp;&middot;&nbsp;</span>
-          <span>EU-Regulated Framework</span>
+          <span>UAE-Structured Framework</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
             <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -208,7 +208,7 @@ export default function BannerV2() {
       {/* ── Trust strip ── */}
       <div className="bv2__trust">
         {[
-          { label: "EU-Regulated", color: "#22c55e" },
+          { label: "UAE-Structured", color: "#22c55e" },
           { label: "KYC / AML Verified", color: "#9D6FFF" },
           { label: "Polygon Blockchain", color: "#DEC7FF" },
           { label: "Min. EUR 500", color: "#5C27FE" },

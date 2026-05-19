@@ -25,7 +25,7 @@ export default function TermsOfUse() {
 
               <div className="legal-pg__section">
                 <h5 className="legal-pg__section-title">3. Platform Services</h5>
-                <p>Growith provides a regulated digital securities marketplace for tokenised private placements. We act as a facilitator between verified investors and EU-registered issuers. Growith does not provide financial advice, portfolio management, or investment recommendations.</p>
+                <p>Growith provides a regulated digital securities marketplace for tokenised private placements. We act as a facilitator between verified investors and RAKEZ-registered issuers. Growith does not provide financial advice, portfolio management, or investment recommendations.</p>
               </div>
 
               <div className="legal-pg__section">

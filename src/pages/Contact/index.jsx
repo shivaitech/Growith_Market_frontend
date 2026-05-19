@@ -174,13 +174,13 @@ export default function Contact() {
               <div className="contact-pg-side">
                 <h4 className="contact-pg-side__title">Why Investors Choose Growith</h4>
                 <p className="contact-pg-side__text">
-                  Growith is an EU-regulated digital securities platform that connects verified investors
+                  Growith is a UAE-based digital securities platform operated through a RAKEZ-established holding structure, connecting verified investors
                   with tokenised real-world assets. Our compliance-first infrastructure ensures every
-                  issuance meets MiFID II and ESMA standards.
+                  issuance meets UAE regulatory standards.
                 </p>
                 <ul className="contact-pg-side__list">
                   <li>Full KYC/AML onboarding in under 5 minutes</li>
-                  <li>Regulated under EU Prospectus Regulation</li>
+                  <li>Operated under UAE RAKEZ holding framework</li>
                   <li>Institutional-grade custodial wallet infrastructure</li>
                   <li>Dedicated investor support team</li>
                   <li>Transparent on-chain transaction history</li>
@@ -190,7 +190,7 @@ export default function Contact() {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M9 12l2 2 4-4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span>EU-Regulated &amp; Fully Compliant Platform</span>
+                  <span>UAE-Structured &amp; Fully Compliant Platform</span>
                 </div>
               </div>
             </div>

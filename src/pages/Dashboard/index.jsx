@@ -92,12 +92,12 @@ const AVAILABLE_TOKENS = [
     image: '/assets/images/partner/heroShivMain.png',
     price: IS_PRELAUNCH ? '$5.00' : '$10.00',
     normalPrice: '$10.00',
-    minInvest: '$500', maxInvest: '$50,000',
+    minInvest: '$500', maxInvest: '$25,000',
     lock: '12 months', status: 'LIVE',
     raised: 100000, target: 1000000,
     totalTokens: 1000000, availSupply: 900000, soldTokens: 100000,
     investors: 0, network: 'ethereum',
-    desc: 'Next-generation AI compute infrastructure token. EU-registered private placement.'
+    desc: 'Next-generation AI compute infrastructure token. RAKEZ-registered private placement.'
   },
 ];
 
@@ -552,6 +552,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
   const pnl    = total - invested;
   const pnlPct = invested > 0 ? ((pnl / invested) * 100).toFixed(1) : '0.0';
   const [holdingsPage, setHoldingsPage] = useState(1);
+  const [offerDismissed, setOfferDismissed] = useState(false);
   const visibleHoldings = approvedPurchases.slice(0, holdingsPage * HOLDINGS_PER_PAGE);
   const { copy, copied } = useCopyText();
   const walletBalance = Number(walletData?.cashBalance || walletData?.balance || walletData?.walletBalance || 0);
@@ -602,17 +603,40 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
       {/* KYC banner */}
       <PrelaunchOfferBanner onNav={onNav} />
 
-      {investor.kycStatus === 'approved' && (
-        <div className="db-alert db-alert--success">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <div>
-            <strong>KYC Verified</strong> — Your identity is verified via Sumsub. You are eligible to invest in all open offerings.
+      {/* Live Offering spotlight */}
+      {!offerDismissed && <div className="db-live-offer-card">
+        <div className="db-live-offer-card__img">
+          <img src="/assets/images/partner/heroShivMain.png" alt="ShivAI" onError={e => { e.target.style.display='none'; }} />
+        </div>
+        <div className="db-live-offer-card__body">
+          <div className="db-live-offer-card__meta">
+            <span className="db-live-offer-card__badge">
+              <span className="db-invest-live-dot" /> LIVE
+            </span>
+            <span className="db-live-offer-card__name">ShivAI Token · SHIV</span>
+          </div>
+          <p className="db-live-offer-card__desc">AI-powered infrastructure. Minimum investment $500 — UAE Holding-Backed private placement.</p>
+          <div className="db-live-offer-card__stats">
+            <div><span>Price</span><strong>$0.01</strong></div>
+            <div><span>Min.</span><strong>$500</strong></div>
+            <div><span>Lock</span><strong>12 months</strong></div>
           </div>
         </div>
-      )}
+        <div className="db-live-offer-card__cta">
+          <button className="db-live-invest-btn" onClick={() => onNav?.('invest')}>
+            <span className="db-invest-live-dot" />
+            Invest Now
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+          <p className="db-live-offer-card__note">Verified investors only · Secure custody</p>
+        </div>
+        <button className="db-live-offer-card__close" onClick={() => setOfferDismissed(true)} aria-label="Dismiss">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+        </button>
+      </div>}
 
-      {/* Stats grid — 3 cols desktop, swiper mobile */}
-      <div className="db-stats-grid db-stats-grid--desktop" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      {/* Stats grid — 4 cols desktop, swiper mobile */}
+      <div className="db-stats-grid db-stats-grid--desktop" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {statCards.map((s, i) => (
           <div key={i} className="db-stat-card" style={{ position: 'relative' }}>
             {s.chart && <div style={{ position: 'absolute', top: 16, right: 16, opacity: 0.9 }}>{s.chart}</div>}
@@ -649,8 +673,8 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             }
           </div>
           <div className="db-chart-card__legend">
-            <span className="db-chart-legend-dot" style={{ background: '#9D6FFF' }} /> Weekly value &nbsp;
-            <span className="db-chart-legend-dot" style={{ background: '#4ade80' }} /> Current week
+            <span><span className="db-chart-legend-dot" style={{ background: '#9D6FFF' }} />Weekly Value</span>
+            <span><span className="db-chart-legend-dot" style={{ background: '#4ade80' }} />Current Week</span>
           </div>
         </div>
         <BarChart
@@ -935,7 +959,7 @@ function PrelaunchOfferBanner({ onNav }) {
 
 function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading = false, lastRefreshed = null, onRefresh, onAddPendingPurchase }) {
   const [selectedToken, setSelectedToken] = useState(null);
-  const [amount, setAmount] = useState('500');
+  const [amount, setAmount] = useState('');
   // payStep: 'form' | 'payment' | 'done'
   const [payStep, setPayStep] = useState('form');
   const [screenshot, setScreenshot] = useState(null);
@@ -955,7 +979,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
 
   const handleSelectToken = t => {
     setSelectedToken(t);
-    setAmount('500');
+    setAmount('');
     setPayStep('form');
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
@@ -1036,7 +1060,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
 
   const resetFlow = () => {
     setSelectedToken(null);
-    setAmount('500');
+    setAmount('');
     setPayStep('form');
     setScreenshot(null);
     setScreenshotPreview(null);
@@ -1223,15 +1247,20 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                   <input
                     type="number"
                     className="db-form-input db-form-input--prefixed"
-                    placeholder="500"
+                    placeholder="Enter amount (min $500)"
                     min="500"
-                    max="50000"
+                    max="25000"
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
                     required
                   />
                 </div>
-                <span className="db-form-hint">Min: {selectedToken.minInvest} · Max: {selectedToken.maxInvest}</span>
+                {amount && Number(amount) < 500
+                  ? <span className="db-form-hint db-form-hint--error">Minimum investment is $500. Please enter a higher amount.</span>
+                  : amount && Number(amount) > 25000
+                  ? <span className="db-form-hint db-form-hint--error">Maximum investment is $25,000. Please enter a lower amount.</span>
+                  : <span className="db-form-hint">Min: {selectedToken.minInvest} · Max: {selectedToken.maxInvest}</span>
+                }
               </div>
               <div className="db-form-group">
                 <label className="db-form-label">Estimated Token Allocation</label>
@@ -3669,7 +3698,7 @@ const Dashboard = () => {
             price:       `$${effectivePrice.toFixed(2)}`,
             normalPrice: `$${normalPrice.toFixed(2)}`,
             minInvest:   raw.minInvestment ? `$${Number(raw.minInvestment).toLocaleString()}` : '$500',
-            maxInvest:   raw.maxInvestment ? `$${Number(raw.maxInvestment).toLocaleString()}` : '$50,000',
+            maxInvest:   raw.maxInvestment ? `$${Number(raw.maxInvestment).toLocaleString()}` : '$25,000',
             lock:        raw.lockPeriod || raw.lockDuration || '12 months',
             status:      raw.status || 'LIVE',
             raised:      sold,          // token count sold
@@ -4006,6 +4035,16 @@ const Dashboard = () => {
           })}
         </nav>
 
+        {/* Invest CTA */}
+        <div className="db-sidebar-invest">
+          <button className="db-sidebar-invest-btn" onClick={() => handleNav('invest')}>
+            <span className="db-invest-live-dot" />
+            Invest Now
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+          <p className="db-sidebar-invest-sub">ShivAI Token · LIVE</p>
+        </div>
+
         {/* KYC status chip at bottom */}
         <div className="db-sidebar-footer">
           <div className="db-sidebar-user">
@@ -4033,6 +4072,10 @@ const Dashboard = () => {
             {NAV_ITEMS.find(n => n.id === activeTab)?.label || 'Dashboard'}
           </div>
           <div className="db-topbar-actions">
+            <button className="db-topbar-invest-btn" onClick={() => handleNav('invest')}>
+              <span className="db-invest-live-dot" />
+              <span>Invest Now</span>
+            </button>
             <button className="db-icon-btn" aria-label="Notifications">
               <Icon.bell />
               <span className="db-notif-dot" />

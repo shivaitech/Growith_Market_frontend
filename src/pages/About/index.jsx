@@ -9,7 +9,7 @@ const values = [
       </svg>
     ),
     title: 'Compliance First',
-    text: 'Every offering on Growith is issued through an EU-registered entity with full KYC/AML verification, risk disclosures, and legal documentation.',
+    text: 'Every offering on Growith is issued through a RAKEZ-established holding entity with full KYC/AML verification, risk disclosures, and legal documentation.',
   },
   {
     icon: (

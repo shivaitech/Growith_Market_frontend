@@ -38,7 +38,7 @@ export const tokenOfferings = [
     ownerImg: '/assets/images/svg/avatar-02.svg',
     accessType: 'OPEN',
     minInvestment: '$500',
-    maxInvestment: '$50,000',
+    maxInvestment: '$25,000',
     lockPeriod: '12 months',
     totalSupply: '10,000,000,000',
     issuancePrice: '$0.01',
