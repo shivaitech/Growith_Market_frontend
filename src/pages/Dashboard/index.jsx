@@ -687,9 +687,21 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
       {/* Holdings */}
       <div className="db-section-title">Current Holdings</div>
       {approvedPurchases.length === 0 ? (
-        <div className="db-wallet-empty" style={{ padding: '20px 0' }}>
-          No approved token holdings yet.{' '}
-          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
+        <div className="db-holdings-empty">
+          <div className="db-holdings-empty__icon">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="rgba(157,111,255,0.35)" strokeWidth="1.5"/>
+              <path d="M12 6v6l4 2" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="db-holdings-empty__text">
+            <p className="db-holdings-empty__title">Your portfolio is empty</p>
+            <p className="db-holdings-empty__sub">Invest from <strong>$500</strong> in tokenised assets with up to <strong>15% projected returns</strong>.</p>
+          </div>
+          <button className="db-holdings-empty__btn" onClick={() => onNav?.('invest')}>
+            <span className="db-invest-live-dot" />
+            Invest Now
+          </button>
         </div>
       ) : (
         <>
@@ -878,9 +890,21 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
       {/* ── My Holdings ── */}
       <div className="db-section-title">My Holdings</div>
       {approvedPurchases.length === 0 ? (
-        <div className="db-wallet-empty" style={{ padding: '20px 0' }}>
-          No approved token holdings yet.{' '}
-          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
+        <div className="db-holdings-empty">
+          <div className="db-holdings-empty__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="rgba(157,111,255,0.35)" strokeWidth="1.5"/>
+              <path d="M12 6v6l4 2" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="db-holdings-empty__text">
+            <p className="db-holdings-empty__title">No holdings yet</p>
+            <p className="db-holdings-empty__sub">Invest from <strong>$500</strong> in tokenised assets with up to <strong>15% projected returns</strong>.</p>
+          </div>
+          <button className="db-holdings-empty__btn" onClick={() => onNav?.('invest')}>
+            <span className="db-invest-live-dot" />
+            Invest Now
+          </button>
         </div>
       ) : (
         <>

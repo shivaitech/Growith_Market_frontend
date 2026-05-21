@@ -2637,6 +2637,9 @@
   /* Force single column on very small screens */
   @media (max-width: 400px) {
     .db-token-grid { grid-template-columns: 1fr; }
+    .db-holdings-empty { padding: 14px 12px; gap: 12px; }
+    .db-holdings-empty__title { font-size: 13px; }
+    .db-holdings-empty__sub { font-size: 11.5px; }
   }
 
   /* ── Intent form compact ── */
@@ -2703,6 +2706,26 @@
     font-size: 12px;
     border-radius: 8px;
   }
+
+  /* ── Holdings empty state ── */
+  .db-holdings-empty {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .db-holdings-empty__icon { width: 44px; height: 44px; }
+  .db-holdings-empty__icon svg { width: 26px; height: 26px; }
+  .db-holdings-empty__title { font-size: 14px; white-space: normal; }
+  .db-holdings-empty__sub { font-size: 12px; max-width: 100%; }
+  .db-holdings-empty__btn { width: 100%; justify-content: center; padding: 11px 16px; animation: none; }
+
+  /* ── Chart card ── */
+  .db-chart-card { padding: 16px 14px 12px; gap: 10px; }
+  .db-chart-card__header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .db-chart-card__value { font-size: 22px; }
+  .db-chart-card__legend { flex-direction: row; align-items: center; gap: 12px; }
+  .db-chart-card__legend > span { font-size: 10px; }
 
   /* ── Profile hero mobile ── */
   .db-profile-hero__bg { height: 72px; }
@@ -4962,6 +4985,72 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-size: 13px;
   color: rgba(255,255,255,0.3);
   padding: 14px 0 4px;
+}
+
+/* ── Holdings empty state ────────────────────────────── */
+.db-holdings-empty {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(92,39,254,0.07) 0%, rgba(157,111,255,0.04) 100%);
+  border: 1px dashed rgba(157,111,255,0.25);
+  margin-bottom: 8px;
+}
+.db-holdings-empty__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(157,111,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.db-holdings-empty__text {
+  flex: 1;
+  min-width: 0;
+}
+.db-holdings-empty__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 5px;
+  white-space: nowrap;
+}
+.db-holdings-empty__sub {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+  line-height: 1.55;
+  max-width: 340px;
+}
+.db-holdings-empty__sub strong {
+  color: #DEC7FF;
+  font-weight: 600;
+}
+.db-holdings-empty__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #5C27FE 0%, #9D6FFF 100%);
+  animation: db-invest-pulse 2.2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.db-holdings-empty__btn:hover {
+  animation: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(92,39,254,0.5);
 }
 .db-wallet-link-btn {
   background: none;

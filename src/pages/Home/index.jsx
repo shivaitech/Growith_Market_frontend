@@ -7,6 +7,7 @@ import Roadmap from './sections/Roadmap'
 // import Team from './sections/Team'
 import Testimonials from './sections/Testimonials'
 import FAQ from './sections/FAQ'
+import FutureLiquidity from './sections/FutureLiquidity'
 import Create from './sections/Create'
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
       {/* <Team /> */}
       <Testimonials />
       <FAQ />
+      <FutureLiquidity />
       <Create />
     </>
   )

@@ -1,6 +1,11 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { tokenOfferings } from '../../data'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation, Pagination as SwiperPagination } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 
 /* ── tiny helper: section anchor scroll ─── */
 function scrollTo(id) {
@@ -60,7 +65,7 @@ export default function TokenDetail() {
             <span>/</span>
             <Link to="/nft">Marketplace</Link>
             <span>/</span>
-            <span className="td-breadcrumb--active">{token.title.split('—')[0].trim()} — Token</span>
+            <span className="td-breadcrumb--active">{token.name || token.ticker || 'Token'}</span>
           </nav>
 
           <div className="td-hero__grid">
@@ -85,6 +90,7 @@ export default function TokenDetail() {
               </div>
               <h1 className="td-hero__title">{token.title}</h1>
               <p className="td-hero__desc">{token.shortDescription}</p>
+              {token.detailDescription && <p className="td-hero__desc" style={{ marginTop: 10 }}>{token.detailDescription}</p>}
 
               {/* Key stats grid */}
               <div className="td-stats-grid">
@@ -118,7 +124,7 @@ export default function TokenDetail() {
               <div className="td-hero__actions">
                 {token.accessType === 'OPEN' && (
                   <button className="action-btn td-cta-primary" onClick={() => scrollTo('td-final-cta')}>
-                    <span>Invest Now</span>
+                    <span>Participate in Offering</span>
                   </button>
                 )}
                 {token.accessType === 'INVITE_ONLY' && (
@@ -178,6 +184,133 @@ export default function TokenDetail() {
         </section>
       )}
 
+      {/* ══════ B2 – Why Voice AI? (ShivAI only) ══════ */}
+      {token.slug === 'shivai' && (
+        <section className="td-section td-voiceai-section" id="td-voiceai">
+          <div className="container big">
+            <div className="block-text center" style={{ marginBottom: 40 }}>
+              <h6 className="sub-heading"><span>Market Opportunity</span></h6>
+              <h3 className="heading">Why Voice AI?</h3>
+            </div>
+            <div className="td-voiceai-grid">
+              <div className="td-voiceai-body">
+                <p className="td-voiceai-lead">
+                  Businesses worldwide are rapidly adopting AI-driven communication systems to reduce operational costs, improve response times, and scale customer engagement.
+                </p>
+                <p className="td-voiceai-sub">
+                  Voice AI is emerging as one of the fastest-growing segments within the AI economy, with increasing adoption across:
+                </p>
+                <ul className="td-voiceai-list">
+                  {['Customer Support','Sales','Healthcare','Hospitality','Logistics','Financial Services','Government Services'].map(item => (
+                    <li key={item}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 6L9 17l-5-5" stroke="#9D6FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <div className="td-voiceai-callout">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="#9D6FFF" strokeWidth="1.8"/>
+                    <path d="M12 8v4l3 3" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                  <p>ShivAI is positioned within this shift by building scalable AI voice infrastructure for businesses seeking automation without increasing manpower costs.</p>
+                </div>
+              </div>
+              <div className="td-voiceai-stats">
+                <div className="td-voiceai-stat">
+                  <span className="td-voiceai-stat__num">7+</span>
+                  <span className="td-voiceai-stat__label">Industries Served</span>
+                </div>
+                <div className="td-voiceai-stat">
+                  <span className="td-voiceai-stat__num">24/7</span>
+                  <span className="td-voiceai-stat__label">AI Agent Uptime</span>
+                </div>
+                <div className="td-voiceai-stat">
+                  <span className="td-voiceai-stat__num">↓ 60%</span>
+                  <span className="td-voiceai-stat__label">Cost Reduction Potential</span>
+                </div>
+                <div className="td-voiceai-stat">
+                  <span className="td-voiceai-stat__num">∞</span>
+                  <span className="td-voiceai-stat__label">Scalable Without Headcount</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ══════ B3 – Token Representation (ShivAI only) ══════ */}
+      {token.slug === 'shivai' && (
+        <section className="td-section td-section--alt td-tokenrep-section" id="td-tokenrep">
+          <div className="container big">
+            {/* Section header */}
+            <div className="block-text center td-tokenrep-top">
+              <h6 className="sub-heading"><span>Digital Asset</span></h6>
+              <h3 className="heading">Token Representation</h3>
+              <p className="td-tokenrep-intro">ShivAI tokens are security-backed digital assets representing a fractional participation interest within the ShivAI ecosystem, designed to align investor participation with long-term platform growth.</p>
+            </div>
+
+            <div className="td-tokenrep-grid">
+              {/* Left: body text + 2×2 pillar cards */}
+              <div className="td-tokenrep-body">
+                <p className="td-tokenrep-text">As platform adoption, commercial activity, and ecosystem value grow, token holders participate in the broader value framework associated with the platform's development.</p>
+                <h5 className="td-tokenrep-sub-heading">The structure combines:</h5>
+                <div className="td-tokenrep-pillars">
+                  {[
+                    { title: 'Digital Ownership Transparency', desc: 'Full on-chain visibility into token ownership and transaction history.' },
+                    { title: 'Blockchain-Based Issuance', desc: 'Issued on regulated blockchain infrastructure with immutable audit trails.' },
+                    { title: 'Regulated Participation Access', desc: 'Compliant with applicable securities frameworks for qualified investors.' },
+                    { title: 'Long-Term Ecosystem Alignment', desc: "Token value tied directly to ShivAI's commercial growth and expansion." },
+                  ].map(item => (
+                    <div key={item.title} className="td-tokenrep-pillar">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{flexShrink:0,marginTop:2}}>
+                        <path d="M20 6L9 17l-5-5" stroke="#9D6FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <div>
+                        <strong className="td-tokenrep-pillar__title">{item.title}</strong>
+                        <p className="td-tokenrep-pillar__desc">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right: Use of Funds */}
+              <div className="td-tokenrep-funds">
+                <div className="td-tokenrep-funds__card">
+                  <div className="td-tokenrep-funds__header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>Use of Funds</span>
+                  </div>
+                  <p className="td-tokenrep-funds__sub">Funds raised through the offering are expected to support:</p>
+                  <ul className="td-tokenrep-funds__list">
+                    {[
+                      'AI Infrastructure Expansion',
+                      'Product Development',
+                      'Enterprise Onboarding',
+                      'International Market Expansion',
+                      'Sales & Distribution Growth',
+                      'Strategic Partnerships',
+                      'Operational Scaling',
+                    ].map((item, i) => (
+                      <li key={item}>
+                        <span className="td-tokenrep-funds__num">{String(i + 1).padStart(2, '0')}</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ══════ C – Token Structure & Economics ══════ */}
       {token.tokenStructure && (
         <section className="td-section td-section--alt" id="td-structure">
@@ -230,6 +363,7 @@ export default function TokenDetail() {
                         <div className="td-alloc-row__track">
                           <div className="td-alloc-row__fill" style={{ width: `${a.pct}%` }} />
                         </div>
+                        {a.desc && <p className="td-alloc-row__desc">{a.desc}</p>}
                       </div>
                     ))}
                   </div>
@@ -293,22 +427,84 @@ export default function TokenDetail() {
         </section>
       )}
 
+      {/* ══════ E2 – Direct From The Founders ══════ */}
+      {token.founderVideos && token.founderVideos.length > 0 && (
+        <section className="td-section td-founders-section" id="td-founders">
+          <div className="container big">
+            <div className="block-text center" style={{ marginBottom: 40 }}>
+              <h6 className="sub-heading"><span>Founder Communications</span></h6>
+              <h3 className="heading">Direct From The Founders</h3>
+              <p>Access direct updates, strategic insights, ecosystem developments, and founder communications from the team building ShivAI.</p>
+            </div>
+
+            <div className="td-founders-reel">
+              <Swiper
+                modules={[Navigation, SwiperPagination]}
+                navigation={{ nextEl: '.td-reel-next', prevEl: '.td-reel-prev' }}
+                pagination={{ clickable: true, el: '.td-reel-pagination' }}
+                slidesPerView={1}
+                spaceBetween={20}
+                grabCursor
+                breakpoints={{
+                  640:  { slidesPerView: 2, spaceBetween: 20 },
+                  1024: { slidesPerView: 3, spaceBetween: 24 },
+                }}
+              >
+                {token.founderVideos.map((v, i) => (
+                  <SwiperSlide key={i} className="td-reel-slide">
+                    <div className="td-reel-card">
+                      <div className="td-reel-card__thumb">
+                        <div className="td-reel-card__play">
+                          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="23" fill="rgba(92,39,254,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>
+                            <path d="M20 17l14 7-14 7V17z" fill="#fff"/>
+                          </svg>
+                        </div>
+                        <div className="td-reel-card__coming">
+                          <span className="td-reel-card__dot" />
+                          {v.duration}
+                        </div>
+                        <div className="td-reel-card__gradient" />
+                      </div>
+                      <div className="td-reel-card__body">
+                        <span className="td-reel-card__tag">{v.tag}</span>
+                        <h5 className="td-reel-card__title">{v.title}</h5>
+                        <p className="td-reel-card__sub">{v.subtitle}</p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              <div className="td-reel-controls">
+                <button className="td-reel-prev">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+                <div className="td-reel-pagination" />
+                <button className="td-reel-next">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ══════ F – Final CTA Block ══════ */}
       <section className="td-section td-final-cta-section" id="td-final-cta">
         <div className="container big" style={{textAlign:'center'}}>
           <div className="td-final-cta-box">
-            <h3 className="heading font-heading text-white mb-2">Ready to Invest in the Future?</h3>
-            <h5 className="font-heading mb-4" style={{ display: 'inline-block', color: '#fff', fontSize: '1rem', fontWeight: 400, border: '1px dotted rgba(255,255,255,0.5)', borderRadius: '8px', padding: '6px 16px' }}>{token.title.split('—')[0].trim()}</h5>
+            <h3 className="heading font-heading text-white mb-2">Ready to Participate in This Offering?</h3>
+            <h5 className="font-heading mb-4" style={{ display: 'inline-block', color: '#fff', fontSize: '1rem', fontWeight: 400, border: '1px dotted rgba(255,255,255,0.5)', borderRadius: '8px', padding: '6px 16px' }}>{token.name || token.title.split('—')[0].trim()}</h5>
             <p className="td-final-cta-box__desc">
               {isLive
-                ? 'Complete your profile, finish KYC verification, and start your investment journey today.'
-                : 'This offering is not yet open. Join the waitlist to get notified when it launches.'}
+                ? 'Complete your investor profile and KYC verification to access this private placement offering.'
+                : 'This offering is not yet open. Register your interest to be notified when participation opens.'}
             </p>
             <div className="td-final-cta-box__actions">
               {isLive ? (
                 <>
                   <Link to="/onboarding" className="action-btn td-cta-primary">
-                    <span>Create Profile & Start KYC</span>
+                    <span>Begin Investor Verification</span>
                   </Link>
                   <Link to="/contact" className="action-btn banner-cta-secondary">
                     <span>Contact Us</span>
