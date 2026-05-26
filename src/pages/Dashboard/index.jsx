@@ -785,7 +785,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
 }
 
 /* ── Portfolio ──────────────────────────────────── */
-function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurchases = [] }) {
+function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurchases = [], directAirdrops = [] }) {
   const token = availableTokens[0] || AVAILABLE_TOKENS[0];
   const totalInvested  = approvedPurchases.reduce((s, h) => s + (h.invested || 0), 0);
   const totalTokensHeld = approvedPurchases.reduce((s, h) => s + (h.amount || 0), 0);
@@ -927,6 +927,38 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
                 <div className="db-p-stat"><span className="db-p-stat__label">Live Value</span><span className="db-p-stat__value" style={{ color: '#22C55E' }}>${((h.amount || 0) * tokenPrice).toLocaleString()}</span></div>
                 <div className="db-p-stat"><span className="db-p-stat__label">Lock Expiry</span><span className="db-p-stat__value">{token.lock || '12 months'}</span></div>
               </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* ── Airdrop Tokens ── */}
+      {directAirdrops.length > 0 && (
+        <>
+          <div className="db-section-title" style={{ marginTop: 28 }}>Airdrop Tokens</div>
+          {directAirdrops.map((a, i) => (
+            <div key={a.id || i} className="db-portfolio-card" style={{ marginBottom: 16 }}>
+              <div className="db-portfolio-card__header">
+                <div className="db-portfolio-card__logo">
+                  <img src={a.logo || token.logo} alt={a.token} onError={e => { e.target.style.display='none'; }} />
+                </div>
+                <div className="db-portfolio-card__title-block">
+                  <div className="db-portfolio-card__name">{a.token} <span className="db-ticker">{a.ticker}</span></div>
+                  {a.date && <div className="db-portfolio-card__chain">Received: {a.date}</div>}
+                </div>
+                <span className="db-wallet-tag db-wallet-tag--purple" style={{ fontSize: 11, textTransform: 'capitalize' }}>
+                  {a.airdropType ? `${a.airdropType} Airdrop` : 'Airdrop'}
+                </span>
+              </div>
+              <div className="db-portfolio-stat-row">
+                <div className="db-p-stat"><span className="db-p-stat__label">Token Balance</span><span className="db-p-stat__value">{(a.tokenQty || 0).toLocaleString()} {a.ticker}</span></div>
+                <div className="db-p-stat"><span className="db-p-stat__label">USD Value</span><span className="db-p-stat__value">${(a.amountUsd || 0).toLocaleString()}</span></div>
+                <div className="db-p-stat"><span className="db-p-stat__label">Live Value</span><span className="db-p-stat__value" style={{ color: '#9D6FFF' }}>${((a.tokenQty || 0) * tokenPrice).toLocaleString()}</span></div>
+                <div className="db-p-stat"><span className="db-p-stat__label">Status</span><span className="db-p-stat__value" style={{ textTransform: 'capitalize' }}>{a.status || 'completed'}</span></div>
+              </div>
+              {a.adminNote && (
+                <p style={{ fontSize: 12, color: 'rgba(13,11,34,0.6)', margin: '10px 0 0', lineHeight: 1.5 }}>{a.adminNote}</p>
+              )}
             </div>
           ))}
         </>
@@ -1796,8 +1828,72 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
       </div>
 
-      {/* ── Approved Tokens ── */}
+      {/* ── Active Tokens (All) — approved + airdrops combined ── */}
       <div className="db-wallet-section-header">
+        <div className="db-wallet-section-title">
+          <span className="db-wallet-section-dot db-wallet-section-dot--green" />
+          Active Tokens (All)
+          <span style={{ marginLeft: 8, fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+            {approvedRows.length + airdropRows.length} total
+          </span>
+        </div>
+      </div>
+      {(approvedRows.length + airdropRows.length) === 0 ? (
+        <div className="db-wallet-empty">No active tokens yet.</div>
+      ) : (
+        <div className="db-wallet-token-grid">
+          {/* Approved holdings */}
+          {approvedRows.map(h => (
+            <div key={`all-h-${h.id}`} className="db-wallet-token-card">
+              <div className="db-wallet-token-card__top">
+                <img src={h.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
+                <div className="db-wallet-token-card__info">
+                  <span className="db-wallet-token-card__name">{h.token}</span>
+                  <span className="db-wallet-token-card__ticker">{h.ticker}</span>
+                </div>
+                <span className="db-wallet-tag db-wallet-tag--green">Active</span>
+              </div>
+              <div className="db-wallet-token-card__stats">
+                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{h.amount?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Invested</span><strong>${h.invested?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Current Value</span><strong style={{ color: '#22C55E' }}>${h.currentValue?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>Lock Expiry</span><strong>{h.lockExpiry}</strong></div>
+              </div>
+              <button
+                className="db-wallet-view-btn"
+                onClick={() => setViewToken(h)}
+              >
+                View Details
+              </button>
+            </div>
+          ))}
+          {/* Airdrop holdings */}
+          {airdropRows.map(a => (
+            <div key={`all-a-${a.id}`} className="db-wallet-token-card">
+              <div className="db-wallet-token-card__top">
+                <img src={a.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
+                <div className="db-wallet-token-card__info">
+                  <span className="db-wallet-token-card__name">{a.token}</span>
+                  <span className="db-wallet-token-card__ticker">{a.ticker}</span>
+                </div>
+                <span className="db-wallet-tag db-wallet-tag--purple" style={{ textTransform: 'capitalize' }}>
+                  {a.airdropType ? `${a.airdropType} Airdrop` : 'Airdrop'}
+                </span>
+              </div>
+              <div className="db-wallet-token-card__stats">
+                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{a.tokenQty?.toLocaleString()} {a.ticker}</strong></div>
+                <div className="db-wallet-token-stat"><span>Value</span><strong style={{ color: '#22C55E' }}>${a.amountUsd?.toLocaleString()} USD</strong></div>
+                <div className="db-wallet-token-stat"><span>Date</span><strong>{a.date}</strong></div>
+                {a.completedAt && <div className="db-wallet-token-stat"><span>Completed</span><strong>{a.completedAt}</strong></div>}
+                {a.adminNote && <div className="db-wallet-token-stat" style={{ gridColumn: '1/-1' }}><span>Note</span><strong>{a.adminNote}</strong></div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Approved Tokens ── */}
+      <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
           Approved Tokens
@@ -3986,7 +4082,7 @@ const Dashboard = () => {
     const addPendingPurchase = (p) => setPendingPurchases(prev => [p, ...prev]);
     switch (activeTab) {
       case 'overview':     return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} onNav={handleNav} />;
-      case 'portfolio':    return <TabPortfolio onNav={handleNav} availableTokens={availableTokens} approvedPurchases={approvedPurchases} />;
+      case 'portfolio':    return <TabPortfolio onNav={handleNav} availableTokens={availableTokens} approvedPurchases={approvedPurchases} directAirdrops={directAirdrops} />;
       case 'invest':       return <TabInvest investor={investor} availableTokens={availableTokens} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onAddPendingPurchase={addPendingPurchase} />;
       case 'transactions': return <TabTransactions pendingPurchases={pendingPurchases} walletTransactions={walletTransactions} onUploadScreenshot={(id, file) => {
         setPendingPurchases(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'screenshot_uploaded', screenshotFile: file } : p));
