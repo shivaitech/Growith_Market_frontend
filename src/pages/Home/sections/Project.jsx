@@ -1,10 +1,66 @@
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Pagination, Autoplay } from 'swiper/modules'
+import { Autoplay } from 'swiper/modules'
+import { useState } from 'react'
 import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
 import { Link } from 'react-router-dom'
 import { tokenOfferings } from '../../../data'
+
+function CardImageSlider({ item, detailUrl, isLive }) {
+  const [sw, setSw] = useState(null)
+  const [activeIdx, setActiveIdx] = useState(0)
+  const hasSlider = item.images && item.images.length > 1
+
+  const imgStyle = { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }
+
+  return (
+    <div>
+      <div style={{ position: 'relative', overflow: 'hidden', height: '240px', width: '100%', borderRadius: '12px 12px 0 0' }}>
+        {hasSlider ? (
+          <Swiper
+            modules={[Autoplay]}
+            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            loop
+            grabCursor
+            onSwiper={setSw}
+            onSlideChange={(s) => setActiveIdx(s.realIndex)}
+            style={{ width: '100%', height: '240px' }}
+          >
+            {item.images.map((src, i) => (
+              <SwiperSlide key={i} style={{ height: '240px' }}>
+                <Link to={detailUrl} style={{ display: 'block', height: '100%' }}>
+                  <img src={src} alt={`${item.title} ${i + 1}`} style={imgStyle}
+                    onError={(e) => { e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'; e.target.src = '' }}
+                  />
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <Link to={detailUrl} style={{ display: 'block', height: '100%' }}>
+            <img src={item.image} alt={item.title} style={{...imgStyle, transition: 'transform 0.3s ease'}}
+              onError={(e) => { e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'; e.target.src = '' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            />
+          </Link>
+        )}
+        <span style={{
+          position: 'absolute', top: '12px', right: '12px', zIndex: 10,
+          padding: '5px 14px', borderRadius: '100px',
+          fontSize: '11px', fontWeight: '700',
+          fontFamily: "'Conthrax', sans-serif",
+          background: isLive ? 'linear-gradient(135deg, rgba(92,39,254,0.9), rgba(122,69,254,0.9))' : 'rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(8px)',
+          border: isLive ? '1px solid rgba(92,39,254,0.6)' : '1px solid rgba(255,255,255,0.2)',
+          color: '#fff', letterSpacing: '0.05em',
+        }}>
+          {isLive ? '● LIVE' : item.bid}
+        </span>
+      </div>
+
+    </div>
+  )
+}
 
 export default function Project() {
   const shivaiToken = tokenOfferings.find(token => token.slug === 'shivai')
@@ -21,176 +77,158 @@ export default function Project() {
           <h3 className="heading font-heading font-bold text-white">FEATURED TOKENS</h3>
         </div>
 
-        <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
-          slidesPerView={1}
-          spaceBetween={30}
-          navigation
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-          breakpoints={{
-            640: { slidesPerView: 1 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 2 },
-          }}
-          className="pb-14"
-        >
+        <div className="featured-tokens-grid">
           {featuredTokens.map((item) => {
             const detailUrl = item.bid === 'LIVE' ? `/token/${item.slug}` : '/nft'
             const isLive = item.bid === 'LIVE'
 
             return (
-              <SwiperSlide key={item.id}>
-                <div
-                  className="featured-project-card"
-                  style={{
-                    background: 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    marginBottom: 0,
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = 'translateY(-6px)'
-                    e.currentTarget.style.borderColor = 'rgba(92,39,254,0.3)'
-                    e.currentTarget.style.boxShadow = '0 12px 48px rgba(92,39,254,0.15)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  {/* Image */}
-                  <div style={{ position: 'relative', overflow: 'hidden', height: '180px' }}>
-                    <Link to={detailUrl}>
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
-                        onError={(e) => {
-                          e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'
-                          e.target.src = ''
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                      />
-                    </Link>
-                    <span style={{
-                      position: 'absolute', top: '16px', right: '16px',
-                      padding: '6px 16px', borderRadius: '100px',
-                      fontSize: '11px', fontWeight: '700',
-                      fontFamily: "'Conthrax', sans-serif",
-                      background: isLive
-                        ? 'linear-gradient(135deg, rgba(92,39,254,0.9), rgba(122,69,254,0.9))'
-                        : 'rgba(255,255,255,0.12)',
-                      backdropFilter: 'blur(8px)',
-                      border: isLive ? '1px solid rgba(92,39,254,0.6)' : '1px solid rgba(255,255,255,0.2)',
-                      color: '#fff', letterSpacing: '0.05em',
-                    }}>
-                      {isLive ? '● LIVE' : item.bid}
+              <div
+                key={item.id}
+                className="featured-project-card"
+                style={{
+                  background: 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: '20px',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  marginBottom: 0,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-6px)'
+                  e.currentTarget.style.borderColor = 'rgba(92,39,254,0.3)'
+                  e.currentTarget.style.boxShadow = '0 12px 48px rgba(92,39,254,0.15)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <CardImageSlider item={item} detailUrl={detailUrl} isLive={isLive} />
+
+                <div style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <img
+                      src={item.logo || item.ownerImg}
+                      alt={item.owner}
+                      style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(92,39,254,0.3)' }}
+                      onError={(e) => { e.target.style.background = 'rgba(92,39,254,0.2)'; e.target.src = '' }}
+                    />
+                    <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
+                      {item.owner}
                     </span>
                   </div>
 
-                  {/* Content */}
-                  <div style={{ padding: '24px' }}>
-                    {/* Issuer */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                      <img
-                        src={item.logo || item.ownerImg}
-                        alt={item.owner}
-                        style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(92,39,254,0.3)' }}
-                        onError={(e) => { e.target.style.background = 'rgba(92,39,254,0.2)'; e.target.src = '' }}
-                      />
-                      <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
-                        {item.owner}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <Link to={detailUrl}>
-                      <h4 className="font-heading" style={{
-                        color: '#fff', fontSize: '17px', fontWeight: '600',
-                        marginBottom: '10px', lineHeight: '1.3', transition: 'color 0.2s ease',
-                      }}
-                        onMouseEnter={e => e.currentTarget.style.color = '#DEC7FF'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#fff'}
-                      >
-                        {item.title}
-                      </h4>
-                    </Link>
-
-                    {/* Description */}
-                    {item.shortDescription && (
-                      <p style={{
-                        fontSize: '13px', lineHeight: '1.6',
-                        color: 'rgba(255,255,255,0.5)', marginBottom: '18px',
-                        display: '-webkit-box', WebkitLineClamp: '2',
-                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                      }}>
-                        {item.shortDescription}
-                      </p>
-                    )}
-
-                    {/* Metrics */}
-                    <div style={{
-                      display: 'flex', justifyContent: 'space-between',
-                      padding: '14px 0',
-                      borderTop: '1px solid rgba(255,255,255,0.06)',
-                      borderBottom: '1px solid rgba(255,255,255,0.06)',
-                      marginBottom: '18px',
-                    }}>
-                      <div>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Price</p>
-                        <p style={{ fontSize: '14px', fontWeight: '700', color: '#DEC7FF', fontFamily: "'Conthrax', sans-serif" }}>
-                          {item.issuancePrice || item.price}
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Min. Invest</p>
-                        <p style={{ fontSize: '14px', fontWeight: '700', color: '#fff', fontFamily: "'Conthrax', sans-serif" }}>
-                          {item.minInvestment || 'TBA'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* CTA */}
-                    <Link
-                      to={detailUrl}
-                      style={{
-                        display: 'block', width: '100%', padding: '12px',
-                        borderRadius: '12px', textAlign: 'center',
-                        fontSize: '13px', fontWeight: '600',
-                        fontFamily: "'Conthrax', sans-serif",
-                        background: isLive
-                          ? 'linear-gradient(135deg, #5C27FE, #7B45FE)'
-                          : 'rgba(255,255,255,0.04)',
-                        border: isLive
-                          ? '1px solid rgba(92,39,254,0.6)'
-                          : '1px solid rgba(255,255,255,0.1)',
-                        color: '#fff',
-                        transition: 'all 0.3s ease', textDecoration: 'none',
-                        boxShadow: isLive ? '0 4px 20px rgba(92,39,254,0.4)' : 'none',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.opacity = '0.85'
-                        e.currentTarget.style.transform = 'translateY(-1px)'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.opacity = '1'
-                        e.currentTarget.style.transform = 'translateY(0)'
-                      }}
+                  <Link to={detailUrl}>
+                    <h4 className="font-heading" style={{
+                      color: '#fff', fontSize: '17px', fontWeight: '600',
+                      marginBottom: '10px', lineHeight: '1.3', transition: 'color 0.2s ease',
+                    }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#DEC7FF'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#fff'}
                     >
-                      {item.ctaLabel || (isLive ? 'View Live Offering' : 'Notify Me')}
-                    </Link>
+                      {item.title}
+                    </h4>
+                  </Link>
+
+                  {item.shortDescription && (
+                    <p style={{
+                      fontSize: '13px', lineHeight: '1.6',
+                      color: 'rgba(255,255,255,0.5)', marginBottom: '18px',
+                      display: '-webkit-box', WebkitLineClamp: '2',
+                      WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                    }}>
+                      {item.shortDescription}
+                    </p>
+                  )}
+
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    padding: '14px 0',
+                    borderTop: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    marginBottom: '18px',
+                  }}>
+                    <div>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Price</p>
+                      <p style={{ fontSize: '14px', fontWeight: '700', color: '#DEC7FF', fontFamily: "'Conthrax', sans-serif" }}>
+                        {item.issuancePrice || item.price}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Min. Invest</p>
+                      <p style={{ fontSize: '14px', fontWeight: '700', color: '#fff', fontFamily: "'Conthrax', sans-serif" }}>
+                        {item.minInvestment || 'TBA'}
+                      </p>
+                    </div>
                   </div>
+
+                  <Link
+                    to={detailUrl}
+                    style={{
+                      display: 'block', width: '100%', padding: '12px',
+                      borderRadius: '12px', textAlign: 'center',
+                      fontSize: '13px', fontWeight: '600',
+                      fontFamily: "'Conthrax', sans-serif",
+                      background: isLive
+                        ? 'linear-gradient(135deg, #5C27FE, #7B45FE)'
+                        : 'rgba(255,255,255,0.04)',
+                      border: isLive
+                        ? '1px solid rgba(92,39,254,0.6)'
+                        : '1px solid rgba(255,255,255,0.1)',
+                      color: '#fff',
+                      transition: 'all 0.3s ease', textDecoration: 'none',
+                      boxShadow: isLive ? '0 4px 20px rgba(92,39,254,0.4)' : 'none',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.opacity = '0.85'
+                      e.currentTarget.style.transform = 'translateY(-1px)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.opacity = '1'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
+                  >
+                    {item.ctaLabel || (isLive ? 'View Live Offering' : 'Notify Me')}
+                  </Link>
                 </div>
-              </SwiperSlide>
+              </div>
             )
           })}
-        </Swiper>
+        </div>
+
+        <div className="featured-tokens-cta" style={{ textAlign: 'center', paddingLeft: '40px', paddingRight: '40px' }}>
+          <Link
+            to="/nft"
+            className="action-btn"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '14px 36px', borderRadius: '100px',
+              fontSize: '14px', fontWeight: '600',
+              fontFamily: "'Conthrax', sans-serif",
+              background: 'linear-gradient(135deg, #5C27FE, #7B45FE)',
+              border: '1px solid rgba(92,39,254,0.5)',
+              color: '#fff', textDecoration: 'none',
+              boxShadow: '0 4px 24px rgba(92,39,254,0.35)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(92,39,254,0.5)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 24px rgba(92,39,254,0.35)'
+            }}
+          >
+            Explore More
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   )

@@ -1,5 +1,10 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { EffectCards, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-cards";
+import { tokenOfferings } from "../../../data";
 
 const WORDS = [
   "Private Digital Securities",
@@ -12,6 +17,7 @@ const WORDS = [
 export default function Banner() {
   const [wordIndex, setWordIndex] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -23,6 +29,10 @@ export default function Banner() {
     }, 2800);
     return () => clearInterval(timer);
   }, []);
+
+  const activeToken = tokenOfferings[activeIdx] || tokenOfferings[0];
+  const isLive = activeToken?.bid === "LIVE";
+  const detailUrl = isLive ? `/token/${activeToken.slug}` : "/nft";
 
   return (
     <section className="banner">
@@ -84,11 +94,34 @@ export default function Banner() {
           </div>
           <div className="col-xl-6 col-md-12 banner-right-col">
             <div className="banner__right">
-              <div className="image">
-                <img
-                  src="/assets/images/partner/HeroShivaAI.jpeg"
-                  alt="Investment Dashboard"
-                />
+              <div className="image banner-token-image">
+                <Swiper
+                  modules={[EffectCards, Autoplay]}
+                  effect="cards"
+                  loop
+                  allowSlidePrev={false}
+                  allowTouchMove={false}
+                  speed={1200}
+                  autoplay={{ delay: 6000, disableOnInteraction: false }}
+                  cardsEffect={{
+                    slideShadows: false,
+                    perSlideOffset: 10,
+                    perSlideRotate: 4,
+                  }}
+                  onSlideChange={(s) => setActiveIdx(s.realIndex)}
+                  className="banner-token-swiper"
+                >
+                  {tokenOfferings.map((t) => (
+                    <SwiperSlide key={t.id} className="banner-token-slide">
+                      <Link
+                        to={t.bid === "LIVE" ? `/token/${t.slug}` : "/nft"}
+                        className="banner-token-slide__link"
+                      >
+                        <img src={t.image} alt={t.name || t.title} />
+                      </Link>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
               <div className="price">
                 <div className="icon">
@@ -96,22 +129,27 @@ export default function Banner() {
                 </div>
                 <div className="content">
                   <p>Min. Investment</p>
-                  <h5>$500</h5>
-                  <span className="badge-subline">Start with confidence</span>
+                  <h5>{activeToken?.minInvestment || "TBA"}</h5>
+                  <span className="badge-subline">
+                    {isLive ? "Start with confidence" : "Coming soon"}
+                  </span>
                 </div>
               </div>
               <div className="owner">
                 <div className="image">
-                  <img src="/assets/images/icon/shivAiToken.png" alt="ShivAI" />
+                  <img
+                    src={activeToken?.logo || activeToken?.ownerImg || "/assets/images/icon/shivAiToken.png"}
+                    alt={activeToken?.name || "Token"}
+                  />
                 </div>
                 <div className="content">
-                  <h5>ShivAI Token</h5>
-                  <p>Status: LIVE</p>
+                  <h5>{activeToken?.name || activeToken?.title?.split(" ")[0]} Token</h5>
+                  <p>Status: {activeToken?.bid || "—"}</p>
                   <span className="badge-subline">UAE-Structured Asset</span>
                 </div>
               </div>
 
-              <Link to="/token/shivai" className="banner-link-badge badge-learn-more">
+              <Link to={detailUrl} className="banner-link-badge badge-learn-more">
                 <span className="banner-link-badge__text">
                   Learn More
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -127,7 +165,7 @@ export default function Banner() {
               </Link>
             </div>
           </div>
-          
+
           {/* Partner Benefits — shown below image on mobile/tablet */}
           <div className="col-12 pay-mobile-wrap">
             <div className="pay pay-mobile">
