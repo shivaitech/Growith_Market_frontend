@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { tokenOfferings } from '../../data'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination as SwiperPagination, Autoplay } from 'swiper/modules'
@@ -9,6 +9,56 @@ import 'swiper/css/pagination'
 
 function scrollTo(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function ReelVideo({ src }) {
+  const videoRef = useRef(null)
+  const [paused, setPaused] = useState(true)
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        src={src}
+        controls
+        playsInline
+        preload="metadata"
+        loop={false}
+        autoPlay={false}
+        controlsList="nodownload noplaybackrate noremoteplayback"
+        disablePictureInPicture
+        onContextMenu={e => e.preventDefault()}
+        onPlay={() => setPaused(false)}
+        onPause={() => setPaused(true)}
+        onEnded={() => setPaused(true)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 4, background: '#000' }}
+      />
+      {paused && (
+        <button
+          type="button"
+          aria-label="Play video"
+          onClick={() => videoRef.current?.play()}
+          style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(92,39,254,0.92)',
+            border: '1.5px solid rgba(255,255,255,0.18)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 6, padding: 0,
+            boxShadow: '0 8px 32px rgba(92,39,254,0.55)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.08)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(92,39,254,0.7)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(92,39,254,0.55)' }}
+        >
+          <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
+            <path d="M18 14l16 10-16 10V14z" fill="#fff"/>
+          </svg>
+        </button>
+      )}
+    </>
+  )
 }
 
 function FaqItem({ q, a }) {
@@ -148,7 +198,10 @@ export default function TokenDetail() {
             <div className="td-hero__info">
               <div className="td-hero__issuer">
                 <img src={token.logo || token.ownerImg} alt={token.owner} className="td-hero__issuer-img" />
-                <span>{token.owner}</span>
+                <span>
+                  <strong style={{ color: '#fff', fontWeight: 700, marginRight: 8 }}>{token.name}</strong>
+                  <span style={{ opacity: 0.7 }}>· {token.owner}</span>
+                </span>
               </div>
               {token.websiteUrl && (
                 <a
@@ -220,7 +273,6 @@ export default function TokenDetail() {
                 {[
                   { label: 'Founder',        id: 'td-founder' },
                   { label: 'Token Structure',id: 'td-structure' },
-                  { label: 'Documents',      id: 'td-docs' },
                   { label: 'FAQ',            id: 'td-faq' },
                 ].map(n => (
                   <button key={n.id} className="td-nav-pill" onClick={() => scrollTo(n.id)}>
@@ -289,17 +341,23 @@ export default function TokenDetail() {
                   <SwiperSlide key={i} className="td-reel-slide">
                     <div className="td-reel-card">
                       <div className="td-reel-card__thumb">
-                        <div className="td-reel-card__play">
-                          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                            <circle cx="24" cy="24" r="23" fill="rgba(92,39,254,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>
-                            <path d="M20 17l14 7-14 7V17z" fill="#fff"/>
-                          </svg>
-                        </div>
-                        <div className="td-reel-card__coming">
-                          <span className="td-reel-card__dot" />
-                          {v.duration}
-                        </div>
-                        <div className="td-reel-card__gradient" />
+                        {v.video ? (
+                          <ReelVideo src={v.video} />
+                        ) : (
+                          <>
+                            <div className="td-reel-card__play">
+                              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <circle cx="24" cy="24" r="23" fill="rgba(92,39,254,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>
+                                <path d="M20 17l14 7-14 7V17z" fill="#fff"/>
+                              </svg>
+                            </div>
+                            <div className="td-reel-card__coming">
+                              <span className="td-reel-card__dot" />
+                              {v.duration}
+                            </div>
+                            <div className="td-reel-card__gradient" />
+                          </>
+                        )}
                       </div>
                       <div className="td-reel-card__body">
                         <span className="td-reel-card__tag">{v.tag}</span>

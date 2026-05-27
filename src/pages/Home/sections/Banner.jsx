@@ -18,6 +18,7 @@ export default function Banner() {
   const [wordIndex, setWordIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [swiperInstance, setSwiperInstance] = useState(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -94,13 +95,12 @@ export default function Banner() {
           </div>
           <div className="col-xl-6 col-md-12 banner-right-col">
             <div className="banner__right">
+              <div className="banner-token-stack">
               <div className="image banner-token-image">
                 <Swiper
                   modules={[EffectCards, Autoplay]}
                   effect="cards"
                   loop
-                  allowSlidePrev={false}
-                  allowTouchMove={false}
                   speed={1200}
                   autoplay={{ delay: 6000, disableOnInteraction: false }}
                   cardsEffect={{
@@ -108,6 +108,7 @@ export default function Banner() {
                     perSlideOffset: 10,
                     perSlideRotate: 4,
                   }}
+                  onSwiper={setSwiperInstance}
                   onSlideChange={(s) => setActiveIdx(s.realIndex)}
                   className="banner-token-swiper"
                 >
@@ -123,6 +124,42 @@ export default function Banner() {
                   ))}
                 </Swiper>
               </div>
+
+              <div className="banner-token-nav">
+                <button
+                  type="button"
+                  className="banner-token-nav__arrow"
+                  aria-label="Previous token"
+                  onClick={() => swiperInstance?.slidePrev()}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                </button>
+                <div className="banner-token-nav__dots">
+                  {tokenOfferings.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`banner-token-nav__dot${i === activeIdx ? " banner-token-nav__dot--active" : ""}`}
+                      aria-label={`Go to token ${i + 1}`}
+                      onClick={() => swiperInstance?.slideToLoop(i)}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="banner-token-nav__arrow"
+                  aria-label="Next token"
+                  onClick={() => swiperInstance?.slideNext()}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </button>
+              </div>
+              </div>
+
               <div className="price">
                 <div className="icon">
                   <img src="/assets/images/svg/icon-token.svg" alt="Token" />
@@ -145,7 +182,6 @@ export default function Banner() {
                 <div className="content">
                   <h5>{activeToken?.name || activeToken?.title?.split(" ")[0]} Token</h5>
                   <p>Status: {activeToken?.bid || "—"}</p>
-                  <span className="badge-subline">UAE-Structured Asset</span>
                 </div>
               </div>
 

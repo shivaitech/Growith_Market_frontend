@@ -3,6 +3,84 @@
    (Original template CSS is in template.css)
    ===================================================== */
 
+/* Banner — slider + nav stacked vertically (overrides parent flex-row on mobile) */
+.banner-token-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+/* On desktop, match the image's offset so the nav centers under the cards */
+@media (min-width: 992px) {
+  .banner-token-stack {
+    width: 468px;
+    margin-left: auto;
+    margin-right: 60px;
+  }
+  .banner .banner__right .image.banner-token-image {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Banner — token slider navigation (arrows + dots) */
+.banner-token-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 5;
+}
+.banner-token-nav__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  padding: 0;
+}
+.banner-token-nav__arrow svg {
+  width: 13px;
+  height: 13px;
+}
+.banner-token-nav__arrow:hover {
+  background: rgba(157, 111, 255, 0.18);
+  border-color: rgba(157, 111, 255, 0.5);
+  transform: translateY(-1px);
+}
+.banner-token-nav__dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.banner-token-nav__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+.banner-token-nav__dot:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+.banner-token-nav__dot--active {
+  background: #9D6FFF;
+  width: 18px;
+  border-radius: 100px;
+  box-shadow: 0 0 8px rgba(157, 111, 255, 0.6);
+}
+
 /* Banner — token cards slider (stacked deck, replaces ::before/::after gray cards) */
 .banner .banner__right .image.banner-token-image {
   overflow: visible !important;
@@ -110,7 +188,74 @@
   box-shadow: 0 8px 32px rgba(92,39,254,0.7);
 }
 
-/* Featured tokens grid — 2 col desktop, 1 col mobile */
+/* Featured tokens slider */
+.featured-tokens-slider-wrap {
+  padding: 0 40px 4px;
+  position: relative;
+}
+.featured-tokens-swiper {
+  width: 100%;
+  padding-bottom: 4px !important;
+}
+.featured-tokens-swiper .swiper-slide {
+  height: auto;
+  display: flex;
+}
+.featured-tokens-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+.featured-tokens-nav__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.featured-tokens-nav__arrow:hover {
+  background: rgba(157, 111, 255, 0.18);
+  border-color: rgba(157, 111, 255, 0.5);
+  transform: translateY(-1px);
+}
+.featured-tokens-nav__dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.featured-tokens-nav__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+.featured-tokens-nav__dot:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+.featured-tokens-nav__dot--active {
+  background: #9D6FFF;
+  width: 22px;
+  border-radius: 100px;
+  box-shadow: 0 0 8px rgba(157, 111, 255, 0.6);
+}
+@media (max-width: 767px) {
+  .featured-tokens-slider-wrap { padding: 0 16px 4px; }
+}
+
+/* Featured tokens grid (legacy fallback — 2 col desktop, 1 col mobile) */
 .featured-tokens-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -573,7 +718,7 @@ body {
   .banner .banner__right .owner {
     padding: 16px !important;
     border-radius: 25px !important;
-    bottom: 175px !important;
+    bottom: 230px !important;
   }
   .banner .banner__right .owner .image {
     min-width: 56px !important;
@@ -1764,7 +1909,7 @@ html, body {
     display: flex !important;
     align-items: center !important;
     position: absolute !important;
-    bottom: 30px !important;
+    bottom: 90px !important;
     left: -20px !important;
     right: auto !important;
     top: auto !important;
@@ -2189,7 +2334,7 @@ html, body {
     display: flex !important;
     align-items: center !important;
     position: absolute !important;
-    bottom: 20px !important;
+    bottom: 80px !important;
     left: -10px !important;
     right: auto !important;
     top: auto !important;
@@ -2668,7 +2813,7 @@ html, body {
   .banner__right .owner {
     padding: 10px 12px !important;
     left: -5px !important;
-    bottom: 10px !important;
+    bottom: 70px !important;
   }
   .banner__right .owner .image {
     width: 38px !important; height: 38px !important;
@@ -3375,7 +3520,12 @@ html, body {
   text-decoration: none;
   color: rgba(255,255,255,0.75);
   transition: all 0.2s;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
+.td-docs-grid { min-width: 0; }
 .td-doc-card:hover {
   background: rgba(92,39,254,0.08);
   border-color: rgba(157,111,255,0.3);
@@ -3885,7 +4035,7 @@ html, body {
 .td-reel-card__thumb {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 10 / 9;
   background: linear-gradient(160deg, rgba(92,39,254,0.22) 0%, rgba(13,11,34,0.9) 100%);
   display: flex;
   align-items: center;
@@ -4027,7 +4177,7 @@ html, body {
 
 
 @media (max-width: 640px) {
-  .td-reel-card__thumb { aspect-ratio: 16 / 10; }
+  .td-reel-card__thumb { aspect-ratio: 4 / 3; }
   .td-founders-header .heading { font-size: 20px !important; }
 }
 

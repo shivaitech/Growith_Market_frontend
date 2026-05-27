@@ -29,10 +29,10 @@ export const tokenOfferings = [
     id: 1,
     slug: 'shivai',
     name: 'ShivAI',
-    title: 'Own a Stake in the Future of AI Workforce for Global Customer Communication',
+    title: 'ShivAI - Own a Stake in the Future of AI Workforce for Global Customer Communication',
     shortDescription: 'ShivAI is a Voice AI SaaS platform enabling businesses to automate calls, customer engagement, lead qualification, and support through AI-powered voice agents operating 24/7.',
     detailDescription: 'Structured as a regulated private placement opportunity, the offering provides verified investors early-stage exposure to the rapidly growing AI communication and automation sector.',
-    image: '/assets/images/partner/HeroShivaAI.jpeg',
+    image: '/assets/images/partner/MainShiv.jpeg',
     images: [
       '/assets/images/partner/MainShiv.jpeg',
       '/assets/images/partner/Shiv2.jpeg',
@@ -53,7 +53,7 @@ export const tokenOfferings = [
     issuancePrice: '$0.01',
     blockchain: 'Polygon',
     tokenStandard: 'ERC-20',
-    founderName: 'ShivAI Foundation',
+    founderName: 'Call ShivAI',
     founderBio: 'ShivAI is a Voice AI platform built to help businesses automate and scale their customer communication. It enables companies to handle calls, follow-ups, and customer interactions through intelligent AI voice agents that sound natural and respond in real time. Designed for reliability and ease of use, ShivAI allows businesses to deploy AI-powered calling systems without technical complexity. From small teams to large enterprises, it brings consistent, always-on communication without increasing manpower.',
     companyMission: 'To make business communication faster, smarter, and always available through AI-powered voice technology. ShivAI aims to ensure that every business regardless of size can deliver instant, high-quality customer interactions while reducing operational costs and improving efficiency.',
     tokenStructure: {
@@ -93,6 +93,7 @@ export const tokenOfferings = [
       { category: 'Blockchain', name: 'Audit Report', url: '#' },
     ],
     founderVideos: [
+      { title: 'ShivAI Inauguration by CM Yogi', subtitle: 'Official launch ceremony', tag: 'Inauguration', duration: 'Watch Now', video: '/assets/Videos/Yogi.mp4' },
       { title: 'Founder Introduction', subtitle: 'Why ShivAI Exists', tag: 'Founder', duration: 'Coming Soon' },
       { title: 'Investor Update', subtitle: 'Q2 Ecosystem Growth', tag: 'Investor Update', duration: 'Coming Soon' },
       { title: 'Product Update', subtitle: 'Voice AI Expansion Roadmap', tag: 'Product', duration: 'Coming Soon' },

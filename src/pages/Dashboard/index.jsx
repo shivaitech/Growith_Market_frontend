@@ -52,7 +52,7 @@ const HOLDINGS = [
     token: 'ShivAI',
     ticker: 'SHIV',
     logo: '/assets/images/icon/shivAiToken.png',
-    image: '/assets/images/partner/heroShivMain.png',
+    image: '/assets/images/partner/MainShiv.jpeg',
     amount: 250000,
     invested: 2500,
     currentValue: 2875,
@@ -89,14 +89,14 @@ const AVAILABLE_TOKENS = [
   {
     id: 1, slug: 'shivai', name: 'ShivAI Token', ticker: 'SHIV',
     logo: '/assets/images/icon/shivAiToken.png',
-    image: '/assets/images/partner/heroShivMain.png',
+    image: '/assets/images/partner/MainShiv.jpeg',
     price: IS_PRELAUNCH ? '$5.00' : '$10.00',
     normalPrice: '$10.00',
     minInvest: '$500', maxInvest: '$25,000',
     lock: '12 months', status: 'LIVE',
-    raised: 100000, target: 1000000,
-    totalTokens: 1000000, availSupply: 900000, soldTokens: 100000,
-    investors: 0, network: 'ethereum',
+    raised: 100000000, target: 1000000000,
+    totalTokens: 1000000000, availSupply: 900000000, soldTokens: 100000000,
+    investors: 511, network: 'ethereum',
     desc: 'Next-generation AI compute infrastructure token. RAKEZ-registered private placement.'
   },
 ];
@@ -606,7 +606,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
       {/* Live Offering spotlight */}
       {!offerDismissed && <div className="db-live-offer-card">
         <div className="db-live-offer-card__img">
-          <img src="/assets/images/partner/heroShivMain.png" alt="ShivAI" onError={e => { e.target.style.display='none'; }} />
+          <img src="/assets/images/partner/MainShiv.jpeg" alt="ShivAI" onError={e => { e.target.style.display='none'; }} />
         </div>
         <div className="db-live-offer-card__body">
           <div className="db-live-offer-card__meta">
@@ -788,8 +788,11 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
 function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurchases = [], directAirdrops = [] }) {
   const token = availableTokens[0] || AVAILABLE_TOKENS[0];
   const totalInvested  = approvedPurchases.reduce((s, h) => s + (h.invested || 0), 0);
-  const totalTokensHeld = approvedPurchases.reduce((s, h) => s + (h.amount || 0), 0);
-  const totalValue     = approvedPurchases.reduce((s, h) => s + (h.currentValue || h.invested || 0), 0);
+  const airdropTokensHeld = directAirdrops.reduce((s, a) => s + (a.tokenQty || 0), 0);
+  const airdropValue    = directAirdrops.reduce((s, a) => s + (a.amountUsd || 0), 0);
+  const totalTokensHeld = approvedPurchases.reduce((s, h) => s + (h.amount || 0), 0) + airdropTokensHeld;
+  const totalValue     = approvedPurchases.reduce((s, h) => s + (h.currentValue || h.invested || 0), 0) + airdropValue;
+  const hasAnyHoldings = approvedPurchases.length > 0 || directAirdrops.length > 0;
   const tokenPrice     = token?.price ? parseFloat(token.price.replace('$', '')) : EFFECTIVE_TOKEN_PRICE;
   const liveValue      = totalTokensHeld > 0 ? totalTokensHeld * tokenPrice : 0;
   const effectiveValue = liveValue > 0 ? liveValue : totalValue;
@@ -797,7 +800,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
   const pnlPct         = totalInvested > 0 ? ((pnl / totalInvested) * 100).toFixed(1) : '0.0';
 
   const soldPct  = token.target > 0 ? Math.min((token.raised / token.target) * 100, 100) : 0;
-  const fmtNum   = n => n >= 1000000 ? `${(n/1000000).toFixed(2)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(n);
+  const fmtNum   = n => n >= 1000000000 ? `${(n/1000000000).toFixed(2)}B` : n >= 1000000 ? `${(n/1000000).toFixed(2)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(n);
 
   const allocSegments = [
     { label: 'Private Placement',              pct: 60, color: '#6B35FF' },
@@ -889,7 +892,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
 
       {/* ── My Holdings ── */}
       <div className="db-section-title">My Holdings</div>
-      {approvedPurchases.length === 0 ? (
+      {!hasAnyHoldings ? (
         <div className="db-holdings-empty">
           <div className="db-holdings-empty__icon">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
@@ -908,7 +911,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
         </div>
       ) : (
         <>
-          {/* Individual holding rows */}
+          {/* Approved purchase rows */}
           {approvedPurchases.map((h, i) => (
             <div key={h.id || i} className="db-portfolio-card" style={{ marginBottom: 16 }}>
               <div className="db-portfolio-card__header">
@@ -929,15 +932,9 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
               </div>
             </div>
           ))}
-        </>
-      )}
-
-      {/* ── Airdrop Tokens ── */}
-      {directAirdrops.length > 0 && (
-        <>
-          <div className="db-section-title" style={{ marginTop: 28 }}>Airdrop Tokens</div>
+          {/* Airdrop rows — also counted as holdings */}
           {directAirdrops.map((a, i) => (
-            <div key={a.id || i} className="db-portfolio-card" style={{ marginBottom: 16 }}>
+            <div key={`ad-${a.id || i}`} className="db-portfolio-card" style={{ marginBottom: 16 }}>
               <div className="db-portfolio-card__header">
                 <div className="db-portfolio-card__logo">
                   <img src={a.logo || token.logo} alt={a.token} onError={e => { e.target.style.display='none'; }} />
@@ -969,8 +966,8 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
 
 /* ── Invest ─────────────────────────────────────── */
 /* USDT payment wallet address & QR for purchases */
-const USDT_TRC20_ADDRESS = 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE';
-const USDT_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(USDT_TRC20_ADDRESS)}`;
+const USDT_TRC20_ADDRESS = 'TLUTemi8uBbqLTRzHHU1w6d2ExaXFEdXmH';
+const USDT_QR_URL = '/assets/images/item/UsdtR.png';
 
 /* ── Pre-launch offer banner ── */
 function PrelaunchOfferBanner({ onNav }) {
@@ -1260,11 +1257,11 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 </div>
                 <div className="db-token-pill">
                   <span>Supply</span>
-                  <strong>{t.totalTokens >= 1000000 ? `${(t.totalTokens/1000000).toFixed(0)}M` : `${(t.totalTokens/1000).toFixed(0)}K`}</strong>
+                  <strong>{t.totalTokens >= 1000000000 ? `${(t.totalTokens/1000000000).toFixed(0)}B` : t.totalTokens >= 1000000 ? `${(t.totalTokens/1000000).toFixed(0)}M` : `${(t.totalTokens/1000).toFixed(0)}K`}</strong>
                 </div>
                 <div className="db-token-pill">
                   <span>Investors</span>
-                  <strong>{t.investors ?? '—'}</strong>
+                  <strong>511</strong>
                 </div>
               </div>
 
@@ -1408,11 +1405,12 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               <div className="db-usdt-qr-col">
                 <div className="db-usdt-qr-box">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(USDT_TRC20_ADDRESS)}&bgcolor=ffffff&color=000000&margin=2`}
+                    src={USDT_QR_URL}
                     alt="USDT TRC20 QR"
                     className="db-usdt-qr-img"
                     onError={e => { e.target.style.display = 'none'; }}
                   />
+                  <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.55)', textAlign: 'center' }}>No memo required</div>
                 </div>
                 <div className="db-usdt-network-badge">TRC20 · Tron</div>
               </div>
@@ -1444,7 +1442,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
 
             <div className="db-alert db-alert--warning db-alert--compact" style={{ margin: '12px 0' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <div>TRC20 / Tron only — wrong network = permanent loss of funds.</div>
+              <div>Only send Tether USDT (TRC20) assets to this address. Other assets will be lost forever.</div>
             </div>
 
             {/* Screenshot upload */}
@@ -3814,7 +3812,7 @@ const Dashboard = () => {
             name:        raw.name || 'ShivAI Token',
             ticker:      raw.symbol || raw.ticker || 'SHIV',
             logo:        raw.logo || raw.logoUrl || '/assets/images/icon/shivAiToken.png',
-            image:       raw.image || raw.bannerImage || '/assets/images/partner/heroShivMain.png',
+            image:       raw.image || raw.bannerImage || '/assets/images/partner/MainShiv.jpeg',
             price:       `$${effectivePrice.toFixed(2)}`,
             normalPrice: `$${normalPrice.toFixed(2)}`,
             minInvest:   raw.minInvestment ? `$${Number(raw.minInvestment).toLocaleString()}` : '$500',

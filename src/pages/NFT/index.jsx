@@ -41,7 +41,7 @@ export default function NFT() {
 
   return (
     <>
-      <PageTitle title="Token Marketplace" sub="Private Digital Securities" />
+      <PageTitle title="Private Digital Ownership Marketplace" sub="Private Digital Securities" />
 
       <section className="marketplace-section" style={{ padding: '60px 0' }}>
         <div className="container big">
