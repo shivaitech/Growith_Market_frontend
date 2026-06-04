@@ -160,18 +160,6 @@ export default function Banner() {
               </div>
               </div>
 
-              <div className="price">
-                <div className="icon">
-                  <img src="/assets/images/svg/icon-token.svg" alt="Token" />
-                </div>
-                <div className="content">
-                  <p>Min. Investment</p>
-                  <h5>{activeToken?.minInvestment || "TBA"}</h5>
-                  <span className="badge-subline">
-                    {isLive ? "Start with confidence" : "Coming soon"}
-                  </span>
-                </div>
-              </div>
               <div className="owner">
                 <div className="image">
                   <img

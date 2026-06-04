@@ -8,7 +8,7 @@ const infoItems = [
       </svg>
     ),
     label: 'Office Address',
-    value: 'Ground Floor, The Sotheby Building, Rodney Bay, Gros-Islet, Saint Lucia P.O. Box 838, Castries, Saint Lucia',
+    value: 'EIB-611A, Emirates Islamic Bank Building, Business Zone-FZ RAK, United Arab Emirates',
   },
   {
     icon: (

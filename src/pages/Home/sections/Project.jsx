@@ -26,8 +26,8 @@ function CardImageSlider({ item, detailUrl, isLive }) {
             style={{ width: '100%', height: '240px' }}
           >
             {item.images.map((src, i) => (
-              <SwiperSlide key={i} style={{ height: '240px' }}>
-                <Link to={detailUrl} style={{ display: 'block', height: '100%' }}>
+              <SwiperSlide key={i} style={{ height: '240px', width: '100%' }}>
+                <Link to={detailUrl} style={{ display: 'block', height: '100%', width: '100%' }}>
                   <img src={src} alt={`${item.title} ${i + 1}`} style={imgStyle}
                     onError={(e) => { e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'; e.target.src = '' }}
                   />

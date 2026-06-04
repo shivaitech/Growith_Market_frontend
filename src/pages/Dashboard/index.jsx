@@ -543,17 +543,237 @@ function KycBadge({ status }) {
    TAB COMPONENTS
    ══════════════════════════════════════════════════ */
 
+/* ── Holdings aggregation: group purchases + airdrops by ticker ── */
+function aggregateHoldings(approvedPurchases = [], directAirdrops = []) {
+  const map = new Map();
+  const getKey = x => x.ticker || x.token || 'unknown';
+
+  approvedPurchases.forEach(p => {
+    const key = getKey(p);
+    if (!map.has(key)) {
+      map.set(key, {
+        key, token: p.token, ticker: p.ticker, logo: p.logo,
+        totalTokens: 0, totalValue: 0, totalInvested: 0,
+        purchaseCount: 0, airdropCount: 0,
+        entries: [],
+      });
+    }
+    const g = map.get(key);
+    const amount = Number(p.amount || 0);
+    const value  = Number(p.currentValue || p.invested || 0);
+    g.totalTokens += amount;
+    g.totalValue  += value;
+    g.totalInvested += Number(p.invested || 0);
+    g.purchaseCount += 1;
+    g.entries.push({
+      kind: 'purchase',
+      id: p.id,
+      amount,
+      invested: Number(p.invested || 0),
+      currentValue: value,
+      date: p.date,
+      lockExpiry: p.lockExpiry,
+      reference: p.purchaseRef || p.reference || p.id,
+      method: p.method,
+    });
+  });
+
+  directAirdrops.forEach(a => {
+    const key = getKey(a);
+    if (!map.has(key)) {
+      map.set(key, {
+        key, token: a.token, ticker: a.ticker, logo: a.logo,
+        totalTokens: 0, totalValue: 0, totalInvested: 0,
+        purchaseCount: 0, airdropCount: 0,
+        entries: [],
+      });
+    }
+    const g = map.get(key);
+    const amount = Number(a.tokenQty || 0);
+    const value  = Number(a.amountUsd || 0);
+    g.totalTokens += amount;
+    g.totalValue  += value;
+    g.airdropCount += 1;
+    g.entries.push({
+      kind: 'airdrop',
+      id: a.id,
+      amount,
+      currentValue: value,
+      date: a.date,
+      airdropType: a.airdropType,
+      reference: a.reference,
+      adminNote: a.adminNote,
+      status: a.status,
+    });
+  });
+
+  return Array.from(map.values());
+}
+
+/* ── Unified token holding card (used in Overview, Portfolio, Wallet) ── */
+function TokenHoldingCard({ holding, onViewDetails }) {
+  const fmt = n => Number(n).toLocaleString();
+  const fmtPrice = n => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  const avgCost = holding.totalTokens > 0 && holding.totalInvested > 0
+    ? holding.totalInvested / holding.totalTokens
+    : 0;
+  const pnl = holding.totalValue - holding.totalInvested;
+  const pnlPct = holding.totalInvested > 0 ? (pnl / holding.totalInvested) * 100 : 0;
+  const hasInvested = holding.totalInvested > 0;
+  // Find latest acquisition date from entries
+  const latestEntry = holding.entries.reduce((latest, e) => {
+    if (!e.date) return latest;
+    return !latest || (e.date && new Date(e.date) > new Date(latest.date)) ? e : latest;
+  }, null);
+  const sourcesLine = [
+    holding.purchaseCount > 0 && `${holding.purchaseCount} Purchase${holding.purchaseCount > 1 ? 's' : ''}`,
+    holding.airdropCount > 0 && `${holding.airdropCount} Airdrop${holding.airdropCount > 1 ? 's' : ''}`,
+  ].filter(Boolean).join(' · ');
+
+  return (
+    <div className="db-token-holding-card">
+      <div className="db-token-holding-card__header">
+        <div className="db-token-holding-card__logo">
+          <img src={holding.logo} alt="" onError={e => { e.target.style.display='none'; }} />
+        </div>
+        <div className="db-token-holding-card__title">
+          <div className="db-token-holding-card__name">{holding.token}</div>
+          <div className="db-token-holding-card__ticker">{holding.ticker}</div>
+        </div>
+      </div>
+
+      <div className="db-token-holding-card__balance">
+        <span className="db-token-holding-card__balance-label">Total Holdings</span>
+        <div className="db-token-holding-card__balance-value">
+          {fmt(holding.totalTokens)} <span>{holding.ticker}</span>
+        </div>
+        <div className="db-token-holding-card__balance-usd">≈ ${fmt(holding.totalValue)} USD</div>
+      </div>
+
+      <div className="db-token-holding-card__stats">
+        {hasInvested && (
+          <div className="db-token-holding-card__stat">
+            <span>Invested</span>
+            <strong>${fmt(holding.totalInvested)}</strong>
+          </div>
+        )}
+        {hasInvested && (
+          <div className="db-token-holding-card__stat">
+            <span>Avg Cost</span>
+            <strong>${fmtPrice(avgCost)}</strong>
+          </div>
+        )}
+        {hasInvested && (
+          <div className="db-token-holding-card__stat">
+            <span>P&amp;L</span>
+            <strong style={{ color: pnl >= 0 ? '#22C55E' : '#EF4444' }}>
+              {pnl >= 0 ? '+' : ''}${fmt(Math.abs(pnl))} ({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%)
+            </strong>
+          </div>
+        )}
+        {!hasInvested && holding.airdropCount > 0 && (
+          <div className="db-token-holding-card__stat">
+            <span>Acquisition</span>
+            <strong style={{ color: '#9D6FFF' }}>Free (Airdrop)</strong>
+          </div>
+        )}
+        {latestEntry && (
+          <div className="db-token-holding-card__stat">
+            <span>Last Activity</span>
+            <strong>{latestEntry.date}</strong>
+          </div>
+        )}
+      </div>
+
+      <div className="db-token-holding-card__footer">
+        <span className="db-token-holding-card__sources">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          {sourcesLine}
+        </span>
+        <button className="db-token-holding-card__btn" onClick={() => onViewDetails(holding)}>
+          View Details
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Modal showing each purchase/airdrop entry that makes up a holding ── */
+function TokenHoldingDetailsModal({ holding, onClose }) {
+  if (!holding) return null;
+  const fmt = n => Number(n).toLocaleString();
+  return (
+    <div className="db-modal-overlay" onClick={onClose}>
+      <div className="db-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
+        <div className="db-modal-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+            <img src={holding.logo} alt="" style={{ width: 40, height: 40, borderRadius: 10, background: '#1a1a2e', flexShrink: 0 }} onError={e => { e.target.style.display='none'; }} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{holding.token}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{holding.ticker} · {fmt(holding.totalTokens)} tokens · ${fmt(holding.totalValue)}</div>
+            </div>
+          </div>
+          <button className="db-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="db-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {holding.entries.length === 0 && (
+            <div className="db-wallet-empty">No breakdown available.</div>
+          )}
+          {holding.entries.map((e, i) => (
+            <div key={e.id || i} className={`db-token-detail-row db-token-detail-row--${e.kind}`}>
+              <div className="db-token-detail-row__top">
+                <span className={`db-wallet-tag ${e.kind === 'airdrop' ? 'db-wallet-tag--purple' : 'db-wallet-tag--green'}`} style={{ textTransform: 'capitalize', fontSize: 11 }}>
+                  {e.kind === 'airdrop' ? (e.airdropType ? `${e.airdropType} Airdrop` : 'Airdrop') : 'Purchase'}
+                </span>
+                {e.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{e.kind === 'airdrop' ? 'Received' : 'Approved'} · {e.date}</span>}
+              </div>
+              <div className="db-token-detail-row__stats">
+                <div><span>Tokens</span><strong>{fmt(e.amount)} {holding.ticker}</strong></div>
+                {e.kind === 'purchase'
+                  ? <div><span>Invested</span><strong>${fmt(e.invested)}</strong></div>
+                  : <div><span>USD Value</span><strong>${fmt(e.currentValue)}</strong></div>
+                }
+                <div><span>Value</span><strong style={{ color: e.kind === 'airdrop' ? '#9D6FFF' : '#22C55E' }}>${fmt(e.currentValue)}</strong></div>
+                {e.lockExpiry && e.kind === 'purchase' && <div><span>Lock Expiry</span><strong>{e.lockExpiry}</strong></div>}
+                {e.status && e.kind === 'airdrop' && <div><span>Status</span><strong style={{ textTransform: 'capitalize' }}>{e.status}</strong></div>}
+              </div>
+              {e.reference && (
+                <div className="db-token-detail-row__ref">
+                  <span>Ref</span>
+                  <strong style={{ fontFamily: 'monospace', fontSize: 11, wordBreak: 'break-all' }}>{e.reference}</strong>
+                </div>
+              )}
+              {e.adminNote && (
+                <div className="db-token-detail-row__note">
+                  <span>Note</span><strong>{e.adminNote}</strong>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Overview ───────────────────────────────────── */
 const HOLDINGS_PER_PAGE = 3;
 
-function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], walletData = null, walletTransactions = [], onNav }) {
+function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], walletData = null, walletTransactions = [], directAirdrops = [], onNav }) {
   const total    = approvedPurchases.reduce((s, h) => s + (h.currentValue || h.invested || 0), 0);
   const invested = approvedPurchases.reduce((s, h) => s + (h.invested || 0), 0);
   const pnl    = total - invested;
   const pnlPct = invested > 0 ? ((pnl / invested) * 100).toFixed(1) : '0.0';
   const [holdingsPage, setHoldingsPage] = useState(1);
   const [offerDismissed, setOfferDismissed] = useState(false);
-  const visibleHoldings = approvedPurchases.slice(0, holdingsPage * HOLDINGS_PER_PAGE);
+  const [detailsToken, setDetailsToken] = useState(null);
+  const allHoldings = aggregateHoldings(approvedPurchases, directAirdrops);
+  const visibleHoldings = allHoldings.slice(0, holdingsPage * HOLDINGS_PER_PAGE);
   const { copy, copied } = useCopyText();
   const walletBalance = Number(walletData?.cashBalance || walletData?.balance || walletData?.walletBalance || 0);
   const walletAddr    = walletData?.walletAddress || investor?.walletAddress || INVESTOR.walletAddress;
@@ -686,7 +906,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
 
       {/* Holdings */}
       <div className="db-section-title">Current Holdings</div>
-      {approvedPurchases.length === 0 ? (
+      {allHoldings.length === 0 ? (
         <div className="db-holdings-empty">
           <div className="db-holdings-empty__icon">
             <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
@@ -707,36 +927,18 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
         <>
           <div className="db-holdings-grid">
             {visibleHoldings.map(h => (
-              <div key={h.id} className="db-hcard">
-                <div className="db-hcard__body" style={{ padding: '16px' }}>
-                  <div className="db-hcard__header">
-                    <div className="db-hcard__logo">
-                      <img src={h.logo} alt="" onError={e => { e.target.style.display='none'; }} />
-                    </div>
-                    <div>
-                      <div className="db-hcard__name">{h.token} <span className="db-ticker">{h.ticker}</span></div>
-                      <div className="db-hcard__chain">{h.ticker || 'Token'}</div>
-                    </div>
-                    <span className="db-wallet-tag db-wallet-tag--green" style={{ marginLeft: 'auto', fontSize: 11 }}>Active</span>
-                  </div>
-                  <div className="db-hcard__stats" style={{ marginTop: 12 }}>
-                    <div className="db-hcard__stat"><span>Tokens</span><strong>{(h.amount ?? 0).toLocaleString()}</strong></div>
-                    <div className="db-hcard__stat"><span>Invested</span><strong>${(h.invested ?? 0).toLocaleString()}</strong></div>
-                    <div className="db-hcard__stat"><span>Value</span><strong style={{ color: '#22C55E' }}>${(h.currentValue ?? h.invested ?? 0).toLocaleString()}</strong></div>
-                    {h.date && <div className="db-hcard__stat"><span>Approved</span><strong>{h.date}</strong></div>}
-                  </div>
-                </div>
-              </div>
+              <TokenHoldingCard key={h.key} holding={h} onViewDetails={setDetailsToken} />
             ))}
           </div>
-          {approvedPurchases.length > HOLDINGS_PER_PAGE && (
+          {allHoldings.length > HOLDINGS_PER_PAGE && (
             <div className="db-holdings-pagination">
-              {holdingsPage * HOLDINGS_PER_PAGE < approvedPurchases.length
+              {holdingsPage * HOLDINGS_PER_PAGE < allHoldings.length
                 ? <button className="db-btn db-btn--secondary db-btn--sm" onClick={() => setHoldingsPage(p => p + 1)}>Show More</button>
                 : <button className="db-btn db-btn--secondary db-btn--sm" onClick={() => setHoldingsPage(1)}>Show Less</button>
               }
             </div>
           )}
+          <TokenHoldingDetailsModal holding={detailsToken} onClose={() => setDetailsToken(null)} />
         </>
       )}
 
@@ -787,6 +989,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
 /* ── Portfolio ──────────────────────────────────── */
 function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurchases = [], directAirdrops = [] }) {
   const token = availableTokens[0] || AVAILABLE_TOKENS[0];
+  const [detailsToken, setDetailsToken] = useState(null);
   const totalInvested  = approvedPurchases.reduce((s, h) => s + (h.invested || 0), 0);
   const airdropTokensHeld = directAirdrops.reduce((s, a) => s + (a.tokenQty || 0), 0);
   const airdropValue    = directAirdrops.reduce((s, a) => s + (a.amountUsd || 0), 0);
@@ -911,53 +1114,12 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
         </div>
       ) : (
         <>
-          {/* Approved purchase rows */}
-          {approvedPurchases.map((h, i) => (
-            <div key={h.id || i} className="db-portfolio-card" style={{ marginBottom: 16 }}>
-              <div className="db-portfolio-card__header">
-                <div className="db-portfolio-card__logo">
-                  <img src={h.logo || token.logo} alt={h.token} onError={e => { e.target.style.display='none'; }} />
-                </div>
-                <div className="db-portfolio-card__title-block">
-                  <div className="db-portfolio-card__name">{h.token} <span className="db-ticker">{h.ticker}</span></div>
-                  {h.date && <div className="db-portfolio-card__chain">Approved: {h.date}</div>}
-                </div>
-                <span className="db-wallet-tag db-wallet-tag--green" style={{ fontSize: 11 }}>Active</span>
-              </div>
-              <div className="db-portfolio-stat-row">
-                <div className="db-p-stat"><span className="db-p-stat__label">Token Balance</span><span className="db-p-stat__value">{(h.amount || 0).toLocaleString()} {h.ticker}</span></div>
-                <div className="db-p-stat"><span className="db-p-stat__label">Invested</span><span className="db-p-stat__value">${(h.invested || 0).toLocaleString()}</span></div>
-                <div className="db-p-stat"><span className="db-p-stat__label">Live Value</span><span className="db-p-stat__value" style={{ color: '#22C55E' }}>${((h.amount || 0) * tokenPrice).toLocaleString()}</span></div>
-                <div className="db-p-stat"><span className="db-p-stat__label">Lock Expiry</span><span className="db-p-stat__value">{token.lock || '12 months'}</span></div>
-              </div>
-            </div>
-          ))}
-          {/* Airdrop rows — also counted as holdings */}
-          {directAirdrops.map((a, i) => (
-            <div key={`ad-${a.id || i}`} className="db-portfolio-card" style={{ marginBottom: 16 }}>
-              <div className="db-portfolio-card__header">
-                <div className="db-portfolio-card__logo">
-                  <img src={a.logo || token.logo} alt={a.token} onError={e => { e.target.style.display='none'; }} />
-                </div>
-                <div className="db-portfolio-card__title-block">
-                  <div className="db-portfolio-card__name">{a.token} <span className="db-ticker">{a.ticker}</span></div>
-                  {a.date && <div className="db-portfolio-card__chain">Received: {a.date}</div>}
-                </div>
-                <span className="db-wallet-tag db-wallet-tag--purple" style={{ fontSize: 11, textTransform: 'capitalize' }}>
-                  {a.airdropType ? `${a.airdropType} Airdrop` : 'Airdrop'}
-                </span>
-              </div>
-              <div className="db-portfolio-stat-row">
-                <div className="db-p-stat"><span className="db-p-stat__label">Token Balance</span><span className="db-p-stat__value">{(a.tokenQty || 0).toLocaleString()} {a.ticker}</span></div>
-                <div className="db-p-stat"><span className="db-p-stat__label">USD Value</span><span className="db-p-stat__value">${(a.amountUsd || 0).toLocaleString()}</span></div>
-                <div className="db-p-stat"><span className="db-p-stat__label">Live Value</span><span className="db-p-stat__value" style={{ color: '#9D6FFF' }}>${((a.tokenQty || 0) * tokenPrice).toLocaleString()}</span></div>
-                <div className="db-p-stat"><span className="db-p-stat__label">Status</span><span className="db-p-stat__value" style={{ textTransform: 'capitalize' }}>{a.status || 'completed'}</span></div>
-              </div>
-              {a.adminNote && (
-                <p style={{ fontSize: 12, color: 'rgba(13,11,34,0.6)', margin: '10px 0 0', lineHeight: 1.5 }}>{a.adminNote}</p>
-              )}
-            </div>
-          ))}
+          <div className="db-holdings-grid">
+            {aggregateHoldings(approvedPurchases, directAirdrops).map(h => (
+              <TokenHoldingCard key={h.key} holding={h} onViewDetails={setDetailsToken} />
+            ))}
+          </div>
+          <TokenHoldingDetailsModal holding={detailsToken} onClose={() => setDetailsToken(null)} />
         </>
       )}
     </div>
@@ -1400,8 +1562,9 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
           </div>
 
           <div className="db-usdt-payment">
-            {/* Top: QR + details side by side */}
+            {/* Top: QR + details + wallet options */}
             <div className="db-usdt-pay-row">
+              <div className="db-usdt-pay-left">
               <div className="db-usdt-qr-col">
                 <div className="db-usdt-qr-box">
                   <img
@@ -1436,6 +1599,86 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 <div className="db-usdt-receive-line">
                   <span className="db-usdt-detail-label">Ref</span>
                   <span className="db-usdt-detail-value db-muted" style={{ fontSize: '12px' }}>{purchaseId}</span>
+                </div>
+              </div>
+              </div>
+
+              {/* Pay with Wallet — right column (TRC20 USDT only) */}
+              <div className="db-usdt-wallets-col">
+                <div className="db-usdt-wallets-label">Pay with Wallet</div>
+                <div className="db-usdt-wallets-trc20">
+                  <span className="db-usdt-wallets-trc20__dot" />
+                  USDT · TRC20 · Tron only
+                </div>
+                {[
+                  {
+                    name: 'Trust Wallet',
+                    sub: 'USDT (TRC20)',
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 2L4 6v9c0 7.5 5 13.5 12 15 7-1.5 12-7.5 12-15V6L16 2z" fill="#3375BB"/>
+                        <path d="M16 7v18c-4.5-1-8-5.5-8-10V8.5L16 7z" fill="#fff"/>
+                      </svg>
+                    ),
+                    // Trust Wallet universal link — coin=195 is Tron, token_id is USDT-TRC20 contract
+                    url: `https://link.trustwallet.com/send?coin=195&address=${USDT_TRC20_ADDRESS}&amount=${amount}&token_id=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`,
+                  },
+                  {
+                    name: 'TronLink',
+                    sub: 'USDT (TRC20)',
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" fill="#FF060A"/>
+                        <path d="M22 10L9 12l4 12 11-9-2-5z" fill="#fff"/>
+                      </svg>
+                    ),
+                    // TronLink TIP-302 deep link — Tron native, TRC20 token contract specified
+                    url: `tron://send?address=${USDT_TRC20_ADDRESS}&amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`,
+                  },
+                  {
+                    name: 'Binance',
+                    sub: 'Withdraw via TRC20',
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="6" fill="#F0B90B"/>
+                        <path d="M11 16l5-5 5 5-1.5 1.5L16 14l-3.5 3.5L11 16zm0 0l1.5-1.5L16 18l3.5-3.5L21 16l-5 5-5-5zm5-3l1.5 1.5L16 16l-1.5-1.5L16 13zm-7 3l1.5-1.5L12 16l-1.5 1.5L9 16zm13 0l1.5-1.5L26 16l-1.5 1.5L22 16z" fill="#fff"/>
+                      </svg>
+                    ),
+                    // Binance web withdraw page — network=TRX forces TRC20
+                    url: `https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto/USDT?network=TRX&address=${USDT_TRC20_ADDRESS}&amount=${amount}`,
+                  },
+                  {
+                    name: 'Klever',
+                    sub: 'USDT (TRC20)',
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" fill="#9B57E0"/>
+                        <path d="M11 9h3l3 5-3 5H11l3-5-3-5zm7 0h3l-5 7 5 7h-3l-5-7 5-7z" fill="#fff"/>
+                      </svg>
+                    ),
+                    // Klever Wallet TRC20 USDT
+                    url: `klever://send?to=${USDT_TRC20_ADDRESS}&amount=${amount}&asset=USDT&network=TRX`,
+                  },
+                ].map(w => (
+                  <a
+                    key={w.name}
+                    href={w.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="db-usdt-wallet-btn"
+                  >
+                    <span className="db-usdt-wallet-btn__icon">{w.icon}</span>
+                    <span className="db-usdt-wallet-btn__text">
+                      <span className="db-usdt-wallet-btn__name">{w.name}</span>
+                      <span className="db-usdt-wallet-btn__sub">{w.sub}</span>
+                    </span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', opacity: 0.55, flexShrink: 0 }}>
+                      <path d="M7 17l10-10M7 7h10v10"/>
+                    </svg>
+                  </a>
+                ))}
+                <div className="db-usdt-wallets-hint">
+                  ⚠ Always confirm <strong>TRC20 / Tron</strong> network before sending. Other networks result in permanent loss.
                 </div>
               </div>
             </div>
@@ -1748,6 +1991,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
 function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], walletData = null, walletRequests = [], directAirdrops = [], dataLoading = false, lastRefreshed = null, onRefresh, onNav }) {
   const { copy, copied } = useCopyText();
   const [viewToken, setViewToken] = useState(null);
+  const [detailsToken, setDetailsToken] = useState(null);
   const walletAddr = walletData?.walletAddress || investor?.walletAddress || INVESTOR.walletAddress;
   const shortAddr = walletAddr.slice(0, 12) + '…' + walletAddr.slice(-6);
 
@@ -1839,56 +2083,13 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       {(approvedRows.length + airdropRows.length) === 0 ? (
         <div className="db-wallet-empty">No active tokens yet.</div>
       ) : (
-        <div className="db-wallet-token-grid">
-          {/* Approved holdings */}
-          {approvedRows.map(h => (
-            <div key={`all-h-${h.id}`} className="db-wallet-token-card">
-              <div className="db-wallet-token-card__top">
-                <img src={h.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
-                <div className="db-wallet-token-card__info">
-                  <span className="db-wallet-token-card__name">{h.token}</span>
-                  <span className="db-wallet-token-card__ticker">{h.ticker}</span>
-                </div>
-                <span className="db-wallet-tag db-wallet-tag--green">Active</span>
-              </div>
-              <div className="db-wallet-token-card__stats">
-                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{h.amount?.toLocaleString()}</strong></div>
-                <div className="db-wallet-token-stat"><span>Invested</span><strong>${h.invested?.toLocaleString()}</strong></div>
-                <div className="db-wallet-token-stat"><span>Current Value</span><strong style={{ color: '#22C55E' }}>${h.currentValue?.toLocaleString()}</strong></div>
-                <div className="db-wallet-token-stat"><span>Lock Expiry</span><strong>{h.lockExpiry}</strong></div>
-              </div>
-              <button
-                className="db-wallet-view-btn"
-                onClick={() => setViewToken(h)}
-              >
-                View Details
-              </button>
-            </div>
-          ))}
-          {/* Airdrop holdings */}
-          {airdropRows.map(a => (
-            <div key={`all-a-${a.id}`} className="db-wallet-token-card">
-              <div className="db-wallet-token-card__top">
-                <img src={a.logo} alt="" className="db-wallet-token-card__logo" onError={e => { e.target.style.display='none'; }} />
-                <div className="db-wallet-token-card__info">
-                  <span className="db-wallet-token-card__name">{a.token}</span>
-                  <span className="db-wallet-token-card__ticker">{a.ticker}</span>
-                </div>
-                <span className="db-wallet-tag db-wallet-tag--purple" style={{ textTransform: 'capitalize' }}>
-                  {a.airdropType ? `${a.airdropType} Airdrop` : 'Airdrop'}
-                </span>
-              </div>
-              <div className="db-wallet-token-card__stats">
-                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{a.tokenQty?.toLocaleString()} {a.ticker}</strong></div>
-                <div className="db-wallet-token-stat"><span>Value</span><strong style={{ color: '#22C55E' }}>${a.amountUsd?.toLocaleString()} USD</strong></div>
-                <div className="db-wallet-token-stat"><span>Date</span><strong>{a.date}</strong></div>
-                {a.completedAt && <div className="db-wallet-token-stat"><span>Completed</span><strong>{a.completedAt}</strong></div>}
-                {a.adminNote && <div className="db-wallet-token-stat" style={{ gridColumn: '1/-1' }}><span>Note</span><strong>{a.adminNote}</strong></div>}
-              </div>
-            </div>
+        <div className="db-holdings-grid">
+          {aggregateHoldings(approvedRows, airdropRows).map(h => (
+            <TokenHoldingCard key={h.key} holding={h} onViewDetails={setDetailsToken} />
           ))}
         </div>
       )}
+      <TokenHoldingDetailsModal holding={detailsToken} onClose={() => setDetailsToken(null)} />
 
       {/* ── Approved Tokens ── */}
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
@@ -4079,7 +4280,7 @@ const Dashboard = () => {
     if (isTabLocked(activeTab)) return <TabVerification investor={investor} onNav={handleNav} />;
     const addPendingPurchase = (p) => setPendingPurchases(prev => [p, ...prev]);
     switch (activeTab) {
-      case 'overview':     return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} onNav={handleNav} />;
+      case 'overview':     return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} directAirdrops={directAirdrops} onNav={handleNav} />;
       case 'portfolio':    return <TabPortfolio onNav={handleNav} availableTokens={availableTokens} approvedPurchases={approvedPurchases} directAirdrops={directAirdrops} />;
       case 'invest':       return <TabInvest investor={investor} availableTokens={availableTokens} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onAddPendingPurchase={addPendingPurchase} />;
       case 'transactions': return <TabTransactions pendingPurchases={pendingPurchases} walletTransactions={walletTransactions} onUploadScreenshot={(id, file) => {
@@ -4089,7 +4290,7 @@ const Dashboard = () => {
       case 'affiliate':    return <TabAffiliate investor={investor} enrolled={enrolledPrograms} setEnrolled={setEnrolledPrograms} directProgramId={directAffProgId} onClearDirect={() => setDirectAffProgId(null)} />;
       case 'verification': return <TabVerification investor={investor} onNav={handleNav} />;
       case 'settings':     return <TabSettings investor={investor} />;
-      default:             return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} onNav={handleNav} />;
+      default:             return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} directAirdrops={directAirdrops} onNav={handleNav} />;
     }
   };
 

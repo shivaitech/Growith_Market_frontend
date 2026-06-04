@@ -4593,8 +4593,122 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .db-usdt-pay-row {
   display: flex;
   gap: 16px;
-  align-items: flex-start;
+  align-items: stretch;
   margin-bottom: 0;
+}
+.db-usdt-pay-left {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* ── Pay with Wallet column ── */
+.db-usdt-wallets-col {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+}
+.db-usdt-wallets-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.db-usdt-wallets-trc20 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 100px;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.25);
+  color: #22C55E;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+.db-usdt-wallets-trc20__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22C55E;
+  box-shadow: 0 0 6px #22C55E;
+}
+.db-usdt-wallet-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.db-usdt-wallet-btn:hover {
+  background: rgba(157,111,255,0.12);
+  border-color: rgba(157,111,255,0.35);
+  transform: translateY(-1px);
+}
+.db-usdt-wallet-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.db-usdt-wallet-btn__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.db-usdt-wallet-btn__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-usdt-wallet-btn__sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.db-usdt-wallets-hint {
+  font-size: 11px;
+  color: rgba(245,158,11,0.85);
+  line-height: 1.5;
+  margin-top: 4px;
+  padding: 8px 10px;
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 8px;
+}
+.db-usdt-wallets-hint strong {
+  color: #F59E0B;
+  font-weight: 700;
+}
+@media (max-width: 991px) {
+  .db-usdt-wallets-col {
+    width: 100%;
+  }
 }
 .db-usdt-qr-col {
   flex-shrink: 0;
@@ -4766,6 +4880,238 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: rgba(255,255,255,0.45);
   margin-bottom: 14px;
 }
+/* ── Unified Token Holding Card ───────────────────── */
+.db-token-holding-card {
+  background: linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.db-token-holding-card:hover {
+  border-color: rgba(157,111,255,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(92,39,254,0.12);
+}
+.db-token-holding-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.db-token-holding-card__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(157,111,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid rgba(157,111,255,0.15);
+}
+.db-token-holding-card__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.db-token-holding-card__title {
+  min-width: 0;
+  flex: 1;
+}
+.db-token-holding-card__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.db-token-holding-card__ticker {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-family: monospace;
+  letter-spacing: 0.04em;
+}
+.db-token-holding-card__balance {
+  background: linear-gradient(135deg, rgba(157,111,255,0.08), rgba(92,39,254,0.04));
+  border: 1px solid rgba(157,111,255,0.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.db-token-holding-card__balance-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.db-token-holding-card__balance-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  font-family: 'Conthrax', sans-serif;
+}
+.db-token-holding-card__balance-value span {
+  font-size: 14px;
+  color: #DEC7FF;
+  margin-left: 4px;
+}
+.db-token-holding-card__balance-usd {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+}
+.db-token-holding-card__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+.db-token-holding-card__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.db-token-holding-card__stat span {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+.db-token-holding-card__stat strong {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-token-holding-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.db-token-holding-card__sources {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.db-token-holding-card__sources svg {
+  opacity: 0.6;
+}
+.db-token-holding-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(157,111,255,0.12);
+  border: 1px solid rgba(157,111,255,0.25);
+  color: #DEC7FF;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.db-token-holding-card__btn:hover {
+  background: rgba(157,111,255,0.22);
+  border-color: rgba(157,111,255,0.5);
+}
+
+@media (max-width: 480px) {
+  .db-token-holding-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .db-token-holding-card__btn {
+    width: 100%;
+  }
+}
+
+/* ── Token breakdown rows inside modal ───────────────── */
+.db-token-detail-row {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.db-token-detail-row--purchase { border-left: 3px solid #22C55E; }
+.db-token-detail-row--airdrop  { border-left: 3px solid #9D6FFF; }
+.db-token-detail-row__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.db-token-detail-row__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+.db-token-detail-row__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.db-token-detail-row__stats span {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.db-token-detail-row__stats strong {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+}
+.db-token-detail-row__ref,
+.db-token-detail-row__note {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.db-token-detail-row__ref span,
+.db-token-detail-row__note span {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.db-token-detail-row__ref strong,
+.db-token-detail-row__note strong {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+
 .db-usdt-qr-box {
   background: #fff;
   border-radius: 16px;

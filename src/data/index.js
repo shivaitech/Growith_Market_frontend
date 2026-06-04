@@ -32,7 +32,7 @@ export const tokenOfferings = [
     title: 'ShivAI - Own a Stake in the Future of AI Workforce for Global Customer Communication',
     shortDescription: 'ShivAI is a Voice AI SaaS platform enabling businesses to automate calls, customer engagement, lead qualification, and support through AI-powered voice agents operating 24/7.',
     detailDescription: 'Structured as a regulated private placement opportunity, the offering provides verified investors early-stage exposure to the rapidly growing AI communication and automation sector.',
-    image: '/assets/images/partner/MainShiv.jpeg',
+    image: '/assets/images/partner/HeroTokens/ShivAiCardHero.jpeg',
     images: [
       '/assets/images/partner/MainShiv.jpeg',
       '/assets/images/partner/Shiv2.jpeg',
