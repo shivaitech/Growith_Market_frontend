@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { authTokenState, userState } from '../../recoil/auth';
 import { setToken as ssSetToken, setUser as ssSetUser, setRefreshToken as ssSetRefreshToken } from '../../utils/secureStorage';
@@ -124,7 +124,9 @@ export default function Onboarding() {
               <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="ob-header-logo" />
+          <Link to="/" aria-label="Go to home" style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <img src="/assets/images/growith_logo_transparent.png" alt="Growith" className="ob-header-logo" style={{ cursor: 'pointer' }} />
+          </Link>
           <div style={{ width: 40 }}></div>
         </div>
 

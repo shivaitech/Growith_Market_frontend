@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 const features = [
   {
     id: 1,
@@ -29,6 +31,45 @@ const features = [
   },
 ]
 
+function SpecCard({ item, idx }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          obs.unobserve(el)
+        }
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -10% 0px' }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={`spec-card spec-card--animated ${visible ? 'is-visible' : ''}`}
+      style={{ transitionDelay: visible ? `${idx * 90}ms` : '0ms' }}
+    >
+      <div className="spec-card__accent" />
+      <div className="spec-card__icon">
+        <img src={item.img} alt={item.title} />
+      </div>
+      <div className="spec-card__body">
+        <h5 className="spec-card__title">{item.title}</h5>
+        <p className="spec-card__desc">{item.desc}</p>
+      </div>
+      <span className="spec-card__num">{item.num}</span>
+    </div>
+  )
+}
+
 export default function Speciality() {
   return (
     <section className="speciality">
@@ -41,18 +82,8 @@ export default function Speciality() {
         </div>
 
         <div className="spec-grid">
-          {features.map((item) => (
-            <div className="spec-card" key={item.id}>
-              <div className="spec-card__accent" />
-              <div className="spec-card__icon">
-                <img src={item.img} alt={item.title} />
-              </div>
-              <div className="spec-card__body">
-                <h5 className="spec-card__title">{item.title}</h5>
-                <p className="spec-card__desc">{item.desc}</p>
-              </div>
-              <span className="spec-card__num">{item.num}</span>
-            </div>
+          {features.map((item, idx) => (
+            <SpecCard key={item.id} item={item} idx={idx} />
           ))}
         </div>
       </div>

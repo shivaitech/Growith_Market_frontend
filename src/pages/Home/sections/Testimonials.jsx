@@ -55,10 +55,7 @@ export default function Testimonials() {
           <div className="testimonial-cards">
             {testimonials.map((item) => (
               <div className="testimonial-card" key={item.id}>
-                <div className="testimonial-card__quote">
-                  <img src="/assets/images/svg/quote.svg" alt="quote" />
-                </div>
-                <p className="testimonial-card__text">{item.text}</p>
+                <p className="testimonial-card__text">{item.text.replace(/^"|"$/g, '')}</p>
                 <div className="testimonial-card__author">
                   <div className="testimonial-card__avatar">
                     <img src={item.avatar} alt={item.name} />
@@ -66,6 +63,9 @@ export default function Testimonials() {
                   <div className="testimonial-card__info">
                     <h5 className="testimonial-card__name">{item.name}</h5>
                     <p className="testimonial-card__role">{item.role}</p>
+                  </div>
+                  <div className="testimonial-card__quote-inline">
+                    <img src="/assets/images/svg/quote.svg" alt="" />
                   </div>
                 </div>
               </div>

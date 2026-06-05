@@ -1,5 +1,6 @@
 export default function ProgressBar({ currentStep, totalSteps }) {
-  const progress = (currentStep / totalSteps) * 100;
+  // 0% at start of step 1, advances after each completed step
+  const progress = ((currentStep - 1) / totalSteps) * 100;
 
   return (
     <div className="progress-container">

@@ -180,7 +180,7 @@ export default function BlogDetails() {
                 <ul className="blog-sidebar__cats">
                   {Array.from(new Set(blogPosts.map((p) => p.category))).map((cat) => (
                     <li key={cat}>
-                      <Link to="/blog" className="blog-sidebar__cat-link">
+                      <Link to={`/blog?category=${encodeURIComponent(cat)}`} className="blog-sidebar__cat-link">
                         <span>{cat}</span>
                         <span className="blog-sidebar__cat-count">{blogPosts.filter((p) => p.category === cat).length}</span>
                       </Link>

@@ -35,9 +35,13 @@ export default function NFT() {
 
   const [filterStatus, setFilterStatus] = useState('ALL')
 
-  const filteredTokens = filterStatus === 'ALL' 
-    ? displayTokens 
-    : displayTokens.filter(t => t.bid === filterStatus)
+  const filteredTokens = filterStatus === 'ALL'
+    ? displayTokens
+    : filterStatus === 'PRE-LAUNCH'
+      ? displayTokens.filter(t => t.bid === 'PRE-LAUNCH')
+      : filterStatus === 'UPCOMING'
+        ? displayTokens.filter(t => t.bid !== 'LIVE' && t.bid !== 'PRE-LAUNCH')
+        : displayTokens.filter(t => t.bid === filterStatus)
 
   return (
     <>
@@ -53,7 +57,7 @@ export default function NFT() {
             marginBottom: '48px',
             flexWrap: 'wrap'
           }}>
-            {['ALL', 'LIVE', 'UPCOMING'].map(status => (
+            {['ALL', 'LIVE', 'PRE-LAUNCH', 'UPCOMING'].map(status => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}

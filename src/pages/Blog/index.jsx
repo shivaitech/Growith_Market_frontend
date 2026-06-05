@@ -1,13 +1,38 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { blogPosts } from '../../data'
 
 const CATEGORIES = ['All', ...Array.from(new Set(blogPosts.map((p) => p.category)))]
 
 export default function Blog() {
-  const [active, setActive] = useState('All')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialCat = searchParams.get('category') || 'All'
+  const [active, setActive] = useState(CATEGORIES.includes(initialCat) ? initialCat : 'All')
   const featured = blogPosts[0]
-  const filtered = (active === 'All' ? blogPosts.slice(1) : blogPosts.filter((p) => p.category === active && p.id !== featured.id))
+  // When a specific category is selected, INCLUDE the featured if it matches
+  const filtered = active === 'All'
+    ? blogPosts.slice(1)
+    : blogPosts.filter((p) => p.category === active)
+
+  useEffect(() => {
+    if (active === 'All') {
+      searchParams.delete('category')
+    } else {
+      searchParams.set('category', active)
+    }
+    setSearchParams(searchParams, { replace: true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active])
+
+  // On first load with a category param, scroll to the filter so user sees the filtered grid
+  useEffect(() => {
+    if (initialCat && initialCat !== 'All') {
+      setTimeout(() => {
+        document.querySelector('.blog-filter')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>

@@ -2723,7 +2723,8 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
     );
   };
 
-  const [showOverlay, setShowOverlay] = useState(true);
+  // Affiliate program is coming soon — overlay is permanent and cannot be dismissed
+  const showOverlay = true;
 
   return (
     <div className="db-tab-content" style={{ position: 'relative' }}>
@@ -2755,17 +2756,6 @@ function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClea
           width: '90%',
           boxShadow: '0 8px 48px rgba(107,53,255,0.25)',
         }}>
-          <button
-            onClick={() => setShowOverlay(false)}
-            style={{
-              position: 'absolute', top: 14, right: 14,
-              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: '50%', width: 30, height: 30,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 16, lineHeight: 1,
-            }}
-            aria-label="Close"
-          >×</button>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
             background: 'rgba(157,111,255,0.12)',

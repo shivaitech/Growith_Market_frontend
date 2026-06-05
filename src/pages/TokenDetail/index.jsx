@@ -539,23 +539,25 @@ export default function TokenDetail() {
                 ))}
               </div>
 
-              {/* Allocation chart */}
+              {/* Allocation chart (sticky inside a stretching wrapper) */}
               {token.tokenStructure.allocationBreakdown && (
-                <div className="td-allocation">
-                  <h5 className="td-allocation__title">Allocation Breakdown</h5>
-                  <div className="td-allocation__bars">
-                    {token.tokenStructure.allocationBreakdown.map((a, i) => (
-                      <div key={i} className="td-alloc-row">
-                        <div className="td-alloc-row__label">
-                          <span>{a.label}</span>
-                          <span className="td-alloc-row__pct">{a.pct}%</span>
+                <div className="td-allocation-wrap">
+                  <div className="td-allocation">
+                    <h5 className="td-allocation__title">Allocation Breakdown</h5>
+                    <div className="td-allocation__bars">
+                      {token.tokenStructure.allocationBreakdown.map((a, i) => (
+                        <div key={i} className="td-alloc-row">
+                          <div className="td-alloc-row__label">
+                            <span>{a.label}</span>
+                            <span className="td-alloc-row__pct">{a.pct}%</span>
+                          </div>
+                          <div className="td-alloc-row__track">
+                            <div className="td-alloc-row__fill" style={{ width: `${a.pct}%` }} />
+                          </div>
+                          {a.desc && <p className="td-alloc-row__desc">{a.desc}</p>}
                         </div>
-                        <div className="td-alloc-row__track">
-                          <div className="td-alloc-row__fill" style={{ width: `${a.pct}%` }} />
-                        </div>
-                        {a.desc && <p className="td-alloc-row__desc">{a.desc}</p>}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

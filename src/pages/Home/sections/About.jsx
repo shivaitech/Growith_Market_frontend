@@ -1,4 +1,38 @@
 import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+
+function AboutFeatureCard({ feature, idx }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          obs.unobserve(el)
+        }
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -8% 0px' }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={`abt__fcard abt__fcard--animated ${visible ? 'is-visible' : ''}`}
+      style={{ transitionDelay: visible ? `${idx * 80}ms` : '0ms' }}
+    >
+      <span className="abt__ficon">{feature.icon}</span>
+      <strong className="abt__flabel">{feature.label}</strong>
+      <span className="abt__ftext">{feature.text}</span>
+    </div>
+  )
+}
 
 /* ── Orbital icon renderer ─────────────────────────────────────────────── */
 function NodeIcon({ type }) {
@@ -224,11 +258,7 @@ export default function About() {
         {/* ── Feature cards strip ── */}
         <div className="abt__features">
           {features?.map((f, i) => (
-            <div key={i} className="abt__fcard">
-              <span className="abt__ficon">{f.icon}</span>
-              <strong className="abt__flabel">{f.label}</strong>
-              <span className="abt__ftext">{f.text}</span>
-            </div>
+            <AboutFeatureCard key={i} feature={f} idx={i} />
           ))}
         </div>
 

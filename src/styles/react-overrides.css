@@ -3,6 +3,111 @@
    (Original template CSS is in template.css)
    ===================================================== */
 
+/* ── FAQ accordion: + → − when open ── */
+.flat-accordion .flat-toggle .toggle-title .icon-plus {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.flat-accordion .flat-toggle .toggle-title .icon-plus::before,
+.flat-accordion .flat-toggle .toggle-title .icon-plus::after {
+  content: "" !important;
+  position: absolute;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.flat-accordion .flat-toggle .toggle-title .icon-plus::before {
+  /* horizontal bar (always visible — forms the minus) */
+  width: 14px;
+  height: 2px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.flat-accordion .flat-toggle .toggle-title .icon-plus::after {
+  /* vertical bar (rotates away when open) */
+  width: 2px;
+  height: 14px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.flat-accordion .flat-toggle.active .toggle-title .icon-plus::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  opacity: 0;
+}
+
+/* ── Testimonial card — inline quote next to author ── */
+.testimonial-card__quote-inline {
+  margin-left: auto;
+  opacity: 0.5;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.testimonial-card__quote-inline img {
+  width: 28px;
+  height: 28px;
+  filter: brightness(0) saturate(100%) invert(60%) sepia(60%) saturate(800%) hue-rotate(240deg) brightness(95%);
+}
+.testimonial-card__author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.testimonial-card .testimonial-card__quote {
+  display: none !important;
+}
+
+/* ── Spec cards (Platform Architecture) scroll-in animation ── */
+.spec-card--animated {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.spec-card--animated.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Timeline scroll-in animation (animate card only, dot stays fixed) ── */
+.timeline__item--animated .timeline__card {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.5s ease,
+              box-shadow 0.5s ease,
+              background 0.5s ease;
+}
+.timeline__item--animated.is-visible .timeline__card {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Scroll-focus highlight: card lights up when near center of viewport */
+.timeline__item--animated.is-focused .timeline__card {
+  border-color: rgba(157, 111, 255, 0.8) !important;
+  box-shadow:
+    0 0 0 1.5px rgba(157, 111, 255, 0.55),
+    0 0 60px rgba(157, 111, 255, 0.25),
+    0 24px 70px rgba(92, 39, 254, 0.35) !important;
+  background: linear-gradient(160deg, rgba(157, 111, 255, 0.12) 0%, rgba(92, 39, 254, 0.04) 100%) !important;
+}
+.timeline__item--animated .timeline__dot {
+  transition: filter 0.5s ease, transform 0.5s ease;
+  border-radius: 50%;
+}
+.timeline__item--animated.is-focused .timeline__dot {
+  filter: drop-shadow(0 0 14px rgba(157, 111, 255, 0.85)) drop-shadow(0 0 28px rgba(157, 111, 255, 0.45));
+}
+
 /* Banner — slider + nav stacked vertically (overrides parent flex-row on mobile) */
 .banner-token-stack {
   display: flex;
@@ -97,7 +202,6 @@
   overflow: visible !important;
   position: relative;
   border-radius: inherit;
-  transform: scaleX(-1);
   will-change: transform;
 }
 .banner-token-swiper .swiper-wrapper {
@@ -112,7 +216,6 @@
   transform-style: preserve-3d;
 }
 .banner-token-slide__link {
-  transform: scaleX(-1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -3351,12 +3454,17 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
-  align-items: start;
+  align-items: stretch;
 }
 .td-structure-cards {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+/* Right column wrapper: stretches to match left column height */
+.td-allocation-wrap {
+  position: relative;
+  height: 100%;
 }
 .td-info-card {
   background: rgba(255,255,255,0.03);
@@ -3408,7 +3516,7 @@ html, body {
   border-radius: 18px;
   padding: 32px;
   position: sticky;
-  top: 100px;
+  top: 80px;
 }
 .td-allocation__title {
   font-family: 'Conthrax', sans-serif;
@@ -6286,6 +6394,41 @@ select.form-input option {
 .about-pg--first {
   padding-top: 40px;
 }
+/* Widen the container on About and Legal pages so content doesn't feel squished */
+.about-pg .container,
+.about-pg-stats .container,
+.about-pg-values .container,
+.about-pg-team .container,
+.about-pg-mission .container,
+.about-pg-cta .container,
+.legal-pg .container {
+  max-width: 1480px !important;
+  width: 92% !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
+/* Legal page: widen the inner column too */
+.legal-pg .col-xl-8 {
+  flex: 0 0 92% !important;
+  max-width: 1200px !important;
+}
+@media (max-width: 991px) {
+  .about-pg .container,
+  .about-pg-stats .container,
+  .about-pg-values .container,
+  .about-pg-team .container,
+  .about-pg-mission .container,
+  .about-pg-cta .container,
+  .legal-pg .container {
+    width: 100% !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .legal-pg .col-xl-8 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
 .about-pg__visual {
   position: relative;
   height: 480px;
@@ -6293,7 +6436,9 @@ select.form-input option {
 }
 .about-pg__img {
   position: absolute;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: #0a0d2a;
   border-radius: 20px;
 }
 .about-pg__img--main {
@@ -9328,6 +9473,15 @@ select.form-input option {
   border: 1px solid rgba(255,255,255,0.06);
   background: rgba(255,255,255,0.02);
   transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+.abt__fcard.abt__fcard--animated {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.abt__fcard.abt__fcard--animated.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 .abt__fcard:hover {
   transform: translateY(-4px);

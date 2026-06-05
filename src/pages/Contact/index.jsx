@@ -9,6 +9,9 @@ const infoItems = [
     ),
     label: 'Office Address',
     value: 'EIB-611A, Emirates Islamic Bank Building, Business Zone-FZ RAK, United Arab Emirates',
+    href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Emirates Islamic Bank Building, Business Zone-FZ RAK, United Arab Emirates'),
+    target: '_blank',
+    copyable: true,
   },
   {
     icon: (
@@ -18,6 +21,8 @@ const infoItems = [
     ),
     label: 'Phone',
     value: '+971 506618 0707',
+    href: 'tel:+9715066180707',
+    copyable: true,
   },
   {
     icon: (
@@ -27,6 +32,8 @@ const infoItems = [
     ),
     label: 'Email',
     value: 'support@growithlive.com',
+    href: 'mailto:support@growithlive.com',
+    copyable: true,
   },
   {
     icon: (
@@ -39,6 +46,65 @@ const infoItems = [
     value: 'Monday to Friday 9AM to 6:30PM GST',
   },
 ]
+
+function CopyButton({ value, label }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigator.clipboard?.writeText(value).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    })
+  }
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      aria-label={`Copy ${label}`}
+      title={copied ? 'Copied!' : `Copy ${label}`}
+      style={{
+        position: 'absolute', top: 12, right: 12,
+        width: 30, height: 30, borderRadius: '50%',
+        background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
+        border: `1px solid ${copied ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.12)'}`,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', color: copied ? '#22C55E' : 'rgba(255,255,255,0.7)',
+        transition: 'background 0.2s, border-color 0.2s, color 0.2s',
+        zIndex: 2,
+      }}
+    >
+      {copied ? (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ) : (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+      )}
+    </button>
+  )
+}
+
+function InfoCardWrapper({ item, children, isWide }) {
+  const cardClass = `contact-pg-info__card${isWide ? ' contact-pg-info__card--wide' : ''}`
+  if (item.href) {
+    return (
+      <a
+        href={item.href}
+        target={item.target}
+        rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
+        className={cardClass}
+        style={{ display: 'block', textDecoration: 'none', position: 'relative' }}
+      >
+        {children}
+      </a>
+    )
+  }
+  return <div className={cardClass} style={{ position: 'relative' }}>{children}</div>
+}
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
@@ -77,22 +143,24 @@ export default function Contact() {
           {/* Row 1: Address — full width */}
           <div className="row mb-3">
             <div className="col-12">
-              <div className="contact-pg-info__card contact-pg-info__card--wide">
+              <InfoCardWrapper item={infoItems[0]} isWide>
+                {infoItems[0].copyable && <CopyButton value={infoItems[0].value} label={infoItems[0].label} />}
                 <div className="contact-pg-info__icon">{infoItems[0].icon}</div>
                 <p className="contact-pg-info__label">{infoItems[0].label}</p>
                 <p className="contact-pg-info__value">{infoItems[0].value}</p>
-              </div>
+              </InfoCardWrapper>
             </div>
           </div>
           {/* Row 2: Phone, Email, Business Hours */}
           <div className="row">
             {infoItems.slice(1).map((item, i) => (
               <div className="col-xl-4 col-md-4 col-12" key={i}>
-                <div className="contact-pg-info__card">
+                <InfoCardWrapper item={item}>
+                  {item.copyable && <CopyButton value={item.value} label={item.label} />}
                   <div className="contact-pg-info__icon">{item.icon}</div>
                   <p className="contact-pg-info__label">{item.label}</p>
                   <p className="contact-pg-info__value">{item.value}</p>
-                </div>
+                </InfoCardWrapper>
               </div>
             ))}
           </div>

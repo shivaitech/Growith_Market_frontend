@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import apiService from '../services/apiService'
 
 const platformLinks = [
   { label: 'Home', path: '/' },
@@ -62,13 +63,17 @@ export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault()
-    if (email) {
-      setSubscribed(true)
-      setEmail('')
-      setTimeout(() => setSubscribed(false), 3000)
+    if (!email) return
+    try {
+      await apiService.post('/api/newsletter/subscribe', { email })
+    } catch (err) {
+      console.warn('Newsletter subscribe failed:', err?.message || err)
     }
+    setSubscribed(true)
+    setEmail('')
+    setTimeout(() => setSubscribed(false), 3000)
   }
 
   return (
@@ -89,15 +94,17 @@ export default function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button type="submit">
-                {subscribed ? (
-                  <>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: 6 }}>
-                      <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Subscribed!
-                  </>
-                ) : 'Get Early Access'}
+              <button type="submit" className="action-btn">
+                <span>
+                  {subscribed ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: 6, verticalAlign: 'middle' }}>
+                        <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Subscribed!
+                    </>
+                  ) : 'Get Early Access'}
+                </span>
               </button>
             </form>
           </div>

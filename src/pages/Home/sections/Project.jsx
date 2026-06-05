@@ -10,11 +10,11 @@ function CardImageSlider({ item, detailUrl, isLive }) {
   const [, setActiveIdx] = useState(0)
   const hasSlider = item.images && item.images.length > 1
 
-  const imgStyle = { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }
+  const imgStyle = { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', background: '#0a0d2a' }
 
   return (
     <div>
-      <div style={{ position: 'relative', overflow: 'hidden', height: '240px', width: '100%', borderRadius: '12px 12px 0 0' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', height: '220px', width: '100%', borderRadius: '12px 12px 0 0', background: '#0a0d2a' }}>
         {hasSlider ? (
           <Swiper
             modules={[Autoplay]}
@@ -23,10 +23,10 @@ function CardImageSlider({ item, detailUrl, isLive }) {
             grabCursor
             onSwiper={setSw}
             onSlideChange={(s) => setActiveIdx(s.realIndex)}
-            style={{ width: '100%', height: '240px' }}
+            style={{ width: '100%', height: '220px' }}
           >
             {item.images.map((src, i) => (
-              <SwiperSlide key={i} style={{ height: '240px', width: '100%' }}>
+              <SwiperSlide key={i} style={{ height: '220px', width: '100%' }}>
                 <Link to={detailUrl} style={{ display: 'block', height: '100%', width: '100%' }}>
                   <img src={src} alt={`${item.title} ${i + 1}`} style={imgStyle}
                     onError={(e) => { e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'; e.target.src = '' }}
@@ -37,25 +37,11 @@ function CardImageSlider({ item, detailUrl, isLive }) {
           </Swiper>
         ) : (
           <Link to={detailUrl} style={{ display: 'block', height: '100%' }}>
-            <img src={item.image} alt={item.title} style={{...imgStyle, transition: 'transform 0.3s ease'}}
+            <img src={item.image} alt={item.title} style={imgStyle}
               onError={(e) => { e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'; e.target.src = '' }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             />
           </Link>
         )}
-        <span style={{
-          position: 'absolute', top: '12px', right: '12px', zIndex: 10,
-          padding: '5px 14px', borderRadius: '100px',
-          fontSize: '11px', fontWeight: '700',
-          fontFamily: "'Conthrax', sans-serif",
-          background: isLive ? 'linear-gradient(135deg, rgba(92,39,254,0.9), rgba(122,69,254,0.9))' : 'rgba(255,255,255,0.12)',
-          backdropFilter: 'blur(8px)',
-          border: isLive ? '1px solid rgba(92,39,254,0.6)' : '1px solid rgba(255,255,255,0.2)',
-          color: '#fff', letterSpacing: '0.05em',
-        }}>
-          {isLive ? '● LIVE' : item.bid}
-        </span>
       </div>
 
     </div>
@@ -80,14 +66,14 @@ function FeaturedCard({ item }) {
         height: '100%',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-6px)'
-        e.currentTarget.style.borderColor = 'rgba(92,39,254,0.3)'
-        e.currentTarget.style.boxShadow = '0 12px 48px rgba(92,39,254,0.15)'
+        e.currentTarget.style.borderColor = 'rgba(157,111,255,0.55)'
+        e.currentTarget.style.boxShadow = '0 0 0 1px rgba(157,111,255,0.4), 0 16px 56px rgba(92,39,254,0.28)'
+        e.currentTarget.style.background = 'linear-gradient(160deg, rgba(157,111,255,0.08) 0%, rgba(92,39,254,0.03) 100%)'
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)'
         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
         e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.background = 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)'
       }}
     >
       <CardImageSlider item={item} detailUrl={detailUrl} isLive={isLive} />
@@ -100,8 +86,20 @@ function FeaturedCard({ item }) {
             style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(92,39,254,0.3)' }}
             onError={(e) => { e.target.style.background = 'rgba(92,39,254,0.2)'; e.target.src = '' }}
           />
-          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
+          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '500', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {item.owner}
+          </span>
+          <span style={{
+            padding: '4px 10px', borderRadius: '100px',
+            fontSize: '10px', fontWeight: '700',
+            fontFamily: "'Conthrax', sans-serif",
+            background: isLive ? 'linear-gradient(135deg, #5C27FE, #7B45FE)' : 'rgba(255,255,255,0.06)',
+            border: isLive ? '1px solid rgba(157,111,255,0.5)' : '1px solid rgba(255,255,255,0.15)',
+            color: '#fff', letterSpacing: '0.05em',
+            boxShadow: isLive ? '0 2px 12px rgba(92,39,254,0.3)' : 'none',
+            whiteSpace: 'nowrap', flexShrink: 0,
+          }}>
+            {isLive ? '● LIVE' : item.bid}
           </span>
         </div>
 
@@ -206,14 +204,15 @@ export default function Project() {
             spaceBetween={24}
             slidesPerView={1}
             loop={featuredTokens.length > 1}
+            centeredSlides
             autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
             speed={700}
             grabCursor
             breakpoints={{
-              640:  { slidesPerView: 1.2 },
-              768:  { slidesPerView: 2 },
-              1024: { slidesPerView: 2 },
-              1200: { slidesPerView: 3 },
+              640:  { slidesPerView: 1.2, centeredSlides: true },
+              768:  { slidesPerView: 2, centeredSlides: false },
+              1024: { slidesPerView: 2, centeredSlides: false },
+              1200: { slidesPerView: 3, centeredSlides: true },
             }}
             onSwiper={setSwiperInstance}
             onSlideChange={(s) => setActiveIdx(s.realIndex)}
