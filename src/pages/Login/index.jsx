@@ -171,9 +171,9 @@ const Login = () => {
       <div className="login-right">
         {/* Header */}
         <div className="login-header">
-          <button className="login-back" onClick={() => navigate(-1)} aria-label="Go back">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <button className="login-back" onClick={() => navigate('/')} aria-label="Go to home">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
 

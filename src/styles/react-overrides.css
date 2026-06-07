@@ -44,26 +44,233 @@
   opacity: 0;
 }
 
-/* ── Testimonial card — inline quote next to author ── */
-.testimonial-card__quote-inline {
-  margin-left: auto;
-  opacity: 0.5;
-  flex-shrink: 0;
+/* ── Blog Details — redesigned hero header ── */
+.blog-detail-hero {
+  position: relative;
+  text-align: left;
+}
+.blog-detail-hero .container {
+  max-width: 1100px !important;
+}
+.blog-detail-hero__crumbs {
   display: flex;
   align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 22px;
+  flex-wrap: wrap;
 }
-.testimonial-card__quote-inline img {
-  width: 28px;
-  height: 28px;
-  filter: brightness(0) saturate(100%) invert(60%) sepia(60%) saturate(800%) hue-rotate(240deg) brightness(95%);
+.blog-detail-hero__crumbs a {
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.blog-detail-hero__crumbs a:hover {
+  color: #DEC7FF;
+}
+.blog-detail-hero__crumbs a:last-of-type {
+  color: #DEC7FF;
+  pointer-events: none;
+}
+.blog-detail-hero__chip {
+  display: inline-block;
+  padding: 5px 14px;
+  background: linear-gradient(135deg, #5C27FE, #7B45FE);
+  border: 1px solid rgba(157, 111, 255, 0.5);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: 'Conthrax', sans-serif;
+  box-shadow: 0 4px 16px rgba(92, 39, 254, 0.35);
+  margin-bottom: 18px;
+}
+.blog-detail-hero__title {
+  font-family: 'Conthrax', sans-serif;
+  font-size: clamp(24px, 4vw, 44px);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+  margin: 0 0 22px;
+  max-width: 900px;
+}
+.blog-detail-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 24px;
+  align-items: center;
+}
+.blog-detail-hero__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+.blog-detail-hero__meta-item svg {
+  opacity: 0.7;
+}
+/* Hide the old breadcrumbs styling if any leaks through */
+.blog-detail-hero .breadcrumbs ul,
+.blog-detail-hero .breadcrumbs h3 {
+  display: none !important;
+}
+@media (max-width: 575px) {
+  .blog-detail-hero { padding: 40px 0 24px !important; }
+  .blog-detail-hero__title { font-size: 22px; }
+  .blog-detail-hero__meta { gap: 12px 16px; font-size: 12px; }
+}
+
+/* ── Tighten section spacing: testimonials ↔ FAQ ── */
+.testimonials .testimonials__main {
+  padding: 56px 15px 36px !important;
+}
+.faq {
+  padding: 36px 0 60px !important;
+}
+.faq .block-text {
+  margin-bottom: 8px !important;
+}
+.faq .block-text .heading {
+  margin-bottom: 8px !important;
+}
+.faq__main {
+  margin-top: 16px !important;
+}
+@media (max-width: 767px) {
+  .testimonials .testimonials__main {
+    padding: 40px 15px 28px !important;
+  }
+  .faq {
+    padding: 28px 0 48px !important;
+  }
+}
+
+/* ── Testimonial cards — redesigned ── */
+.testimonial-card {
+  position: relative;
+  background: linear-gradient(160deg, rgba(157,111,255,0.05) 0%, rgba(255,255,255,0.02) 100%) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 18px !important;
+  padding: 28px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease !important;
+}
+.testimonial-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 60px;
+  background: linear-gradient(180deg, #9D6FFF, #5C27FE);
+  border-radius: 0 4px 4px 0;
+}
+.testimonial-card:hover {
+  border-color: rgba(157,111,255,0.4) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(92,39,254,0.18);
+  background: linear-gradient(160deg, rgba(157,111,255,0.09) 0%, rgba(92,39,254,0.03) 100%) !important;
+}
+.testimonial-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.testimonial-card__quote-mark {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 72px;
+  line-height: 0.7;
+  color: #9D6FFF;
+  opacity: 0.55;
+  font-weight: 700;
+  user-select: none;
+  display: inline-block;
+  margin-left: -4px;
+}
+.testimonial-card__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.testimonial-card__text {
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  color: rgba(255,255,255,0.78) !important;
+  margin: 0 !important;
+  flex: 1;
+  font-style: italic;
 }
 .testimonial-card__author {
-  display: flex;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 0 !important;
+}
+.testimonial-card__avatar {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(157,111,255,0.35) !important;
+  background: rgba(157,111,255,0.1) !important;
+}
+.testimonial-card__avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+.testimonial-card__info {
+  flex: 1;
+  min-width: 0;
+}
+.testimonial-card__name {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  margin: 0 0 2px !important;
+  line-height: 1.2 !important;
+}
+.testimonial-card__role {
+  font-size: 12px !important;
+  color: rgba(255,255,255,0.55) !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+}
+.testimonial-card__verified {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #DEC7FF;
+  background: rgba(157,111,255,0.1);
+  border: 1px solid rgba(157,111,255,0.25);
+  padding: 4px 9px;
+  border-radius: 100px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
 }
 .testimonial-card .testimonial-card__quote {
   display: none !important;
+}
+@media (max-width: 575px) {
+  .testimonial-card { padding: 22px !important; }
+  .testimonial-card__quote-mark { font-size: 56px; }
+  .testimonial-card__text { font-size: 13px !important; }
 }
 
 /* ── Spec cards (Platform Architecture) scroll-in animation ── */

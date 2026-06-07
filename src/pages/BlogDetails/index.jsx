@@ -87,19 +87,42 @@ export default function BlogDetails() {
   return (
     <>
       {/* ── Page Title ──────────────────────────────────── */}
-      <section className="page-title" style={{ backgroundImage: 'none', background: 'linear-gradient(180deg, rgba(92,39,254,0.14) 0%, transparent 100%)' }}>
+      <section className="page-title blog-detail-hero" style={{ background: 'linear-gradient(180deg, rgba(92,39,254,0.14) 0%, transparent 100%)', padding: '64px 0 36px' }}>
         <div className="container">
-          <div className="row">
-            <div className="col-md-12">
-              <div className="breadcrumbs" data-aos="zoom-in" data-aos-duration="800">
-                <h3 className="heading">Blog Details</h3>
-                <ul>
-                  <li><Link to="/">Home</Link></li>
-                  <li><Link to="/blog">Blog</Link></li>
-                  <li><span>{post.category}</span></li>
-                </ul>
-              </div>
-            </div>
+          {/* Inline breadcrumb */}
+          <nav className="blog-detail-hero__crumbs" aria-label="Breadcrumb">
+            <Link to="/">Home</Link>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.35 }}>
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <Link to="/blog">Blog</Link>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.35 }}>
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <Link to={`/blog?category=${encodeURIComponent(post.category)}`}>{post.category}</Link>
+          </nav>
+          {/* Title */}
+          <h1 className="blog-detail-hero__title">{post.title}</h1>
+          {/* Meta */}
+          <div className="blog-detail-hero__meta">
+            <span className="blog-detail-hero__meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {post.date}
+            </span>
+            <span className="blog-detail-hero__meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 15"/>
+              </svg>
+              {post.readTime}
+            </span>
+            <span className="blog-detail-hero__meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              By {post.author}
+            </span>
           </div>
         </div>
       </section>
@@ -172,21 +195,6 @@ export default function BlogDetails() {
                     <p className="blog-sidebar__author-role">Growith Editorial Team</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Categories */}
-              <div className="blog-sidebar__widget">
-                <h5 className="blog-sidebar__title">Categories</h5>
-                <ul className="blog-sidebar__cats">
-                  {Array.from(new Set(blogPosts.map((p) => p.category))).map((cat) => (
-                    <li key={cat}>
-                      <Link to={`/blog?category=${encodeURIComponent(cat)}`} className="blog-sidebar__cat-link">
-                        <span>{cat}</span>
-                        <span className="blog-sidebar__cat-count">{blogPosts.filter((p) => p.category === cat).length}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </div>
 
               {/* Related posts */}

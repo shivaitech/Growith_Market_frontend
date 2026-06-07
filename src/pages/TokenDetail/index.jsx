@@ -235,7 +235,7 @@ export default function TokenDetail() {
                   { label: 'Issuance Price',  value: token.issuancePrice },
                   { label: 'Min. Investment', value: token.minInvestment },
                   { label: 'Max. Investment', value: token.maxInvestment },
-                  { label: 'Lock-in Period',  value: token.lockPeriod },
+                  { label: 'Transfer Access', value: token.transferAccess || 'Upto 5% Monthly Unlock' },
                   { label: 'Total Supply',    value: token.totalSupply },
                   { label: 'Blockchain',      value: `${token.blockchain} (${token.tokenStandard})` },
                 ].map(s => (

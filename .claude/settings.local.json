@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -rn \"2\\\\.4M\\\\|1,200\\\\|\\\\$2\\\\|Capital\\\\|EU-Regulated Issuances\\\\|stats\" \"c:\\\\Users\\\\admin\\\\Desktop\\\\growith\\\\Growith_Market_frontend\\\\src\\\\layouts\" --include=\"*.jsx\" --include=\"*.js\")"
+      "Bash(grep -rn \"2\\\\.4M\\\\|1,200\\\\|\\\\$2\\\\|Capital\\\\|EU-Regulated Issuances\\\\|stats\" \"c:\\\\Users\\\\admin\\\\Desktop\\\\growith\\\\Growith_Market_frontend\\\\src\\\\layouts\" --include=\"*.jsx\" --include=\"*.js\")",
+      "Bash(awk -F: '$1 <= 2268')"
     ]
   }
 }
