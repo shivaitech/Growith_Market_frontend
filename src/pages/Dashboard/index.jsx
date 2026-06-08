@@ -1003,7 +1003,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
   const pnlPct         = totalInvested > 0 ? ((pnl / totalInvested) * 100).toFixed(1) : '0.0';
 
   const soldPct  = token.target > 0 ? Math.min((token.raised / token.target) * 100, 100) : 0;
-  const fmtNum   = n => n >= 1000000000 ? `${(n/1000000000).toFixed(2)}B` : n >= 1000000 ? `${(n/1000000).toFixed(2)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(n);
+  const fmtNum   = n => n >= 1000000000 ? `${(n/1000000000).toFixed(2)} Billion` : n >= 1000000 ? `${(n/1000000).toFixed(2)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}K` : String(n);
 
   const allocSegments = [
     { label: 'Private Placement',              pct: 60, color: '#6B35FF' },
@@ -1419,7 +1419,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 </div>
                 <div className="db-token-pill">
                   <span>Supply</span>
-                  <strong>{t.totalTokens >= 1000000000 ? `${(t.totalTokens/1000000000).toFixed(0)}B` : t.totalTokens >= 1000000 ? `${(t.totalTokens/1000000).toFixed(0)}M` : `${(t.totalTokens/1000).toFixed(0)}K`}</strong>
+                  <strong>{t.totalTokens >= 1000000000 ? `${(t.totalTokens/1000000000).toFixed(0)} Billion` : t.totalTokens >= 1000000 ? `${(t.totalTokens/1000000).toFixed(0)}M` : `${(t.totalTokens/1000).toFixed(0)}K`}</strong>
                 </div>
                 <div className="db-token-pill">
                   <span>Investors</span>

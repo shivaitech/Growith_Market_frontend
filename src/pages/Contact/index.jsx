@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import apiService from '../../services/apiService'
 
 const infoItems = [
   {
@@ -109,12 +110,33 @@ function InfoCardWrapper({ item, children, isWide }) {
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setSent(true)
-    setTimeout(() => setSent(false), 4000)
-    setForm({ name: '', email: '', subject: '', message: '' })
+    if (!form.name || !form.email || !form.message) {
+      setError('Please fill in name, email, and message.')
+      return
+    }
+    setError('')
+    setSubmitting(true)
+    try {
+      await apiService.post('/api/v1/contact', {
+        fullName: form.name,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+      })
+      setSent(true)
+      setForm({ name: '', email: '', subject: '', message: '' })
+      setTimeout(() => setSent(false), 4000)
+    } catch (err) {
+      console.warn('Contact submit failed:', err?.message || err)
+      setError(err?.message || 'Something went wrong. Please try again or email us directly.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -181,6 +203,17 @@ export default function Contact() {
                     Your message has been sent. We'll get back to you shortly.
                   </div>
                 )}
+                {error && (
+                  <div className="contact-pg-form__error" style={{
+                    background: 'rgba(239,68,68,0.1)',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    color: '#fca5a5',
+                    padding: '12px 16px',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    marginBottom: 16,
+                  }}>{error}</div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                   <div className="row gy-3">
@@ -228,8 +261,8 @@ export default function Contact() {
                       />
                     </div>
                     <div className="col-12">
-                      <button type="submit" className="action-btn contact-pg-form__submit">
-                        <span>Send Message</span>
+                      <button type="submit" className="action-btn contact-pg-form__submit" disabled={submitting}>
+                        <span>{submitting ? 'Sending…' : 'Send Message'}</span>
                       </button>
                     </div>
                   </div>

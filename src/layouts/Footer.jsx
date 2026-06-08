@@ -67,7 +67,7 @@ export default function Footer() {
     e.preventDefault()
     if (!email) return
     try {
-      await apiService.post('/api/newsletter/subscribe', { email })
+      await apiService.post('/api/v1/newsletter/subscribe', { email })
     } catch (err) {
       console.warn('Newsletter subscribe failed:', err?.message || err)
     }
@@ -94,17 +94,15 @@ export default function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button type="submit" className="action-btn">
-                <span>
-                  {subscribed ? (
-                    <>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: 6, verticalAlign: 'middle' }}>
-                        <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      Subscribed!
-                    </>
-                  ) : 'Get Early Access'}
-                </span>
+              <button type="submit">
+                {subscribed ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: 6 }}>
+                      <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Subscribed!
+                  </>
+                ) : 'Get Early Access'}
               </button>
             </form>
           </div>
