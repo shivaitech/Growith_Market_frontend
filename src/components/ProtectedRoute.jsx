@@ -46,7 +46,23 @@ const ProtectedRoute = ({ children }) => {
         ssSetUser(userData);
         setStatus('ok');
       })
-      .catch(() => {
+      .catch((err) => {
+        // Only force logout for genuine auth failures (401 / token errors).
+        // Server errors (5xx) or backend bugs should NOT log the user out —
+        // we keep the session and let them continue with cached data.
+        const isAuth = err?.isAuthError === true || err?.status === 401;
+        if (!isAuth) {
+          console.warn('getMe() failed with non-auth error; keeping session.', err);
+          // If we have a cached user, stay logged in. Otherwise, redirect.
+          if (cachedUser) {
+            setStatus('ok');
+          } else {
+            // No cached profile and the server can't return one — stay on the
+            // page but show with whatever defaults exist. Mark as ok to render.
+            setStatus('ok');
+          }
+          return;
+        }
         // Token expired or invalid — clear everything and send to login
         setToken(null);
         setUser(null);

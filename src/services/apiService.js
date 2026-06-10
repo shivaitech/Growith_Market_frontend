@@ -54,7 +54,10 @@ class ApiService {
         if (this._isTokenError(response.status, errMessage)) {
           this._handleUnauthorized();
         }
-        throw new Error(errMessage);
+        const err = new Error(errMessage);
+        err.status = response.status;
+        err.isAuthError = this._isTokenError(response.status, errMessage);
+        throw err;
       }
       return await response.json();
     } catch (error) {

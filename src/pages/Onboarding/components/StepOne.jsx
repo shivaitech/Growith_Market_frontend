@@ -93,6 +93,7 @@ export default function StepOne({ onRegistered }) {
       <form onSubmit={handleSubmit} noValidate>
         <FormInput
           label="Full Name"
+          hint="Use your full legal name exactly as it appears on your government-issued ID. This will be used for KYC verification."
           type="text"
           name="fullName"
           value={formData.fullName}

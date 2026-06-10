@@ -14,6 +14,7 @@ const FormInput = ({
   validating = false,
   isValid = false,
   emailStatus = null, // null | 'valid' | 'not-found' | 'invalid-format'
+  hint,
   ...props
 }) => {
   const [internalError, setInternalError] = useState('');
@@ -44,6 +45,24 @@ const FormInput = ({
   return (
     <div className="login-form-group">
       {label && <label htmlFor={name} className="login-label">{label}</label>}
+      {hint && (
+        <div style={{
+          fontSize: 11,
+          lineHeight: 1.5,
+          color: 'rgba(255,255,255,0.55)',
+          margin: '0 0 8px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 6,
+        }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, flexShrink: 0, opacity: 0.7 }}>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span>{hint}</span>
+        </div>
+      )}
       <div style={{ position: 'relative' }} className={type === 'password' ? 'login-password-wrapper' : ''}>
         <input
           type={inputType}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Toast from '../../components/Toast';
+import StripeCheckoutModal from '../../components/StripeCheckoutModal';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
@@ -1183,6 +1184,8 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
   const [apiError, setApiError] = useState(null);
   const [screenshotError, setScreenshotError] = useState(false);
   const [purchaseId] = useState(() => Math.random().toString(36).slice(2, 10).toUpperCase());
+  const [stripeOpen, setStripeOpen] = useState(false);
+  const [qrZoomed, setQrZoomed] = useState(false);
   const { copy, copied } = useCopyText();
   const formRef = useRef(null);
   const fileRef = useRef(null);
@@ -1566,15 +1569,26 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
             <div className="db-usdt-pay-row">
               <div className="db-usdt-pay-left">
               <div className="db-usdt-qr-col">
-                <div className="db-usdt-qr-box">
+                <button
+                  type="button"
+                  className="db-usdt-qr-box db-usdt-qr-box--tappable"
+                  onClick={() => setQrZoomed(true)}
+                  aria-label="View QR code in larger view"
+                >
                   <img
                     src={USDT_QR_URL}
                     alt="USDT TRC20 QR"
                     className="db-usdt-qr-img"
                     onError={e => { e.target.style.display = 'none'; }}
                   />
-                  <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.55)', textAlign: 'center' }}>No memo required</div>
-                </div>
+                  <span className="db-usdt-qr-view-overlay">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 3h6v6M14 10l7-7M9 21H3v-6M10 14l-7 7"/>
+                    </svg>
+                    View
+                  </span>
+                </button>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', textAlign: 'center', marginTop: 2 }}>No memo required</div>
                 <div className="db-usdt-network-badge">TRC20 · Tron</div>
               </div>
               <div className="db-usdt-info-col">
@@ -1605,6 +1619,51 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
 
               {/* Pay with Wallet — right column (TRC20 USDT only) */}
               <div className="db-usdt-wallets-col">
+                <div className="db-usdt-wallets-label">Pay with Card</div>
+                <div className="db-usdt-card-networks">
+                  <svg width="32" height="20" viewBox="0 0 38 24" fill="none" aria-label="Visa">
+                    <rect width="38" height="24" rx="3" fill="#1A1F71"/>
+                    <text x="19" y="16" textAnchor="middle" fill="#fff" fontFamily="Arial,sans-serif" fontSize="9" fontWeight="700">VISA</text>
+                  </svg>
+                  <svg width="32" height="20" viewBox="0 0 38 24" fill="none" aria-label="Mastercard">
+                    <rect width="38" height="24" rx="3" fill="#0A0E27"/>
+                    <circle cx="15" cy="12" r="6" fill="#EB001B"/>
+                    <circle cx="23" cy="12" r="6" fill="#F79E1B" fillOpacity="0.9"/>
+                  </svg>
+                  <svg width="32" height="20" viewBox="0 0 38 24" fill="none" aria-label="Amex">
+                    <rect width="38" height="24" rx="3" fill="#1F72CD"/>
+                    <text x="19" y="16" textAnchor="middle" fill="#fff" fontFamily="Arial,sans-serif" fontSize="8" fontWeight="700">AMEX</text>
+                  </svg>
+                  <svg width="32" height="20" viewBox="0 0 38 24" fill="none" aria-label="Discover">
+                    <rect width="38" height="24" rx="3" fill="#0A0E27"/>
+                    <text x="19" y="16" textAnchor="middle" fill="#FF6000" fontFamily="Arial,sans-serif" fontSize="6" fontWeight="700">DISCOVER</text>
+                  </svg>
+                </div>
+                <button
+                  type="button"
+                  className="db-usdt-card-btn"
+                  onClick={() => setStripeOpen(true)}
+                >
+                  <span className="db-usdt-card-btn__icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2"/>
+                      <line x1="2" y1="10" x2="22" y2="10"/>
+                      <line x1="6" y1="15" x2="10" y2="15"/>
+                    </svg>
+                  </span>
+                  <span className="db-usdt-card-btn__text">
+                    <span className="db-usdt-card-btn__name">Pay with Card</span>
+                    <span className="db-usdt-card-btn__sub">Secured by Stripe · Instant</span>
+                  </span>
+                  <span className="db-usdt-card-btn__stripe-badge">
+                    <svg width="34" height="14" viewBox="0 0 60 25" fill="none" aria-label="Stripe">
+                      <path d="M59.5 14.4c0-4.5-2.2-8-6.4-8s-6.7 3.5-6.7 7.9c0 5.3 3 8 7.2 8 2 0 3.6-.5 4.8-1.1v-3.5c-1.2.6-2.5 1-4.2 1-1.6 0-3.1-.6-3.3-2.6h8.5c.1-.2.1-1.1.1-1.7zm-8.6-1.6c0-1.9 1.2-2.7 2.2-2.7 1 0 2.1.8 2.1 2.7h-4.3zM40.5 6.4c-1.7 0-2.8.8-3.4 1.4l-.2-1.1H33v25.4l4.4-.9v-6.2c.6.5 1.6 1.1 3.2 1.1 3.2 0 6.2-2.6 6.2-8.3 0-5.2-3-7.4-6.3-7.4zm-1 11.4c-1 0-1.7-.4-2.2-.9V11c.5-.5 1.2-.9 2.2-.9 1.7 0 2.9 1.9 2.9 3.8 0 2-1.2 3.9-2.9 3.9zm-12-12.4l4.4-1V0l-4.4 1v4.4zm0 1.3h4.4v15.7h-4.4zm-5.5 1.3l-.3-1.3h-3.8v15.7H22V11.6c1-1.3 2.8-1.1 3.4-.9V6.7c-.6-.2-2.6-.6-3.4 1.3zM12 2.9l-4.3.9v14.1c0 2.6 2 4.5 4.6 4.5 1.5 0 2.5-.3 3.1-.6v-3.5c-.6.2-3.4 1.1-3.4-1.6V10h3.4V6.4h-3.4V2.9zM4.4 11c0-.7.6-1 1.5-1 1.3 0 3 .4 4.3 1.1V7c-1.4-.6-2.9-.8-4.3-.8-3.5 0-5.9 1.8-5.9 4.9 0 4.9 6.7 4.1 6.7 6.2 0 .8-.7 1.1-1.7 1.1-1.4 0-3.2-.6-4.7-1.4V21c1.6.7 3.2 1 4.6 1 3.6 0 6.1-1.8 6.1-4.9 0-5.3-6.7-4.3-6.7-6.1z" fill="#635BFF"/>
+                    </svg>
+                  </span>
+                </button>
+
+                <div className="db-usdt-pay-divider"><span>or</span></div>
+
                 <div className="db-usdt-wallets-label">Pay with Wallet</div>
                 <div className="db-usdt-wallets-trc20">
                   <span className="db-usdt-wallets-trc20__dot" />
@@ -1758,6 +1817,137 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
         </div>
         </div>
       )}
+
+      {/* ── QR Zoom Modal ── */}
+      {qrZoomed && (
+        <div
+          onClick={() => setQrZoomed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10001,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(7, 10, 41, 0.88)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+            padding: 20,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: 380, width: '100%',
+              background: '#fff',
+              borderRadius: 20,
+              padding: 24,
+              position: 'relative',
+              boxShadow: '0 24px 80px rgba(92,39,254,0.4)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setQrZoomed(false)}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: -16, right: -16,
+                width: 36, height: 36, borderRadius: '50%',
+                background: '#0F1330',
+                border: '1.5px solid rgba(255,255,255,0.2)',
+                color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18, lineHeight: 1,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+              }}
+            >×</button>
+            <img
+              src={USDT_QR_URL}
+              alt="USDT TRC20 QR Code"
+              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 12 }}
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+            <div style={{
+              marginTop: 16,
+              padding: '10px 14px',
+              background: '#0F1330',
+              borderRadius: 10,
+              fontFamily: 'monospace',
+              fontSize: 12,
+              color: '#fff',
+              wordBreak: 'break-all',
+              textAlign: 'center',
+              letterSpacing: '0.02em',
+            }}>{USDT_TRC20_ADDRESS}</div>
+            <div style={{
+              marginTop: 8,
+              fontSize: 11,
+              color: '#666',
+              textAlign: 'center',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+            }}>USDT · TRC20 · Tron Only · No Memo</div>
+            <button
+              type="button"
+              onClick={() => copy(USDT_TRC20_ADDRESS, 'usdt-zoom')}
+              style={{
+                marginTop: 14,
+                width: '100%',
+                padding: '12px 16px',
+                background: 'linear-gradient(135deg, #5C27FE, #7B45FE)',
+                border: 'none',
+                borderRadius: 10,
+                color: '#fff',
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: "'Conthrax', sans-serif",
+                cursor: 'pointer',
+                letterSpacing: '0.03em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+            >
+              {copied === 'usdt-zoom' ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Icon.copy /> Copy Address
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Stripe Card Payment Modal ── */}
+      <StripeCheckoutModal
+        open={stripeOpen}
+        onClose={() => setStripeOpen(false)}
+        tokenId={selectedToken?.id || selectedToken?.tokenId || selectedToken?._id}
+        ticker={selectedToken?.ticker}
+        amountUsd={Number(amount) || 0}
+        tokenQty={tokenQty}
+        onSuccess={({ paymentIntent, requestId }) => {
+          // Add to pending purchases so the dashboard reflects the new buy immediately
+          if (onAddPendingPurchase && selectedToken) {
+            onAddPendingPurchase({
+              id: requestId || paymentIntent?.id || `stripe-${Date.now()}`,
+              token: selectedToken.name,
+              ticker: selectedToken.ticker,
+              logo: selectedToken.logo,
+              amountUsd: Number(amount) || 0,
+              tokenQty,
+              method: 'Card (Stripe)',
+              date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              paymentStatus: 'paid',
+              purchaseRef: paymentIntent?.id || '',
+            });
+          }
+        }}
+      />
     </div>
   );
 }
@@ -2888,6 +3078,20 @@ function TabVerification({ investor, onNav }) {
   });
   const [errors, setErrors] = useState({});
 
+  // Prefill the legal name from the registered account name once it loads.
+  // Only sets it if the user hasn't started editing the field yet (or it's the placeholder default).
+  useEffect(() => {
+    const accountName = (investor.name || '').trim();
+    if (!accountName || accountName === INVESTOR.name) return;
+    setForm(prev => {
+      const current = (prev.fullName || '').trim();
+      if (!current || current === INVESTOR.name) {
+        return { ...prev, fullName: accountName };
+      }
+      return prev;
+    });
+  }, [investor.name]);
+
   // ── Document upload state ──
   const [docs, setDocs] = useState({
     primaryType:    '',
@@ -3267,8 +3471,48 @@ function TabVerification({ investor, onNav }) {
         <form className="kyc-form" onSubmit={handleSubmit} noValidate>
           <div className="kyc-form__row">
             <div className="kyc-form__group">
-              <label className="kyc-form__label">Full Legal Name <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`} name="fullName" value={form.fullName} onChange={handleChange} placeholder="As on your passport/ID" maxLength={80} />
+              <label className="kyc-form__label">
+                Full Legal Name <span className="kyc-form__req">*</span>
+                <span style={{
+                  marginLeft: 8,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: '#9D6FFF',
+                  background: 'rgba(157,111,255,0.1)',
+                  border: '1px solid rgba(157,111,255,0.25)',
+                  padding: '2px 8px',
+                  borderRadius: 100,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  verticalAlign: 'middle',
+                }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  Locked
+                </span>
+              </label>
+              <div style={{ fontSize: 11, color: 'rgba(13,11,34,0.55)', margin: '-4px 0 8px', lineHeight: 1.5 }}>
+                This is the legal name you provided at signup. It cannot be edited here — please contact support if it needs to be corrected.
+              </div>
+              <input
+                className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`}
+                name="fullName"
+                value={form.fullName}
+                readOnly
+                tabIndex={-1}
+                placeholder="As on your passport/ID"
+                maxLength={80}
+                style={{
+                  background: 'rgba(157,111,255,0.04)',
+                  cursor: 'not-allowed',
+                  color: 'rgba(13,11,34,0.75)',
+                }}
+              />
               <span className="kyc-form__error">{errors.fullName || ''}</span>
             </div>
             <div className="kyc-form__group">

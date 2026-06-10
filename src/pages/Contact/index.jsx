@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import apiService from '../../services/apiService'
+
+const PUBLIC_API_ORIGIN = (() => {
+  try { return new URL(import.meta.env.VITE_API_BASE_URL).origin } catch { return '' }
+})()
 
 const infoItems = [
   {
@@ -115,25 +118,31 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.name || !form.email || !form.message) {
-      setError('Please fill in name, email, and message.')
-      return
-    }
     setError('')
     setSubmitting(true)
     try {
-      await apiService.post('/api/v1/contact', {
-        fullName: form.name,
-        email: form.email,
-        subject: form.subject,
-        message: form.message,
+      const res = await fetch(`${PUBLIC_API_ORIGIN}/api/v1/contact/message-inquiry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullname: form.name,
+          email: form.email,
+          subject: form.subject,
+          message: form.message,
+        }),
       })
+      if (!res.ok) {
+        let msg = `Request failed (${res.status})`
+        try {
+          const body = await res.json()
+          msg = body?.message || body?.error || msg
+        } catch { /* ignore parse error */ }
+        throw new Error(msg)
+      }
       setSent(true)
       setForm({ name: '', email: '', subject: '', message: '' })
-      setTimeout(() => setSent(false), 4000)
     } catch (err) {
-      console.warn('Contact submit failed:', err?.message || err)
-      setError(err?.message || 'Something went wrong. Please try again or email us directly.')
+      setError(err?.message || 'Could not send your message. Please try again or email us directly.')
     } finally {
       setSubmitting(false)
     }
@@ -198,13 +207,8 @@ export default function Contact() {
               <div className="contact-pg-form__wrap">
                 <h3 className="contact-pg-form__title">Send Us a Message</h3>
 
-                {sent && (
-                  <div className="contact-pg-form__success">
-                    Your message has been sent. We'll get back to you shortly.
-                  </div>
-                )}
                 {error && (
-                  <div className="contact-pg-form__error" style={{
+                  <div style={{
                     background: 'rgba(239,68,68,0.1)',
                     border: '1px solid rgba(239,68,68,0.3)',
                     color: '#fca5a5',
@@ -254,11 +258,40 @@ export default function Contact() {
                       <textarea
                         required
                         rows={6}
+                        minLength={10}
+                        maxLength={1000}
                         value={form.message}
-                        onChange={e => setForm({ ...form, message: e.target.value })}
+                        onChange={e => setForm({ ...form, message: e.target.value.slice(0, 1000) })}
                         placeholder="Write your message here..."
                         className="contact-pg-form__input contact-pg-form__textarea"
                       />
+                      {(() => {
+                        const len = form.message.length
+                        const min = 10
+                        const max = 1000
+                        const tooShort = len > 0 && len < min
+                        const nearMax = len >= max - 50
+                        return (
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginTop: 6,
+                            fontSize: 12,
+                            color: 'rgba(255,255,255,0.5)',
+                          }}>
+                            <span style={{ color: tooShort ? '#f87171' : 'rgba(255,255,255,0.55)' }}>
+                              {tooShort ? `Minimum ${min} characters (${min - len} more needed)` : `Minimum ${min} characters`}
+                            </span>
+                            <span style={{
+                              color: nearMax ? '#fbbf24' : 'rgba(255,255,255,0.55)',
+                              fontVariantNumeric: 'tabular-nums',
+                            }}>
+                              {len} / {max}
+                            </span>
+                          </div>
+                        )
+                      })()}
                     </div>
                     <div className="col-12">
                       <button type="submit" className="action-btn contact-pg-form__submit" disabled={submitting}>
@@ -298,6 +331,123 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* ── Success Modal ── */}
+      {sent && (
+        <div
+          onClick={() => setSent(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(7, 10, 41, 0.78)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+            padding: 20,
+            animation: 'contactSuccessFade 0.3s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: 460, width: '100%',
+              background: 'linear-gradient(160deg, rgba(20,16,50,0.96) 0%, rgba(30,18,70,0.96) 100%)',
+              border: '1.5px solid rgba(157,111,255,0.35)',
+              borderRadius: 20,
+              padding: '40px 36px 32px',
+              textAlign: 'center',
+              boxShadow: '0 24px 80px rgba(92,39,254,0.35), 0 0 0 1px rgba(157,111,255,0.1)',
+              position: 'relative',
+              animation: 'contactSuccessSlide 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setSent(false)}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.7)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18, lineHeight: 1,
+                transition: 'background 0.2s, color 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+            >×</button>
+
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06))',
+              border: '1.5px solid rgba(34,197,94,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 22px',
+              boxShadow: '0 0 32px rgba(34,197,94,0.25)',
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+
+            <h3 style={{
+              fontFamily: "'Conthrax', sans-serif",
+              fontSize: 22, fontWeight: 800, color: '#fff',
+              margin: '0 0 12px', letterSpacing: '0.01em',
+            }}>
+              Message Sent Successfully!
+            </h3>
+            <p style={{
+              fontSize: 14, lineHeight: 1.65,
+              color: 'rgba(255,255,255,0.65)',
+              margin: '0 0 8px',
+            }}>
+              Thank you for reaching out to the Growith team. We've received your message and a member of our team will respond within <strong style={{ color: '#DEC7FF' }}>one business day</strong>.
+            </p>
+            <p style={{
+              fontSize: 13, lineHeight: 1.6,
+              color: 'rgba(255,255,255,0.45)',
+              margin: '0 0 26px',
+            }}>
+              In the meantime, feel free to explore our marketplace or check your inbox for a confirmation email.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSent(false)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8, padding: '12px 32px',
+                background: 'linear-gradient(135deg, #5C27FE, #7B45FE)',
+                border: '1px solid rgba(157,111,255,0.5)',
+                borderRadius: 100,
+                color: '#fff',
+                fontSize: 13, fontWeight: 700,
+                fontFamily: "'Conthrax', sans-serif",
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(92,39,254,0.4)',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                letterSpacing: '0.03em',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(92,39,254,0.55)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(92,39,254,0.4)' }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes contactSuccessFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes contactSuccessSlide {
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </>
   )
 }

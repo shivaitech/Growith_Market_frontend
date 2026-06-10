@@ -4604,6 +4604,90 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: flex-start;
 }
 
+/* ── Pay with Card (Stripe) ── */
+.db-usdt-card-networks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 4px;
+}
+.db-usdt-card-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(99, 91, 255, 0.12) 0%, rgba(157, 111, 255, 0.06) 100%);
+  border: 1px solid rgba(99, 91, 255, 0.35);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  position: relative;
+}
+.db-usdt-card-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 91, 255, 0.22) 0%, rgba(157, 111, 255, 0.10) 100%);
+  border-color: rgba(99, 91, 255, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(99, 91, 255, 0.18);
+}
+.db-usdt-card-btn__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #635BFF, #7E76FF);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(99, 91, 255, 0.35);
+}
+.db-usdt-card-btn__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.db-usdt-card-btn__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+.db-usdt-card-btn__sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+}
+.db-usdt-card-btn__stripe-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.db-usdt-pay-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.db-usdt-pay-divider::before,
+.db-usdt-pay-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* ── Pay with Wallet column ── */
 .db-usdt-wallets-col {
   flex: 1 1 50%;
@@ -4789,11 +4873,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     align-items: stretch;
     gap: 14px;
   }
+  .db-usdt-pay-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
   .db-usdt-qr-col {
     align-items: center;
   }
   .db-usdt-qr-box {
     padding: 10px;
+    width: 168px;
+    height: 168px;
   }
   .db-usdt-qr-img {
     width: 148px;
@@ -4807,6 +4898,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   .db-usdt-send-amount {
     font-size: 26px;
+  }
+  /* Address row: stack address above copy button to avoid wrap squish */
+  .db-usdt-addr-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .db-usdt-addr {
+    word-break: break-all;
+    text-align: center;
+    font-size: 12px !important;
+  }
+  .db-wallet-copy-btn {
+    justify-content: center;
+  }
+  /* Send amount + currency align */
+  .db-usdt-send-amount-row {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   /* Receive + Ref lines — stack label above value */
@@ -5122,6 +5232,42 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-sizing: border-box;
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(157,111,255,0.25), 0 8px 32px rgba(107,53,255,0.2);
+}
+.db-usdt-qr-box--tappable {
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 0;
+}
+.db-usdt-qr-box--tappable:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 1.5px rgba(157,111,255,0.5), 0 12px 36px rgba(107,53,255,0.3);
+}
+.db-usdt-qr-box--tappable:hover .db-usdt-qr-view-overlay {
+  opacity: 1;
+}
+.db-usdt-qr-view-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(15, 19, 48, 0.92);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+@media (max-width: 575px) {
+  .db-usdt-qr-view-overlay { opacity: 1; }
 }
 .db-usdt-qr-img {
   width: 100%;

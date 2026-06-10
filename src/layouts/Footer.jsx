@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import apiService from '../services/apiService'
+
+const PUBLIC_API_ORIGIN = (() => {
+  try { return new URL(import.meta.env.VITE_API_BASE_URL).origin } catch { return '' }
+})()
 
 const platformLinks = [
   { label: 'Home', path: '/' },
@@ -62,18 +65,39 @@ const socialIcons = [
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubscribe = async (e) => {
     e.preventDefault()
     if (!email) return
+    setError('')
     try {
-      await apiService.post('/api/v1/newsletter/subscribe', { email })
+      const res = await fetch(`${PUBLIC_API_ORIGIN}/api/v1/contact/mailing-list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) {
+        let msg = `Request failed (${res.status})`
+        try {
+          const body = await res.json()
+          msg = body?.message || body?.error || msg
+        } catch { /* ignore parse error */ }
+        // Treat "already subscribed" as an informational state, not an error
+        if (/already.*subscribed|already.*exist/i.test(msg)) {
+          setAlreadySubscribed(true)
+          setEmail('')
+          return
+        }
+        throw new Error(msg)
+      }
+      setSubscribed(true)
+      setEmail('')
     } catch (err) {
-      console.warn('Newsletter subscribe failed:', err?.message || err)
+      setError(err?.message || 'Could not subscribe. Please try again.')
+      setTimeout(() => setError(''), 4000)
     }
-    setSubscribed(true)
-    setEmail('')
-    setTimeout(() => setSubscribed(false), 3000)
   }
 
   return (
@@ -94,17 +118,19 @@ export default function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button type="submit">
-                {subscribed ? (
-                  <>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: 6 }}>
-                      <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Subscribed!
-                  </>
-                ) : 'Get Early Access'}
-              </button>
+              <button type="submit">Get Early Access</button>
             </form>
+            {error && (
+              <div style={{
+                marginTop: 12,
+                color: '#fca5a5',
+                fontSize: 12,
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.25)',
+                padding: '8px 12px',
+                borderRadius: 8,
+              }}>{error}</div>
+            )}
           </div>
         </div>
       </div>
@@ -155,6 +181,231 @@ export default function Footer() {
           <p className="ft-bottom-bar__reg">Transparent · Verified · Compliance-First Investing</p>
         </div>
       </div>
+      {/* ── Success Modal ── */}
+      {subscribed && (
+        <div
+          onClick={() => setSubscribed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(7, 10, 41, 0.78)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+            padding: 20,
+            animation: 'ftSuccessFade 0.3s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: 460, width: '100%',
+              background: 'linear-gradient(160deg, rgba(20,16,50,0.96) 0%, rgba(30,18,70,0.96) 100%)',
+              border: '1.5px solid rgba(157,111,255,0.35)',
+              borderRadius: 20,
+              padding: '40px 36px 32px',
+              textAlign: 'center',
+              boxShadow: '0 24px 80px rgba(92,39,254,0.35), 0 0 0 1px rgba(157,111,255,0.1)',
+              position: 'relative',
+              animation: 'ftSuccessSlide 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setSubscribed(false)}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.7)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18, lineHeight: 1,
+                transition: 'background 0.2s, color 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+            >×</button>
+
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(157,111,255,0.22), rgba(92,39,254,0.08))',
+              border: '1.5px solid rgba(157,111,255,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 22px',
+              boxShadow: '0 0 32px rgba(157,111,255,0.3)',
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DEC7FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 4L12 14.01l-3-3"/>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              </svg>
+            </div>
+
+            <h3 style={{
+              fontFamily: "'Conthrax', sans-serif",
+              fontSize: 22, fontWeight: 800, color: '#fff',
+              margin: '0 0 12px', letterSpacing: '0.01em',
+            }}>
+              You're on the List!
+            </h3>
+            <p style={{
+              fontSize: 14, lineHeight: 1.65,
+              color: 'rgba(255,255,255,0.65)',
+              margin: '0 0 8px',
+            }}>
+              Thanks for joining the Growith early access list. You'll be the first to hear about <strong style={{ color: '#DEC7FF' }}>upcoming offerings, market insights, and investor announcements</strong>.
+            </p>
+            <p style={{
+              fontSize: 13, lineHeight: 1.6,
+              color: 'rgba(255,255,255,0.45)',
+              margin: '0 0 26px',
+            }}>
+              Check your inbox shortly for a welcome email. Make sure to add us to your contacts so updates land safely.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSubscribed(false)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8, padding: '12px 32px',
+                background: 'linear-gradient(135deg, #5C27FE, #7B45FE)',
+                border: '1px solid rgba(157,111,255,0.5)',
+                borderRadius: 100,
+                color: '#fff',
+                fontSize: 13, fontWeight: 700,
+                fontFamily: "'Conthrax', sans-serif",
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(92,39,254,0.4)',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                letterSpacing: '0.03em',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(92,39,254,0.55)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(92,39,254,0.4)' }}
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Already Subscribed Info Modal ── */}
+      {alreadySubscribed && (
+        <div
+          onClick={() => setAlreadySubscribed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(7, 10, 41, 0.78)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+            padding: 20,
+            animation: 'ftSuccessFade 0.3s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: 460, width: '100%',
+              background: 'linear-gradient(160deg, rgba(20,16,50,0.96) 0%, rgba(30,18,70,0.96) 100%)',
+              border: '1.5px solid rgba(245,158,11,0.35)',
+              borderRadius: 20,
+              padding: '40px 36px 32px',
+              textAlign: 'center',
+              boxShadow: '0 24px 80px rgba(245,158,11,0.18), 0 0 0 1px rgba(245,158,11,0.1)',
+              position: 'relative',
+              animation: 'ftSuccessSlide 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setAlreadySubscribed(false)}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.7)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18, lineHeight: 1,
+                transition: 'background 0.2s, color 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+            >×</button>
+
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(245,158,11,0.22), rgba(245,158,11,0.06))',
+              border: '1.5px solid rgba(245,158,11,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 22px',
+              boxShadow: '0 0 32px rgba(245,158,11,0.25)',
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+
+            <h3 style={{
+              fontFamily: "'Conthrax', sans-serif",
+              fontSize: 22, fontWeight: 800, color: '#fff',
+              margin: '0 0 12px', letterSpacing: '0.01em',
+            }}>
+              You're Already Subscribed
+            </h3>
+            <p style={{
+              fontSize: 14, lineHeight: 1.65,
+              color: 'rgba(255,255,255,0.65)',
+              margin: '0 0 8px',
+            }}>
+              Good news — this email is already on our <strong style={{ color: '#FBBF24' }}>early access mailing list</strong>. You'll continue to receive updates about new offerings and market insights.
+            </p>
+            <p style={{
+              fontSize: 13, lineHeight: 1.6,
+              color: 'rgba(255,255,255,0.45)',
+              margin: '0 0 26px',
+            }}>
+              Not seeing our emails? Please check your spam folder, or contact us to update your preferences.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setAlreadySubscribed(false)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8, padding: '12px 32px',
+                background: 'linear-gradient(135deg, #5C27FE, #7B45FE)',
+                border: '1px solid rgba(157,111,255,0.5)',
+                borderRadius: 100,
+                color: '#fff',
+                fontSize: 13, fontWeight: 700,
+                fontFamily: "'Conthrax', sans-serif",
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(92,39,254,0.4)',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                letterSpacing: '0.03em',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(92,39,254,0.55)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(92,39,254,0.4)' }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes ftSuccessFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes ftSuccessSlide {
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </footer>
   )
 }
