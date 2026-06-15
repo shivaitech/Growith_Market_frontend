@@ -13,6 +13,7 @@ import Onboarding from './pages/Onboarding'
 import OnboardingSuccess from './pages/OnboardingSuccess'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import StripePaymentPage from './pages/StripePayment'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy'
@@ -32,6 +33,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/dashboard/invest/pay/:requestId" element={<ProtectedRoute><StripePaymentPage /></ProtectedRoute>} />
         <Route path="/dashboard/*" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />

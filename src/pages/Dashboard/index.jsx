@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Toast from '../../components/Toast';
-import StripeCheckoutModal from '../../components/StripeCheckoutModal';
+import { createStripePaymentIntent, saveStripeCheckoutSession } from '../../utils/stripeCheckout';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
@@ -1174,6 +1174,7 @@ function PrelaunchOfferBanner({ onNav }) {
 }
 
 function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading = false, lastRefreshed = null, onRefresh, onAddPendingPurchase }) {
+  const navigate = useNavigate();
   const [selectedToken, setSelectedToken] = useState(null);
   const [amount, setAmount] = useState('');
   // payStep: 'form' | 'payment' | 'done'
@@ -1184,7 +1185,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
   const [apiError, setApiError] = useState(null);
   const [screenshotError, setScreenshotError] = useState(false);
   const [purchaseId] = useState(() => Math.random().toString(36).slice(2, 10).toUpperCase());
-  const [stripeOpen, setStripeOpen] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
   const [qrZoomed, setQrZoomed] = useState(false);
   const { copy, copied } = useCopyText();
   const formRef = useRef(null);
@@ -1206,6 +1207,32 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
     e.preventDefault();
     setPayStep('payment');
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
+  const handleStripeCheckout = async () => {
+    if (!selectedToken || tokenQty < 1 || Number(amount) < 500) return;
+    const tokenId = selectedToken.id || selectedToken.tokenId || selectedToken._id;
+    if (!tokenId) {
+      setApiError('Missing token ID — cannot start checkout.');
+      return;
+    }
+
+    setStripeLoading(true);
+    setApiError(null);
+    try {
+      const { normalized } = await createStripePaymentIntent({ tokenId, tokenQty });
+      if (!normalized.requestId || !normalized.clientSecret) {
+        throw new Error('Payment could not be initialized. Please try again.');
+      }
+      if (!saveStripeCheckoutSession(normalized)) {
+        throw new Error('Could not start secure checkout session.');
+      }
+      navigate(`/dashboard/invest/pay/${normalized.requestId}`);
+    } catch (err) {
+      setApiError(err?.message || 'Could not start card payment.');
+    } finally {
+      setStripeLoading(false);
+    }
   };
 
   const handleScreenshotChange = e => {
@@ -1642,7 +1669,8 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 <button
                   type="button"
                   className="db-usdt-card-btn"
-                  onClick={() => setStripeOpen(true)}
+                  onClick={handleStripeCheckout}
+                  disabled={stripeLoading}
                 >
                   <span className="db-usdt-card-btn__icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1652,7 +1680,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                     </svg>
                   </span>
                   <span className="db-usdt-card-btn__text">
-                    <span className="db-usdt-card-btn__name">Pay with Card</span>
+                    <span className="db-usdt-card-btn__name">{stripeLoading ? 'Preparing checkout…' : 'Pay with Card'}</span>
                     <span className="db-usdt-card-btn__sub">Secured by Stripe · Instant</span>
                   </span>
                   <span className="db-usdt-card-btn__stripe-badge">
@@ -1922,32 +1950,6 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
         </div>
       )}
 
-      {/* ── Stripe Card Payment Modal ── */}
-      <StripeCheckoutModal
-        open={stripeOpen}
-        onClose={() => setStripeOpen(false)}
-        tokenId={selectedToken?.id || selectedToken?.tokenId || selectedToken?._id}
-        ticker={selectedToken?.ticker}
-        amountUsd={Number(amount) || 0}
-        tokenQty={tokenQty}
-        onSuccess={({ paymentIntent, requestId }) => {
-          // Add to pending purchases so the dashboard reflects the new buy immediately
-          if (onAddPendingPurchase && selectedToken) {
-            onAddPendingPurchase({
-              id: requestId || paymentIntent?.id || `stripe-${Date.now()}`,
-              token: selectedToken.name,
-              ticker: selectedToken.ticker,
-              logo: selectedToken.logo,
-              amountUsd: Number(amount) || 0,
-              tokenQty,
-              method: 'Card (Stripe)',
-              date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-              paymentStatus: 'paid',
-              purchaseRef: paymentIntent?.id || '',
-            });
-          }
-        }}
-      />
     </div>
   );
 }
@@ -3067,7 +3069,9 @@ function TabVerification({ investor, onNav }) {
   const showToast = (message, type = 'error') => setToast({ open: true, message, type });
   const closeToast = () => setToast(t => ({ ...t, open: false }));
   const [form, setForm] = useState({
-    fullName:    investor.name || '',
+    // Initialize empty — useEffect below populates from registered fullName once user data is loaded.
+    // Avoids the brief placeholder "Nicholas Ergemia" flash if INVESTOR default is active.
+    fullName:    (investor.name && investor.name !== INVESTOR.name) ? investor.name : '',
     dob:         '',
     nationality: '',
     country:     '',
@@ -3496,7 +3500,7 @@ function TabVerification({ investor, onNav }) {
                   Locked
                 </span>
               </label>
-              <div style={{ fontSize: 11, color: 'rgba(13,11,34,0.55)', margin: '-4px 0 8px', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: '-4px 0 8px', lineHeight: 1.5 }}>
                 This is the legal name you provided at signup. It cannot be edited here — please contact support if it needs to be corrected.
               </div>
               <input
@@ -3508,9 +3512,10 @@ function TabVerification({ investor, onNav }) {
                 placeholder="As on your passport/ID"
                 maxLength={80}
                 style={{
-                  background: 'rgba(157,111,255,0.04)',
+                  background: 'rgba(157,111,255,0.06)',
                   cursor: 'not-allowed',
-                  color: 'rgba(13,11,34,0.75)',
+                  color: '#fff',
+                  fontWeight: 600,
                 }}
               />
               <span className="kyc-form__error">{errors.fullName || ''}</span>

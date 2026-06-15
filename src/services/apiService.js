@@ -38,9 +38,14 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    // Merge headers: auth headers come first, caller's headers override/extend (without losing Authorization)
+    const { headers: callerHeaders, ...restOptions } = options;
     const config = {
-      headers: this.getAuthHeaders(),
-      ...options,
+      ...restOptions,
+      headers: {
+        ...this.getAuthHeaders(),
+        ...(callerHeaders || {}),
+      },
     };
 
     try {
