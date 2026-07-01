@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Toast from '../../components/Toast';
+import Modal from '../../components/Modal';
 import { createStripePaymentIntent, saveStripeCheckoutSession } from '../../utils/stripeCheckout';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
@@ -10,20 +11,22 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import TabAffiliate from './TabAffiliate';
+import { AFFILIATE_PROGRAMS, AFFILIATE_STATUS, loadAffiliateApplication, saveAffiliateApplication } from './affiliateData';
 
-/* ═══════════════════════════════════════════════════════════
-   PRE-LAUNCH PRICING  — 50% early investor discount until April 15
-   ═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PRE-LAUNCH PRICING  â€” 50% early investor discount until April 15
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 const TOKEN_NORMAL_PRICE   = 10;    // $10.00 per token after launch
-const TOKEN_PRELAUNCH_PRICE = 5;    // $5.00 per token — 50% off until Apr 16
+const TOKEN_PRELAUNCH_PRICE = 5;    // $5.00 per token â€” 50% off until Apr 16
 const PRELAUNCH_END         = new Date('2026-04-16T00:00:00+05:30'); // midnight IST Apr 16
 const IS_PRELAUNCH          = Date.now() < PRELAUNCH_END.getTime();
 const EFFECTIVE_TOKEN_PRICE = IS_PRELAUNCH ? TOKEN_PRELAUNCH_PRICE : TOKEN_NORMAL_PRICE;
 
-/* ═══════════════════════════════════════════════════════════
-   MOCK DATA  — replace with API calls in production
-   ═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOCK DATA  â€” replace with API calls in production
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 const INVESTOR = {
   name: 'Nicholas Ergemia',
@@ -32,10 +35,13 @@ const INVESTOR = {
   walletAddress: '0x3f5CE91d4A458B72b5a4cB4d5F6e7B8C9D0E1234',
   joinedDate: 'March 2026',
   tier: 'Premium',
+  affiliateStatus: 'none',
   affiliateCode: 'NICK-X7K2',
   referralCount: 8,
   totalReferralEarned: 640,
   pendingReferralPayout: 120,
+  linkClicks: 142,
+  linkSignups: 18,
   linkedAccounts: [
     { provider: 'google', email: 'nicholas@ergemia.com', linked: true },
     { provider: 'telegram', handle: '@nick_ergemia', linked: true },
@@ -70,11 +76,11 @@ const HOLDINGS = [
 
 const TRANSACTIONS = [
   { id: 1, type: 'investment', token: 'ShivAI', amount: 2500, date: 'Mar 10, 2026', status: 'confirmed', hash: '0xabc1...f2d9', method: 'Bank Transfer' },
-  { id: 2, type: 'affiliate', token: '—', amount: 80, date: 'Mar 12, 2026', status: 'confirmed', hash: '—', method: 'Affiliate Commission' },
-  { id: 3, type: 'affiliate', token: '—', amount: 80, date: 'Mar 14, 2026', status: 'confirmed', hash: '—', method: 'Affiliate Commission' },
-  { id: 4, type: 'redeem', token: '—', amount: 120, date: 'Mar 15, 2026', status: 'pending', hash: '—', method: 'USDT Withdrawal' },
-  { id: 5, type: 'kyc', token: '—', amount: null, date: 'Mar 8, 2026', status: 'approved', hash: '—', method: 'Sumsub KYC' },
-  { id: 6, type: 'onboarding', token: '—', amount: null, date: 'Mar 8, 2026', status: 'completed', hash: '—', method: 'Growith Onboarding' },
+  { id: 2, type: 'affiliate', token: 'â€”', amount: 80, date: 'Mar 12, 2026', status: 'confirmed', hash: 'â€”', method: 'Affiliate Commission' },
+  { id: 3, type: 'affiliate', token: 'â€”', amount: 80, date: 'Mar 14, 2026', status: 'confirmed', hash: 'â€”', method: 'Affiliate Commission' },
+  { id: 4, type: 'redeem', token: 'â€”', amount: 120, date: 'Mar 15, 2026', status: 'pending', hash: 'â€”', method: 'USDT Withdrawal' },
+  { id: 5, type: 'kyc', token: 'â€”', amount: null, date: 'Mar 8, 2026', status: 'approved', hash: 'â€”', method: 'Sumsub KYC' },
+  { id: 6, type: 'onboarding', token: 'â€”', amount: null, date: 'Mar 8, 2026', status: 'completed', hash: 'â€”', method: 'Growith Onboarding' },
 ];
 
 const KYC_STEPS = [
@@ -102,128 +108,6 @@ const AVAILABLE_TOKENS = [
   },
 ];
 
-/* Affiliate program tiers */
-const AFFILIATE_TIERS = [
-  { name: 'Starter',   refMin: 0,  refMax: 4,  commPct: 3, color: '#9D6FFF', extraPerks: 'Basic dashboard access' },
-  { name: 'Silver',    refMin: 5,  refMax: 14, commPct: 4, color: '#60A5FA', extraPerks: '+Priority support' },
-  { name: 'Gold',      refMin: 15, refMax: 29, commPct: 5, color: '#F59E0B', extraPerks: '+Bonus token allocation' },
-  { name: 'Platinum',  refMin: 30, refMax: 999,commPct: 7, color: '#22C55E', extraPerks: '+Revenue sharing pool' },
-];
-
-/* Affiliate programs per token */
-const AFFILIATE_PROGRAMS = [
-  {
-    id: 'shivai-standard',
-    tokenId: 1,
-    tokenName: 'ShivAI Token',
-    tokenTicker: 'SHIV',
-    tokenLogo: '/assets/images/icon/shivAiToken.png',
-    name: 'ShivAI Standard Affiliate',
-    tag: 'Standard',
-    tagColor: '#9D6FFF',
-    status: 'active',
-    commissionType: 'percentage',
-    commissionValue: 3,         // % of referred investment
-    bonusThreshold: 5,          // referrals needed for bonus
-    bonusUsd: 50,               // bonus USD on reaching threshold
-    minInvestPerReferral: 500,  // referred person must invest at least this
-    payoutDelay: '3 business days',
-    totalPool: 50000,           // USD left in affiliate pool
-    usedPool: 18400,
-    endsDate: 'Dec 31, 2026',
-    highlights: [
-      'Earn 3% on every confirmed investment',
-      '$50 bonus after 5 qualified referrals',
-      'No cap on number of referrals',
-      'Payout in USDT or bank wire',
-    ],
-    rules: [
-      'Referred investor must complete KYC before commission is credited.',
-      'Minimum referred investment: $500.',
-      'Self-referrals are strictly prohibited.',
-      'Commission is credited after payment confirmation (usually within 3 business days).',
-      'Programme is subject to the Growith Affiliate Terms.',
-    ],
-  },
-  {
-    id: 'shivai-vip',
-    tokenId: 1,
-    tokenName: 'ShivAI Token',
-    tokenTicker: 'SHIV',
-    tokenLogo: '/assets/images/icon/shivAiToken.png',
-    name: 'ShivAI VIP Partner',
-    tag: 'VIP',
-    tagColor: '#F59E0B',
-    status: 'active',
-    commissionType: 'percentage',
-    commissionValue: 6,
-    bonusThreshold: 3,
-    bonusUsd: 150,
-    minInvestPerReferral: 2000,
-    payoutDelay: '1 business day',
-    totalPool: 20000,
-    usedPool: 7200,
-    endsDate: 'Jun 30, 2026',
-    highlights: [
-      'Earn 6% on high-ticket investments ($2 000+)',
-      '$150 bonus after 3 qualified referrals',
-      'Priority payout within 1 business day',
-      'Dedicated affiliate account manager',
-    ],
-    rules: [
-      'Referred investment must be $2 000 or more to qualify.',
-      'KYC must be completed by referred investor.',
-      'VIP access requires Growith account manager approval.',
-      'Programme ends June 30, 2026 or when pool is exhausted.',
-    ],
-  },
-  {
-    id: 'shivai-launch',
-    tokenId: 1,
-    tokenName: 'ShivAI Token',
-    tokenTicker: 'SHIV',
-    tokenLogo: '/assets/images/icon/shivAiToken.png',
-    name: 'ShivAI Launch Boost',
-    tag: 'Limited',
-    tagColor: '#EF4444',
-    status: 'ending_soon',
-    commissionType: 'flat',
-    commissionValue: 25,        // flat USD per referral
-    bonusThreshold: null,
-    bonusUsd: null,
-    minInvestPerReferral: 500,
-    payoutDelay: 'Instant (on confirmation)',
-    totalPool: 5000,
-    usedPool: 4200,
-    endsDate: 'Mar 31, 2026',
-    highlights: [
-      'Flat $25 per confirmed referral — no minimum % math',
-      'Instant payout on each confirmation',
-      'Runs until pool ($5 000) is exhausted',
-      'Stack with tier bonus for extra earnings',
-    ],
-    rules: [
-      'Minimum referred investment $500.',
-      'Flat rate replaces tier percentage for this programme only.',
-      'Pool is first-come-first-served; ends when $5 000 paid out.',
-      'One flat bonus per referred user.',
-    ],
-  },
-];
-
-/* Unique tokens derived from AFFILIATE_PROGRAMS — kept at module scope so TabAffiliate
-   can reference them inside a useEffect without stale-closure issues. */
-const AFFILIATE_TOKENS = AFFILIATE_PROGRAMS.reduce((acc, p) => {
-  if (!acc.find(t => t.id === p.tokenId)) {
-    acc.push({
-      id: p.tokenId, name: p.tokenName, ticker: p.tokenTicker, logo: p.tokenLogo,
-      totalPrograms: AFFILIATE_PROGRAMS.filter(x => x.tokenId === p.tokenId).length,
-      activePrograms: AFFILIATE_PROGRAMS.filter(x => x.tokenId === p.tokenId && x.status !== 'ended').length,
-    });
-  }
-  return acc;
-}, []);
-
 /* Wallet balance breakdown */
 const WALLET_DATA = {
   cashBalance: 520,   // earned & available in USD
@@ -231,17 +115,17 @@ const WALLET_DATA = {
   lifetimeEarned: 640,
   currency: 'USD',
   payoutMethods: [
-    { id: 'usdt_trc20', label: 'USDT (TRC20)', desc: 'Instant · Min $20', icon: '💵' },
-    { id: 'usdt_erc20', label: 'USDT (ERC20)', desc: '~15 min · Min $50', icon: '🔷' },
-    { id: 'bank', label: 'Bank Wire', desc: '2–5 days · Min $200', icon: '🏦' },
+    { id: 'usdt_trc20', label: 'USDT (TRC20)', desc: 'Instant Â· Min $20', icon: 'ðŸ’µ' },
+    { id: 'usdt_erc20', label: 'USDT (ERC20)', desc: '~15 min Â· Min $50', icon: 'ðŸ”·' },
+    { id: 'bank', label: 'Bank Wire', desc: '2â€“5 days Â· Min $200', icon: 'ðŸ¦' },
   ],
 };
 
-/* ══════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SHARED UTILITIES
-   ══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── SVG Bar Chart ───────────────────────────────────────── */
+/* â”€â”€ SVG Bar Chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function BarChart({ data, labels, width = '100%', height = 120, color = '#6B35FF', accentColor = '#9D6FFF' }) {
   if (!data || data.length === 0) return null;
   const min = Math.min(...data) * 0.97;
@@ -308,7 +192,7 @@ function BarChart({ data, labels, width = '100%', height = 120, color = '#6B35FF
   );
 }
 
-/* ── SVG Sparkline ────────────────────────────────────────── */
+/* â”€â”€ SVG Sparkline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function Sparkline({ data, width = 120, height = 40, color = '#6B35FF', fill = true }) {
   if (!data || data.length < 2) return null;
   const min = Math.min(...data);
@@ -337,7 +221,7 @@ function Sparkline({ data, width = 120, height = 40, color = '#6B35FF', fill = t
   );
 }
 
-/* ── SVG Donut Chart ──────────────────────────────────────── */
+/* â”€â”€ SVG Donut Chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function DonutChart({ segments, size = 160, thickness = 28 }) {
   const r = (size - thickness) / 2;
   const circ = 2 * Math.PI * r;
@@ -367,7 +251,7 @@ function DonutChart({ segments, size = 160, thickness = 28 }) {
   );
 }
 
-/* ── Copy to clipboard helper ─────────────────────────────── */
+/* â”€â”€ Copy to clipboard helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function useCopyText() {
   const [copied, setCopied] = useState('');
   const copy = useCallback((text, key = 'default') => {
@@ -379,7 +263,7 @@ function useCopyText() {
   return { copied, copy };
 }
 
-/* ── Icon helpers ───────────────────────────────────────────── */
+/* â”€â”€ Icon helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const Icon = {
   overview: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -523,7 +407,7 @@ const Icon = {
   ),
 };
 
-/* ── KYC status helpers ─────────────────────────────────────── */
+/* â”€â”€ KYC status helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function KycBadge({ status }) {
   const map = {
     approved:     { label: 'KYC Approved',     color: '#22C55E', bg: 'rgba(34,197,94,0.12)',   border: 'rgba(34,197,94,0.25)' },
@@ -540,11 +424,11 @@ function KycBadge({ status }) {
   );
 }
 
-/* ══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    TAB COMPONENTS
-   ══════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Holdings aggregation: group purchases + airdrops by ticker ── */
+/* â”€â”€ Holdings aggregation: group purchases + airdrops by ticker â”€â”€ */
 function aggregateHoldings(approvedPurchases = [], directAirdrops = []) {
   const map = new Map();
   const getKey = x => x.ticker || x.token || 'unknown';
@@ -611,7 +495,7 @@ function aggregateHoldings(approvedPurchases = [], directAirdrops = []) {
   return Array.from(map.values());
 }
 
-/* ── Unified token holding card (used in Overview, Portfolio, Wallet) ── */
+/* â”€â”€ Unified token holding card (used in Overview, Portfolio, Wallet) â”€â”€ */
 function TokenHoldingCard({ holding, onViewDetails }) {
   const fmt = n => Number(n).toLocaleString();
   const fmtPrice = n => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
@@ -629,7 +513,7 @@ function TokenHoldingCard({ holding, onViewDetails }) {
   const sourcesLine = [
     holding.purchaseCount > 0 && `${holding.purchaseCount} Purchase${holding.purchaseCount > 1 ? 's' : ''}`,
     holding.airdropCount > 0 && `${holding.airdropCount} Airdrop${holding.airdropCount > 1 ? 's' : ''}`,
-  ].filter(Boolean).join(' · ');
+  ].filter(Boolean).join(' Â· ');
 
   return (
     <div className="db-token-holding-card">
@@ -648,7 +532,7 @@ function TokenHoldingCard({ holding, onViewDetails }) {
         <div className="db-token-holding-card__balance-value">
           {fmt(holding.totalTokens)} <span>{holding.ticker}</span>
         </div>
-        <div className="db-token-holding-card__balance-usd">≈ ${fmt(holding.totalValue)} USD</div>
+        <div className="db-token-holding-card__balance-usd">â‰ˆ ${fmt(holding.totalValue)} USD</div>
       </div>
 
       <div className="db-token-holding-card__stats">
@@ -704,7 +588,7 @@ function TokenHoldingCard({ holding, onViewDetails }) {
   );
 }
 
-/* ── Modal showing each purchase/airdrop entry that makes up a holding ── */
+/* â”€â”€ Modal showing each purchase/airdrop entry that makes up a holding â”€â”€ */
 function TokenHoldingDetailsModal({ holding, onClose }) {
   if (!holding) return null;
   const fmt = n => Number(n).toLocaleString();
@@ -716,10 +600,10 @@ function TokenHoldingDetailsModal({ holding, onClose }) {
             <img src={holding.logo} alt="" style={{ width: 40, height: 40, borderRadius: 10, background: '#1a1a2e', flexShrink: 0 }} onError={e => { e.target.style.display='none'; }} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{holding.token}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{holding.ticker} · {fmt(holding.totalTokens)} tokens · ${fmt(holding.totalValue)}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{holding.ticker} Â· {fmt(holding.totalTokens)} tokens Â· ${fmt(holding.totalValue)}</div>
             </div>
           </div>
-          <button className="db-modal-close" onClick={onClose}>✕</button>
+          <button className="db-modal-close" onClick={onClose}>âœ•</button>
         </div>
         <div className="db-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {holding.entries.length === 0 && (
@@ -731,7 +615,7 @@ function TokenHoldingDetailsModal({ holding, onClose }) {
                 <span className={`db-wallet-tag ${e.kind === 'airdrop' ? 'db-wallet-tag--purple' : 'db-wallet-tag--green'}`} style={{ textTransform: 'capitalize', fontSize: 11 }}>
                   {e.kind === 'airdrop' ? (e.airdropType ? `${e.airdropType} Airdrop` : 'Airdrop') : 'Purchase'}
                 </span>
-                {e.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{e.kind === 'airdrop' ? 'Received' : 'Approved'} · {e.date}</span>}
+                {e.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{e.kind === 'airdrop' ? 'Received' : 'Approved'} Â· {e.date}</span>}
               </div>
               <div className="db-token-detail-row__stats">
                 <div><span>Tokens</span><strong>{fmt(e.amount)} {holding.ticker}</strong></div>
@@ -762,7 +646,7 @@ function TokenHoldingDetailsModal({ holding, onClose }) {
   );
 }
 
-/* ── Overview ───────────────────────────────────── */
+/* â”€â”€ Overview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const HOLDINGS_PER_PAGE = 3;
 
 function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], walletData = null, walletTransactions = [], directAirdrops = [], onNav }) {
@@ -797,13 +681,13 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
       valueClass: pnl >= 0 ? 'db-stat-value--green' : '',
       extra: pnl > 0
         ? <span className="db-stat-change db-stat-change--up"><Icon.arrow_up /> +{pnlPct}%</span>
-        : <span className="db-stat-sub">—</span>,
+        : <span className="db-stat-sub">â€”</span>,
     },
     {
       label: 'Custodial Wallet',
-      value: walletAddr.slice(0, 10) + '…' + walletAddr.slice(-6),
+      value: walletAddr.slice(0, 10) + 'â€¦' + walletAddr.slice(-6),
       valueClass: 'db-stat-value--sm',
-      extra: <span className="db-stat-sub">Polygon · HSM-backed</span>,
+      extra: <span className="db-stat-sub">Polygon Â· HSM-backed</span>,
     },
   ];
 
@@ -812,8 +696,8 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
       {/* Welcome bar */}
       <div className="db-welcome-bar">
         <div>
-          <h1 className="db-h1">Welcome back, {investor.name.split(' ')[0]} 👋</h1>
-          <p className="db-muted">Here&apos;s your full investment dashboard — updated in real time.</p>
+          <h1 className="db-h1">Welcome back, {investor.name.split(' ')[0]} ðŸ‘‹</h1>
+          <p className="db-muted">Here&apos;s your full investment dashboard â€” updated in real time.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <KycBadge status={investor.kycStatus} />
@@ -834,9 +718,9 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             <span className="db-live-offer-card__badge">
               <span className="db-invest-live-dot" /> LIVE
             </span>
-            <span className="db-live-offer-card__name">ShivAI Token · SHIV</span>
+            <span className="db-live-offer-card__name">ShivAI Token Â· SHIV</span>
           </div>
-          <p className="db-live-offer-card__desc">AI-powered infrastructure. Minimum investment $500 — UAE Holding-Backed private placement.</p>
+          <p className="db-live-offer-card__desc">AI-powered infrastructure. Minimum investment $500 â€” UAE Holding-Backed private placement.</p>
           <div className="db-live-offer-card__stats">
             <div><span>Price</span><strong>$0.01</strong></div>
             <div><span>Min.</span><strong>$500</strong></div>
@@ -849,14 +733,14 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             Invest Now
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
-          <p className="db-live-offer-card__note">Verified investors only · Secure custody</p>
+          <p className="db-live-offer-card__note">Verified investors only Â· Secure custody</p>
         </div>
         <button className="db-live-offer-card__close" onClick={() => setOfferDismissed(true)} aria-label="Dismiss">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
         </button>
       </div>}
 
-      {/* Stats grid — 4 cols desktop, swiper mobile */}
+      {/* Stats grid â€” 4 cols desktop, swiper mobile */}
       <div className="db-stats-grid db-stats-grid--desktop" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {statCards.map((s, i) => (
           <div key={i} className="db-stat-card" style={{ position: 'relative' }}>
@@ -883,13 +767,13 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
       </div>
 
       {/* Portfolio bar chart card */}
-      <div className="db-section-title">Portfolio Performance — Last 12 Weeks</div>
+      <div className="db-section-title">Portfolio Performance â€” Last 12 Weeks</div>
       <div className="db-chart-card">
         <div className="db-chart-card__header">
           <div>
             <div className="db-chart-card__value">${total.toLocaleString()}</div>
             {pnl > 0
-              ? <div className="db-chart-card__change db-green" style={{ color: '#4ade80' }}>▲ +${pnl.toLocaleString()} (+{pnlPct}%) since entry</div>
+              ? <div className="db-chart-card__change db-green" style={{ color: '#4ade80' }}>â–² +${pnl.toLocaleString()} (+{pnlPct}%) since entry</div>
               : <div className="db-chart-card__change" style={{ color: 'rgba(255,255,255,0.4)' }}>Invest to start building your portfolio</div>
             }
           </div>
@@ -973,11 +857,11 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             <div key={tx.id} className="db-activity-row">
               <div className="db-activity-dot" style={{ background: statusColors[tx.status] || '#9D6FFF' }} />
               <div className="db-activity-body">
-                <span className="db-activity-label">{typeLabel[tx.type] || tx.type || '—'}</span>
-                <span className="db-activity-date">{tx.date}{tx.time ? ` · ${tx.time}` : ''}</span>
+                <span className="db-activity-label">{typeLabel[tx.type] || tx.type || 'â€”'}</span>
+                <span className="db-activity-date">{tx.date}{tx.time ? ` Â· ${tx.time}` : ''}</span>
               </div>
               <div className="db-activity-amount" style={{ color: (tx.type === 'redeem' || tx.type === 'withdrawal') ? '#F59E0B' : tx.amount ? '#22C55E' : 'rgba(255,255,255,0.5)' }}>
-                {tx.amount ? `${(tx.type === 'redeem' || tx.type === 'withdrawal') ? '−' : '+'}$${Number(tx.amount).toLocaleString()}` : '—'}
+                {tx.amount ? `${(tx.type === 'redeem' || tx.type === 'withdrawal') ? 'âˆ’' : '+'}$${Number(tx.amount).toLocaleString()}` : 'â€”'}
               </div>
             </div>
           );
@@ -987,7 +871,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
   );
 }
 
-/* ── Portfolio ──────────────────────────────────── */
+/* â”€â”€ Portfolio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurchases = [], directAirdrops = [] }) {
   const token = availableTokens[0] || AVAILABLE_TOKENS[0];
   const [detailsToken, setDetailsToken] = useState(null);
@@ -1024,7 +908,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
       </div>
       <PrelaunchOfferBanner onNav={onNav} />
 
-      {/* ── Token Summary Card ── */}
+      {/* â”€â”€ Token Summary Card â”€â”€ */}
       <div className="db-portfolio-card">
         <div className="db-portfolio-card__header">
           <div className="db-portfolio-card__logo">
@@ -1052,7 +936,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
             <span>{fmtNum(token.target || 0)} total supply</span>
           </div>
           {token.investors > 0 && (
-            <div className="db-raise-investors">{token.investors} investors · {fmtNum(token.availSupply || 0)} {token.ticker} available</div>
+            <div className="db-raise-investors">{token.investors} investors Â· {fmtNum(token.availSupply || 0)} {token.ticker} available</div>
           )}
         </div>
 
@@ -1094,7 +978,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
         </div>
       </div>
 
-      {/* ── My Holdings ── */}
+      {/* â”€â”€ My Holdings â”€â”€ */}
       <div className="db-section-title">My Holdings</div>
       {!hasAnyHoldings ? (
         <div className="db-holdings-empty">
@@ -1127,12 +1011,12 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
   );
 }
 
-/* ── Invest ─────────────────────────────────────── */
+/* â”€â”€ Invest â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* USDT payment wallet address & QR for purchases */
 const USDT_TRC20_ADDRESS = 'TLUTemi8uBbqLTRzHHU1w6d2ExaXFEdXmH';
 const USDT_QR_URL = '/assets/images/item/UsdtR.png';
 
-/* ── Pre-launch offer banner ── */
+/* â”€â”€ Pre-launch offer banner â”€â”€ */
 function PrelaunchOfferBanner({ onNav }) {
   const msLeft  = Math.max(0, PRELAUNCH_END.getTime() - Date.now());
   const daysLeft  = Math.floor(msLeft / 86400000);
@@ -1141,13 +1025,13 @@ function PrelaunchOfferBanner({ onNav }) {
   return (
     <div className="db-prelaunch-banner">
       <div className="db-prelaunch-banner__left">
-        <span className="db-prelaunch-banner__tag">⚡ Pre-Launch Offer</span>
-        <div className="db-prelaunch-banner__title">50% Early Investor Discount&nbsp;— Ends April 15, 2026</div>
+        <span className="db-prelaunch-banner__tag">âš¡ Pre-Launch Offer</span>
+        <div className="db-prelaunch-banner__title">50% Early Investor Discount&nbsp;â€” Ends April 15, 2026</div>
         <div className="db-prelaunch-banner__pricing">
           <span className="db-prelaunch-price-old">$10.00</span>
-          <span className="db-prelaunch-arrow">→</span>
+          <span className="db-prelaunch-arrow">â†’</span>
           <span className="db-prelaunch-price-new">$5.00 per token</span>
-          <span className="db-prelaunch-saving">2× tokens for the same investment!</span>
+          <span className="db-prelaunch-saving">2Ã— tokens for the same investment!</span>
         </div>
       </div>
       <div className="db-prelaunch-banner__right">
@@ -1165,7 +1049,7 @@ function PrelaunchOfferBanner({ onNav }) {
         </div>
         {onNav && (
           <button className="db-btn db-btn--primary db-prelaunch-banner__cta" onClick={() => onNav('invest')}>
-            Invest Now →
+            Invest Now â†’
           </button>
         )}
       </div>
@@ -1213,7 +1097,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
     if (!selectedToken || tokenQty < 1 || Number(amount) < 500) return;
     const tokenId = selectedToken.id || selectedToken.tokenId || selectedToken._id;
     if (!tokenId) {
-      setApiError('Missing token ID — cannot start checkout.');
+      setApiError('Missing token ID â€” cannot start checkout.');
       return;
     }
 
@@ -1311,7 +1195,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
     setScreenshotPreview(null);
   };
 
-  /* ── Done screen ── */
+  /* â”€â”€ Done screen â”€â”€ */
   if (payStep === 'done') {
     return (
       <div className="db-tab-content">
@@ -1363,7 +1247,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
             disabled={dataLoading}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={dataLoading ? { animation: 'spin 1s linear infinite' } : {}}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            {dataLoading ? 'Loading…' : 'Refresh'}
+            {dataLoading ? 'Loadingâ€¦' : 'Refresh'}
           </button>
         </div>
       </div>
@@ -1374,7 +1258,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
       {investor?.kycStatus !== 'approved' && (
         <div className="db-alert db-alert--warning" style={{ marginBottom: 24 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div>Your KYC is {investor?.kycStatus === 'not_started' ? 'not yet submitted' : 'under review'}. You can purchase tokens now — they will be marked <strong>Pending Verification</strong> until your KYC and payment are approved by the admin.</div>
+          <div>Your KYC is {investor?.kycStatus === 'not_started' ? 'not yet submitted' : 'under review'}. You can purchase tokens now â€” they will be marked <strong>Pending Verification</strong> until your KYC and payment are approved by the admin.</div>
         </div>
       )}
 
@@ -1458,14 +1342,14 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               </div>
 
               <div className={`db-token-card__select-indicator ${selectedToken?.id === t.id ? 'active' : ''}`}>
-                {selectedToken?.id === t.id ? '✓ Selected' : 'Invest Now'}
+                {selectedToken?.id === t.id ? 'âœ“ Selected' : 'Invest Now'}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Step 1: Amount + method ── */}
+      {/* â”€â”€ Step 1: Amount + method â”€â”€ */}
       {selectedToken && payStep === 'form' && (
         <div className="db-intent-form-wrap" ref={formRef}>
           <div className="db-intent-form-header">
@@ -1476,12 +1360,12 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 <div className="db-intent-form-header__ticker">
                   {selectedToken.ticker}
                   {IS_PRELAUNCH ? (
-                    <> · <span style={{color:'#4ade80',fontWeight:700}}>{selectedToken.price}</span> <span className="db-price-50off" style={{fontSize:'10px'}}>50% OFF</span></>
-                  ) : <> · {selectedToken.price} per token</>}
+                    <> Â· <span style={{color:'#4ade80',fontWeight:700}}>{selectedToken.price}</span> <span className="db-price-50off" style={{fontSize:'10px'}}>50% OFF</span></>
+                  ) : <> Â· {selectedToken.price} per token</>}
                 </div>
               </div>
             </div>
-            <button type="button" className="db-intent-form-header__close" onClick={() => setSelectedToken(null)}>✕</button>
+            <button type="button" className="db-intent-form-header__close" onClick={() => setSelectedToken(null)}>âœ•</button>
           </div>
           <form onSubmit={handleProceedToPayment} className="db-intent-form">
             <div className="db-form-row">
@@ -1504,7 +1388,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                   ? <span className="db-form-hint db-form-hint--error">Minimum investment is $500. Please enter a higher amount.</span>
                   : amount && Number(amount) > 25000
                   ? <span className="db-form-hint db-form-hint--error">Maximum investment is $25,000. Please enter a lower amount.</span>
-                  : <span className="db-form-hint">Min: {selectedToken.minInvest} · Max: {selectedToken.maxInvest}</span>
+                  : <span className="db-form-hint">Min: {selectedToken.minInvest} Â· Max: {selectedToken.maxInvest}</span>
                 }
               </div>
               <div className="db-form-group">
@@ -1526,13 +1410,13 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
             </div>
 
             <button type="submit" className="db-btn db-btn--primary" disabled={!amount || Number(amount) < 500}>
-              Proceed to Payment →
+              Proceed to Payment â†’
             </button>
           </form>
         </div>
       )}
 
-      {/* ── Step 2: USDT QR payment ── */}
+      {/* â”€â”€ Step 2: USDT QR payment â”€â”€ */}
       {selectedToken && payStep === 'payment' && (
         <div style={{ position: 'relative' }} ref={formRef}>
         {/* KYC lock overlay */}
@@ -1575,7 +1459,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               color: investor?.kycStatus === 'rejected' ? '#F87171' : '#F59E0B',
               fontSize: 13, fontWeight: 600,
             }}>
-              {investor?.kycStatus === 'rejected' ? '✕ KYC Rejected' : '⏳ KYC Under Review'}
+              {investor?.kycStatus === 'rejected' ? 'âœ• KYC Rejected' : 'â³ KYC Under Review'}
             </div>
           </div>
         )}
@@ -1585,10 +1469,10 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               <img src={selectedToken.logo} alt="" className="db-intent-form-header__logo" onError={e => { e.target.style.display='none'; }} />
               <div>
                 <div className="db-intent-form-header__name">Pay with USDT (TRC20)</div>
-                <div className="db-intent-form-header__ticker">Scan QR or copy address · TRC20 / Tron only</div>
+                <div className="db-intent-form-header__ticker">Scan QR or copy address Â· TRC20 / Tron only</div>
               </div>
             </div>
-            <button type="button" className="db-intent-form-header__close" onClick={() => setPayStep('form')}>← Back</button>
+            <button type="button" className="db-intent-form-header__close" onClick={() => setPayStep('form')}>â† Back</button>
           </div>
 
           <div className="db-usdt-payment">
@@ -1616,14 +1500,14 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                   </span>
                 </button>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', textAlign: 'center', marginTop: 2 }}>No memo required</div>
-                <div className="db-usdt-network-badge">TRC20 · Tron</div>
+                <div className="db-usdt-network-badge">TRC20 Â· Tron</div>
               </div>
               <div className="db-usdt-info-col">
                 <div className="db-usdt-send-amount-row">
                   <span className="db-usdt-send-amount">{amount}</span>
                   <span className="db-usdt-send-currency">USDT</span>
                 </div>
-                <div className="db-usdt-send-hint">Send exactly this amount · TRC20 / Tron only</div>
+                <div className="db-usdt-send-hint">Send exactly this amount Â· TRC20 / Tron only</div>
                 <div className="db-usdt-addr-block">
                   <div className="db-usdt-addr-label">Wallet Address</div>
                   <div className="db-usdt-addr-row">
@@ -1644,7 +1528,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               </div>
               </div>
 
-              {/* Pay with Wallet — right column (TRC20 USDT only) */}
+              {/* Pay with Wallet â€” right column (TRC20 USDT only) */}
               <div className="db-usdt-wallets-col">
                 <div className="db-usdt-wallets-label">Pay with Card</div>
                 <div className="db-usdt-card-networks">
@@ -1680,8 +1564,8 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                     </svg>
                   </span>
                   <span className="db-usdt-card-btn__text">
-                    <span className="db-usdt-card-btn__name">{stripeLoading ? 'Preparing checkout…' : 'Pay with Card'}</span>
-                    <span className="db-usdt-card-btn__sub">Secured by Stripe · Instant</span>
+                    <span className="db-usdt-card-btn__name">{stripeLoading ? 'Preparing checkoutâ€¦' : 'Pay with Card'}</span>
+                    <span className="db-usdt-card-btn__sub">Secured by Stripe Â· Instant</span>
                   </span>
                   <span className="db-usdt-card-btn__stripe-badge">
                     <svg width="34" height="14" viewBox="0 0 60 25" fill="none" aria-label="Stripe">
@@ -1695,7 +1579,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 <div className="db-usdt-wallets-label">Pay with Wallet</div>
                 <div className="db-usdt-wallets-trc20">
                   <span className="db-usdt-wallets-trc20__dot" />
-                  USDT · TRC20 · Tron only
+                  USDT Â· TRC20 Â· Tron only
                 </div>
                 {[
                   {
@@ -1707,7 +1591,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                         <path d="M16 7v18c-4.5-1-8-5.5-8-10V8.5L16 7z" fill="#fff"/>
                       </svg>
                     ),
-                    // Trust Wallet universal link — coin=195 is Tron, token_id is USDT-TRC20 contract
+                    // Trust Wallet universal link â€” coin=195 is Tron, token_id is USDT-TRC20 contract
                     url: `https://link.trustwallet.com/send?coin=195&address=${USDT_TRC20_ADDRESS}&amount=${amount}&token_id=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`,
                   },
                   {
@@ -1719,7 +1603,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                         <path d="M22 10L9 12l4 12 11-9-2-5z" fill="#fff"/>
                       </svg>
                     ),
-                    // TronLink TIP-302 deep link — Tron native, TRC20 token contract specified
+                    // TronLink TIP-302 deep link â€” Tron native, TRC20 token contract specified
                     url: `tron://send?address=${USDT_TRC20_ADDRESS}&amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`,
                   },
                   {
@@ -1731,7 +1615,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                         <path d="M11 16l5-5 5 5-1.5 1.5L16 14l-3.5 3.5L11 16zm0 0l1.5-1.5L16 18l3.5-3.5L21 16l-5 5-5-5zm5-3l1.5 1.5L16 16l-1.5-1.5L16 13zm-7 3l1.5-1.5L12 16l-1.5 1.5L9 16zm13 0l1.5-1.5L26 16l-1.5 1.5L22 16z" fill="#fff"/>
                       </svg>
                     ),
-                    // Binance web withdraw page — network=TRX forces TRC20
+                    // Binance web withdraw page â€” network=TRX forces TRC20
                     url: `https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto/USDT?network=TRX&address=${USDT_TRC20_ADDRESS}&amount=${amount}`,
                   },
                   {
@@ -1765,7 +1649,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                   </a>
                 ))}
                 <div className="db-usdt-wallets-hint">
-                  ⚠ Always confirm <strong>TRC20 / Tron</strong> network before sending. Other networks result in permanent loss.
+                  âš  Always confirm <strong>TRC20 / Tron</strong> network before sending. Other networks result in permanent loss.
                 </div>
               </div>
             </div>
@@ -1778,7 +1662,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
             {/* Screenshot upload */}
             <div className="db-usdt-screenshot-section">
               <div className="db-usdt-screenshot-title">
-                Payment Screenshot <span className="db-usdt-optional">· optional, upload later from Transactions</span>
+                Payment Screenshot <span className="db-usdt-optional">Â· optional, upload later from Transactions</span>
               </div>
               <input
                 ref={fileRef}
@@ -1794,7 +1678,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                     type="button"
                     className="db-usdt-screenshot-remove"
                     onClick={() => { setScreenshot(null); setScreenshotPreview(null); fileRef.current.value = ''; }}
-                  >✕ Remove</button>
+                  >âœ• Remove</button>
                 </div>
               ) : (
                 <>
@@ -1838,7 +1722,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 disabled={uploading}
                 onClick={handleSkipScreenshot}
               >
-                {uploading ? <><span className="db-spinner" /> Saving...</> : 'Skip — upload later'}
+                {uploading ? <><span className="db-spinner" /> Saving...</> : 'Skip â€” upload later'}
               </button>
             </div>
           </div>
@@ -1846,7 +1730,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
         </div>
       )}
 
-      {/* ── QR Zoom Modal ── */}
+      {/* â”€â”€ QR Zoom Modal â”€â”€ */}
       {qrZoomed && (
         <div
           onClick={() => setQrZoomed(false)}
@@ -1883,7 +1767,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 cursor: 'pointer', fontSize: 18, lineHeight: 1,
                 boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
               }}
-            >×</button>
+            >Ã—</button>
             <img
               src={USDT_QR_URL}
               alt="USDT TRC20 QR Code"
@@ -1910,7 +1794,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               fontWeight: 600,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-            }}>USDT · TRC20 · Tron Only · No Memo</div>
+            }}>USDT Â· TRC20 Â· Tron Only Â· No Memo</div>
             <button
               type="button"
               onClick={() => copy(USDT_TRC20_ADDRESS, 'usdt-zoom')}
@@ -1954,7 +1838,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
   );
 }
 
-/* ── Transactions ───────────────────────────────── */
+/* â”€â”€ Transactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUploadScreenshot }) {
   const [filter, setFilter] = useState('all');
   const [uploadingId, setUploadingId] = useState(null);
@@ -2020,7 +1904,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
         </div>
       </div>
 
-      {/* ── Pending Purchases section ── */}
+      {/* â”€â”€ Pending Purchases section â”€â”€ */}
       {pendingPurchases.length > 0 && (
         <>
           <div className="db-section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2035,7 +1919,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                     <img src={p.logo} alt="" className="db-pending-card__logo" onError={e => { e.target.style.display='none'; }} />
                     <div>
                       <div className="db-pending-card__name">{p.token} <span className="db-usdt-pending-tag">Pending Verification</span></div>
-                      <div className="db-pending-card__meta">{p.tokenQty?.toLocaleString()} {p.ticker} · ${p.amountUsd?.toLocaleString()} USDT · {p.date}</div>
+                      <div className="db-pending-card__meta">{p.tokenQty?.toLocaleString()} {p.ticker} Â· ${p.amountUsd?.toLocaleString()} USDT Â· {p.date}</div>
                     </div>
                   </div>
                   <div className="db-pending-card__ref">Ref: {p.purchaseRef}</div>
@@ -2057,7 +1941,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                     {localPreviews[p.id] ? (
                       <div className="db-usdt-screenshot-preview" style={{ marginTop: 8 }}>
                         <img src={localPreviews[p.id]} alt="preview" />
-                        {uploadingId === p.id && <span className="db-pending-uploading"><span className="db-spinner" /> Uploading…</span>}
+                        {uploadingId === p.id && <span className="db-pending-uploading"><span className="db-spinner" /> Uploadingâ€¦</span>}
                       </div>
                     ) : (
                       <>
@@ -2066,7 +1950,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                           disabled={uploadingId === p.id}
                           onClick={() => fileRefs.current[p.id]?.click()}
                         >
-                          {uploadingId === p.id ? <><span className="db-spinner" /> Uploading…</> : 'Upload Screenshot'}
+                          {uploadingId === p.id ? <><span className="db-spinner" /> Uploadingâ€¦</> : 'Upload Screenshot'}
                         </button>
                         {uploadErrors[p.id] && (
                           <div style={{ fontSize: 11, color: '#f87171', marginTop: 4 }}>{uploadErrors[p.id]}</div>
@@ -2077,7 +1961,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                 ) : (
                   <div className="db-pending-card__uploaded">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Screenshot uploaded — awaiting admin approval
+                    Screenshot uploaded â€” awaiting admin approval
                   </div>
                 )}
               </div>
@@ -2119,9 +2003,9 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                     </div>
                   </td>
                   <td className="db-tx-amount" style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>
-                    {tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : <span className="db-muted">—</span>}
+                    {tx.amount ? `${tx.type === 'redeem' ? 'âˆ’' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : <span className="db-muted">â€”</span>}
                   </td>
-                  <td className="db-tx-method" style={{ maxWidth: 220, whiteSpace: 'normal', fontSize: 12, color: 'rgba(255,255,255,0.55)' }} title={tx.desc}>{tx.desc || tx.method || '—'}</td>
+                  <td className="db-tx-method" style={{ maxWidth: 220, whiteSpace: 'normal', fontSize: 12, color: 'rgba(255,255,255,0.55)' }} title={tx.desc}>{tx.desc || tx.method || 'â€”'}</td>
                   <td className="db-tx-date">
                     <div>{tx.date}</div>
                     {tx.time && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{tx.time}</div>}
@@ -2153,7 +2037,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                   <div className="db-tx-icon" style={{ background: tc.iconBg, borderColor: tc.iconBorder }}>{tc.svg}</div>
                   <div>
                     <div className="db-tx-mcard__label">{tc.label}</div>
-                    <div className="db-tx-mcard__date">{tx.date}{tx.time ? ` · ${tx.time}` : ''}</div>
+                    <div className="db-tx-mcard__date">{tx.date}{tx.time ? ` Â· ${tx.time}` : ''}</div>
                   </div>
                 </div>
                 <span className="db-tx-status" style={{ color: s.color, background: s.bg }}>
@@ -2161,8 +2045,8 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                 </span>
               </div>
               <div className="db-tx-mcard__details">
-                <div className="db-tx-mcard__row"><span>Amount</span><strong style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>{tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : '—'}</strong></div>
-                <div className="db-tx-mcard__row"><span>Details</span><strong style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>{tx.desc || tx.method || '—'}</strong></div>
+                <div className="db-tx-mcard__row"><span>Amount</span><strong style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>{tx.amount ? `${tx.type === 'redeem' ? 'âˆ’' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : 'â€”'}</strong></div>
+                <div className="db-tx-mcard__row"><span>Details</span><strong style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>{tx.desc || tx.method || 'â€”'}</strong></div>
                 <div className="db-tx-mcard__row"><span>Reference</span><strong className="db-tx-hash">{tx.hash}</strong></div>
               </div>
             </div>
@@ -2178,16 +2062,16 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
   );
 }
 
-/* ── Wallet ─────────────────────────────────────── */
+/* â”€â”€ Wallet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], walletData = null, walletRequests = [], directAirdrops = [], dataLoading = false, lastRefreshed = null, onRefresh, onNav }) {
   const { copy, copied } = useCopyText();
   const [viewToken, setViewToken] = useState(null);
   const [detailsToken, setDetailsToken] = useState(null);
   const walletAddr = walletData?.walletAddress || investor?.walletAddress || INVESTOR.walletAddress;
-  const shortAddr = walletAddr.slice(0, 12) + '…' + walletAddr.slice(-6);
+  const shortAddr = walletAddr.slice(0, 12) + 'â€¦' + walletAddr.slice(-6);
 
-  // ── Map API wallet holdings → internal shape ──
+  // â”€â”€ Map API wallet holdings â†’ internal shape â”€â”€
   const buildApprovedRows = () => {
     const raw = walletData?.holdings ?? walletData?.tokens ?? walletData?.approvedTokens ?? null;
     const fromWallet = Array.isArray(raw) && raw.length > 0
@@ -2199,7 +2083,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
           amount:       Number(h.tokenQty  || h.amount   || h.qty    || 0),
           invested:     Number(h.amountUsd || h.invested  || h.paid   || 0),
           currentValue: Number(h.currentValue || h.value  || h.amountUsd || h.invested || 0),
-          lockExpiry:   h.lockExpiry  || h.expiresAt || '—',
+          lockExpiry:   h.lockExpiry  || h.expiresAt || 'â€”',
           status:       'active',
         }))
       : [];
@@ -2230,7 +2114,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
           status:      (a.status || 'completed').toLowerCase(),
           date:        (a.createdAt || a.date)
             ? new Date(a.createdAt || a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : '—',
+            : 'â€”',
           completedAt: a.completedAt
             ? new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : null,
@@ -2257,12 +2141,12 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
             disabled={dataLoading}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={dataLoading ? { animation: 'spin 1s linear infinite' } : {}}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            {dataLoading ? 'Loading…' : 'Refresh'}
+            {dataLoading ? 'Loadingâ€¦' : 'Refresh'}
           </button>
         </div>
       </div>
 
-      {/* ── Active Tokens (All) — approved + airdrops combined ── */}
+      {/* â”€â”€ Active Tokens (All) â€” approved + airdrops combined â”€â”€ */}
       <div className="db-wallet-section-header">
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
@@ -2283,7 +2167,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       )}
       <TokenHoldingDetailsModal holding={detailsToken} onClose={() => setDetailsToken(null)} />
 
-      {/* ── Approved Tokens ── */}
+      {/* â”€â”€ Approved Tokens â”€â”€ */}
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
@@ -2321,7 +2205,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
       )}
 
-      {/* ── Approved Token Detail Modal ── */}
+      {/* â”€â”€ Approved Token Detail Modal â”€â”€ */}
       {viewToken && (
         <div className="db-modal-overlay" onClick={() => setViewToken(null)}>
           <div className="db-modal-box" onClick={e => e.stopPropagation()}>
@@ -2333,7 +2217,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                   <div style={{ fontSize: 12, color: '#888' }}>{viewToken.ticker}</div>
                 </div>
               </div>
-              <button className="db-modal-close" onClick={() => setViewToken(null)}>✕</button>
+              <button className="db-modal-close" onClick={() => setViewToken(null)}>âœ•</button>
             </div>
             <div className="db-modal-body">
               <div className="db-modal-row">
@@ -2346,21 +2230,21 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
               </div>
               <div className="db-modal-row">
                 <span>Ticker</span>
-                <strong>{viewToken.ticker || '—'}</strong>
+                <strong>{viewToken.ticker || 'â€”'}</strong>
               </div>
               <div className="db-modal-row">
                 <span>Token Qty</span>
-                <strong>{viewToken.amount?.toLocaleString() ?? '—'}</strong>
+                <strong>{viewToken.amount?.toLocaleString() ?? 'â€”'}</strong>
               </div>
               <div className="db-modal-row">
                 <span>Amount Invested</span>
-                <strong>${viewToken.invested?.toLocaleString() ?? '—'} USD</strong>
+                <strong>${viewToken.invested?.toLocaleString() ?? 'â€”'} USD</strong>
               </div>
               <div className="db-modal-row">
                 <span>Current Value</span>
-                <strong style={{ color: '#22C55E' }}>${viewToken.currentValue?.toLocaleString() ?? '—'} USD</strong>
+                <strong style={{ color: '#22C55E' }}>${viewToken.currentValue?.toLocaleString() ?? 'â€”'} USD</strong>
               </div>
-              {viewToken.lockExpiry && viewToken.lockExpiry !== '—' && (
+              {viewToken.lockExpiry && viewToken.lockExpiry !== 'â€”' && (
                 <div className="db-modal-row">
                   <span>Lock Expiry</span>
                   <strong>{viewToken.lockExpiry}</strong>
@@ -2395,7 +2279,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
       )}
 
-      {/* ── Airdrop Tokens ── */}
+      {/* â”€â”€ Airdrop Tokens â”€â”€ */}
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--purple" />
@@ -2431,7 +2315,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
       )}
 
-      {/* ── Pending Tokens ── */}
+      {/* â”€â”€ Pending Tokens â”€â”€ */}
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--amber" />
@@ -2441,7 +2325,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       {pendingRows.length === 0 ? (
         <div className="db-wallet-empty">
           No pending token purchases.{' '}
-          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
+          <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now â†’</button>
         </div>
       ) : (
         <div className="db-wallet-token-grid">
@@ -2462,14 +2346,14 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 <div className="db-wallet-token-stat">
                   <span>Payment Proof</span>
                   <strong style={{ color: p.paymentStatus === 'screenshot_uploaded' ? '#22C55E' : '#F59E0B' }}>
-                    {p.paymentStatus === 'screenshot_uploaded' ? '✓ Uploaded' : 'Awaiting screenshot'}
+                    {p.paymentStatus === 'screenshot_uploaded' ? 'âœ“ Uploaded' : 'Awaiting screenshot'}
                   </strong>
                 </div>
               </div>
               {p.paymentStatus !== 'screenshot_uploaded' && (
                 <button className="db-wallet-upload-hint" onClick={() => onNav?.('transactions')}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Upload screenshot in Transactions →
+                  Upload screenshot in Transactions â†’
                 </button>
               )}
             </div>
@@ -2477,7 +2361,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
       )}
 
-      {/* ── Wallet Requests ── */}
+      {/* â”€â”€ Wallet Requests â”€â”€ */}
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot" style={{ background: '#60A5FA', boxShadow: '0 0 8px #60A5FA88' }} />
@@ -2503,14 +2387,14 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 </div>
                 <div className="db-wallet-tx-info">
                   <span className="db-wallet-tx-name" style={{ textTransform: 'capitalize' }}>{r.type.replace(/_/g, ' ')}</span>
-                  <span className="db-wallet-tx-date">{r.date}{r.reviewedAt ? ` · Reviewed ${r.reviewedAt}` : ''}</span>
+                  <span className="db-wallet-tx-date">{r.date}{r.reviewedAt ? ` Â· Reviewed ${r.reviewedAt}` : ''}</span>
                   {r.notes ? <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2, display: 'block' }}>{r.notes}</span> : null}
                 </div>
                 <div className="db-wallet-tx-mid">
                   <strong className="db-wallet-tx-qty">${r.amount?.toLocaleString()} {r.currency}</strong>
-                  {r.walletAddr && r.walletAddr !== '—' && (
+                  {r.walletAddr && r.walletAddr !== 'â€”' && (
                     <span className="db-wallet-tx-amt" style={{ fontFamily: 'monospace', fontSize: 11 }}>
-                      {r.walletAddr.length > 20 ? r.walletAddr.slice(0, 10) + '…' + r.walletAddr.slice(-6) : r.walletAddr}
+                      {r.walletAddr.length > 20 ? r.walletAddr.slice(0, 10) + 'â€¦' + r.walletAddr.slice(-6) : r.walletAddr}
                     </span>
                   )}
                 </div>
@@ -2525,468 +2409,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
   );
 }
 
-/* ── Affiliate Program ──────────────────────────── */
-function TabAffiliate({ investor, enrolled, setEnrolled, directProgramId, onClearDirect }) {
-  const { copy, copied } = useCopyText();
-
-  /* ── Step state — lazy-initialised when jumping straight to a program detail ── */
-  const [step, setStep] = useState(() => {
-    if (directProgramId && AFFILIATE_PROGRAMS.find(p => p.id === directProgramId)) return 'detail';
-    return 'tokens';
-  });
-  const [selectedToken, setSelectedToken] = useState(() => {
-    if (!directProgramId) return null;
-    const prog = AFFILIATE_PROGRAMS.find(p => p.id === directProgramId);
-    return prog ? AFFILIATE_TOKENS.find(t => t.id === prog.tokenId) || null : null;
-  });
-  const [selectedProgram, setSelectedProgram] = useState(() =>
-    directProgramId ? AFFILIATE_PROGRAMS.find(p => p.id === directProgramId) || null : null
-  );
-  const [enrolling, setEnrolling] = useState(null);
-
-  /* When the sidebar sub-item is clicked while already on the affiliate tab,
-     directProgramId changes → navigate to that program's detail. */
-  useEffect(() => {
-    if (!directProgramId) return;
-    const prog = AFFILIATE_PROGRAMS.find(p => p.id === directProgramId);
-    if (!prog) return;
-    const tok = AFFILIATE_TOKENS.find(t => t.id === prog.tokenId);
-    setSelectedToken(tok || null);
-    setSelectedProgram(prog);
-    setStep('detail');
-    onClearDirect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [directProgramId]);
-
-  /* Clear directProgramId after initial mount (was consumed by lazy-init above) */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (directProgramId) onClearDirect(); }, []);
-
-  /* Programs for selected token */
-  const tokenPrograms = selectedToken
-    ? AFFILIATE_PROGRAMS.filter(p => p.tokenId === selectedToken.id)
-    : [];
-
-  /* Tier info */
-  const currentTier = AFFILIATE_TIERS.find(t => investor.referralCount >= t.refMin && investor.referralCount <= t.refMax) || AFFILIATE_TIERS[0];
-  const nextTier = AFFILIATE_TIERS[AFFILIATE_TIERS.indexOf(currentTier) + 1];
-  const refNeeded = nextTier ? nextTier.refMin - investor.referralCount : 0;
-
-  const referralLink = selectedProgram
-    ? `https://growith.io/ref/${investor.affiliateCode}?p=${selectedProgram.id}`
-    : `https://growith.io/ref/${investor.affiliateCode}`;
-
-  const handleEnroll = async (programId) => {
-    setEnrolling(programId);
-    await new Promise(r => setTimeout(r, 1400));
-    setEnrolled(prev => ({ ...prev, [programId]: true }));
-    setEnrolling(null);
-  };
-
-  /* ── Pool bar helper ── */
-  const PoolBar = ({ used, total }) => {
-    const pct = Math.min((used / total) * 100, 100);
-    return (
-      <div className="db-aff-pool-wrap">
-        <div className="db-aff-pool-track">
-          <div className="db-aff-pool-fill" style={{ width: `${pct}%`, background: pct > 80 ? '#EF4444' : '#9D6FFF' }} />
-        </div>
-        <span className="db-aff-pool-label">${used.toLocaleString()} of ${total.toLocaleString()} pool used</span>
-      </div>
-    );
-  };
-
-  /* ── Breadcrumb ── */
-  const Breadcrumb = () => (
-    <div className="db-aff-breadcrumb">
-      <button className={`db-aff-bc-item ${step === 'tokens' ? 'db-aff-bc-item--active' : ''}`}
-        onClick={() => { setStep('tokens'); setSelectedToken(null); setSelectedProgram(null); }}>
-        <span className="db-aff-bc-num">1</span> Select Token
-      </button>
-      <span className="db-aff-bc-sep">›</span>
-      <button className={`db-aff-bc-item ${step === 'programs' ? 'db-aff-bc-item--active' : ''} ${!selectedToken ? 'db-aff-bc-item--disabled' : ''}`}
-        onClick={() => { if (selectedToken) { setStep('programs'); setSelectedProgram(null); } }}>
-        <span className="db-aff-bc-num">2</span> Choose Program
-      </button>
-      <span className="db-aff-bc-sep">›</span>
-      <button className={`db-aff-bc-item ${step === 'detail' ? 'db-aff-bc-item--active' : ''} ${!selectedProgram ? 'db-aff-bc-item--disabled' : ''}`}
-        onClick={() => { if (selectedProgram) setStep('detail'); }}>
-        <span className="db-aff-bc-num">3</span> Program Details
-      </button>
-    </div>
-  );
-
-  /* ════════════════ STEP 1 — Token Selection ════════════════ */
-  const StepTokens = () => (
-    <div>
-      <div className="db-welcome-bar">
-        <div>
-          <h1 className="db-h1">Affiliate Program</h1>
-          <p className="db-muted">Choose a token to see its available affiliate programs and start earning.</p>
-        </div>
-        <div className="db-aff-tier-badge" style={{ borderColor: currentTier.color, color: currentTier.color, border: '1.5px solid' }}>
-          <Icon.trophy /> {currentTier.name} · {currentTier.commPct}%
-        </div>
-      </div>
-      <Breadcrumb />
-
-      {/* Quick stats */}
-      <div className="db-aff-stats">
-        {[
-          { label: 'Active Referrals', value: investor.referralCount, sub: refNeeded > 0 ? `${refNeeded} more for ${nextTier?.name}` : 'Max tier', icon: '👥' },
-          { label: 'Total Earned', value: `$${investor.totalReferralEarned}`, sub: 'All-time commissions', icon: '💰' },
-          { label: 'Pending Payout', value: `$${investor.pendingReferralPayout}`, sub: 'Clears in 1–3 days', icon: '⏳' },
-          { label: 'Commission Rate', value: `${currentTier.commPct}%`, sub: `${currentTier.name} tier · up to 7%`, icon: '📈' },
-        ].map(s => (
-          <div key={s.label} className="db-aff-stat-card">
-            <span className="db-aff-stat-icon">{s.icon}</span>
-            <span className="db-aff-stat-value">{s.value}</span>
-            <span className="db-aff-stat-label">{s.label}</span>
-            <span className="db-aff-stat-sub">{s.sub}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="db-section-title">Available Tokens</div>
-      <div className="db-aff-token-grid">
-        {AFFILIATE_TOKENS.map(token => (
-          <button key={token.id} className="db-aff-token-card"
-            onClick={() => { setSelectedToken(token); setStep('programs'); }}>
-            <div className="db-aff-token-card__logo">
-              <img src={token.logo} alt={token.name} onError={e => { e.target.style.display='none'; }} />
-            </div>
-            <div className="db-aff-token-card__info">
-              <div className="db-aff-token-card__name">{token.name}</div>
-              <div className="db-aff-token-card__ticker">{token.ticker}</div>
-              <div className="db-aff-token-card__meta">
-                <span className="db-aff-token-card__badge">{token.activePrograms} active program{token.activePrograms !== 1 ? 's' : ''}</span>
-              </div>
-            </div>
-            <div className="db-aff-token-card__arrow">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Tier ladder teaser */}
-      <div className="db-section-title" style={{ marginTop: 32 }}>Your Commission Tier</div>
-      <div className="db-tier-ladder">
-        {AFFILIATE_TIERS.map((tier) => {
-          const isActive = tier.name === currentTier.name;
-          const progressToNext = isActive && nextTier
-            ? ((investor.referralCount - tier.refMin) / (nextTier.refMin - tier.refMin)) * 100
-            : isActive ? 100 : 0;
-          return (
-            <div key={tier.name} className={`db-tier-card ${isActive ? 'db-tier-card--active' : ''}`}>
-              <div className="db-tier-card__top">
-                <span className="db-tier-card__name" style={{ color: isActive ? tier.color : undefined }}>{tier.name}</span>
-                <span className="db-tier-card__rate" style={{ color: tier.color }}>{tier.commPct}%</span>
-              </div>
-              <div className="db-tier-card__range">{tier.refMin}–{tier.refMax === 999 ? '∞' : tier.refMax} referrals</div>
-              <div className="db-tier-card__perk">{tier.extraPerks}</div>
-              {isActive && (
-                <div className="db-tier-card__progress">
-                  <div className="db-tier-card__progress-bar">
-                    <div className="db-tier-card__progress-fill" style={{ width: `${progressToNext}%`, background: tier.color }} />
-                  </div>
-                  <span className="db-tier-card__progress-label">
-                    {nextTier ? `${investor.referralCount}/${nextTier.refMin} to ${nextTier.name}` : 'Max tier 🎉'}
-                  </span>
-                </div>
-              )}
-              {isActive && <span className="db-tier-card__active-badge" style={{ background: tier.color }}>Current</span>}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  /* ════════════════ STEP 2 — Program List ════════════════ */
-  const StepPrograms = () => (
-    <div>
-      <div className="db-welcome-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button className="db-aff-back-btn" onClick={() => { setStep('tokens'); setSelectedToken(null); }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <div>
-            <h1 className="db-h1">
-              <img src={selectedToken.logo} alt="" style={{ width: 28, height: 28, borderRadius: 6, verticalAlign: 'middle', marginRight: 8 }} onError={e => { e.target.style.display='none'; }} />
-              {selectedToken.name} Programs
-            </h1>
-            <p className="db-muted">{tokenPrograms.length} affiliate program{tokenPrograms.length !== 1 ? 's' : ''} available — pick one to join.</p>
-          </div>
-        </div>
-      </div>
-      <Breadcrumb />
-
-      <div className="db-aff-program-list">
-        {tokenPrograms.map(prog => {
-          const poolPct = Math.min((prog.usedPool / prog.totalPool) * 100, 100);
-          const isEnrolled = !!enrolled[prog.id];
-          const statusBadge = prog.status === 'ending_soon'
-            ? { label: 'Ending Soon', color: '#EF4444', bg: 'rgba(239,68,68,0.1)' }
-            : { label: 'Active', color: '#22C55E', bg: 'rgba(34,197,94,0.1)' };
-
-          return (
-            <div key={prog.id} className={`db-aff-prog-card ${isEnrolled ? 'db-aff-prog-card--enrolled' : ''}`}>
-              <div className="db-aff-prog-card__head">
-                <div className="db-aff-prog-card__tags">
-                  <span className="db-aff-prog-card__tag" style={{ color: prog.tagColor, background: `${prog.tagColor}18`, borderColor: `${prog.tagColor}40` }}>{prog.tag}</span>
-                  <span className="db-aff-prog-card__status" style={{ color: statusBadge.color, background: statusBadge.bg }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusBadge.color, display: 'inline-block', marginRight: 5 }} />
-                    {statusBadge.label}
-                  </span>
-                </div>
-                <span className="db-aff-prog-card__name">{prog.name}</span>
-                <div className="db-aff-prog-card__commission">
-                  {prog.commissionType === 'percentage'
-                    ? <><span className="db-aff-prog-card__rate">{prog.commissionValue}%</span> per investment</>
-                    : <><span className="db-aff-prog-card__rate">${prog.commissionValue}</span> flat per referral</>
-                  }
-                </div>
-              </div>
-
-              <div className="db-aff-prog-card__highlights">
-                {prog.highlights.slice(0, 3).map((h, i) => (
-                  <div key={i} className="db-aff-prog-card__hl">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={prog.tagColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    {h}
-                  </div>
-                ))}
-              </div>
-
-              <div className="db-aff-prog-card__meta">
-                <span>Min invest: <strong>${prog.minInvestPerReferral.toLocaleString()}</strong></span>
-                <span>Payout: <strong>{prog.payoutDelay}</strong></span>
-                <span>Ends: <strong>{prog.endsDate}</strong></span>
-              </div>
-
-              <PoolBar used={prog.usedPool} total={prog.totalPool} />
-
-              <div className="db-aff-prog-card__actions">
-                <button className="db-btn db-btn--secondary db-btn--sm"
-                  onClick={() => { setSelectedProgram(prog); setStep('detail'); }}>
-                  View Details
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 4 }}><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                {isEnrolled ? (
-                  <span className="db-aff-prog-enrolled-badge">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Enrolled
-                  </span>
-                ) : (
-                  <button className="db-btn db-btn--primary db-btn--sm"
-                    disabled={enrolling === prog.id}
-                    onClick={() => handleEnroll(prog.id)}>
-                    {enrolling === prog.id ? 'Joining…' : 'Join Program'}
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  /* ════════════════ STEP 3 — Program Detail ════════════════ */
-  const StepDetail = () => {
-    const prog = selectedProgram;
-    const isEnrolled = !!enrolled[prog.id];
-    const poolPct = Math.min((prog.usedPool / prog.totalPool) * 100, 100);
-
-    return (
-      <div>
-        <div className="db-welcome-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button className="db-aff-back-btn" onClick={() => { setStep('programs'); setSelectedProgram(null); }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <div>
-              <h1 className="db-h1">{prog.name}</h1>
-              <p className="db-muted">{prog.tokenName} · {prog.tag} affiliate programme</p>
-            </div>
-          </div>
-          {isEnrolled ? (
-            <span className="db-aff-prog-enrolled-badge db-aff-prog-enrolled-badge--lg">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              You're enrolled
-            </span>
-          ) : (
-            <button className="db-btn db-btn--primary"
-              disabled={enrolling === prog.id}
-              onClick={() => handleEnroll(prog.id)}>
-              {enrolling === prog.id ? 'Joining…' : 'Join This Program'}
-            </button>
-          )}
-        </div>
-        <Breadcrumb />
-
-        {/* Hero metrics */}
-        <div className="db-aff-detail-metrics">
-          <div className="db-aff-detail-metric">
-            <div className="db-aff-detail-metric__value" style={{ color: prog.tagColor }}>
-              {prog.commissionType === 'percentage' ? `${prog.commissionValue}%` : `$${prog.commissionValue}`}
-            </div>
-            <div className="db-aff-detail-metric__label">Commission per referral</div>
-          </div>
-          {prog.bonusThreshold && (
-            <div className="db-aff-detail-metric">
-              <div className="db-aff-detail-metric__value" style={{ color: '#F59E0B' }}>${prog.bonusUsd}</div>
-              <div className="db-aff-detail-metric__label">Bonus after {prog.bonusThreshold} referrals</div>
-            </div>
-          )}
-          <div className="db-aff-detail-metric">
-            <div className="db-aff-detail-metric__value">${prog.minInvestPerReferral.toLocaleString()}</div>
-            <div className="db-aff-detail-metric__label">Min referred investment</div>
-          </div>
-          <div className="db-aff-detail-metric">
-            <div className="db-aff-detail-metric__value">${(prog.totalPool - prog.usedPool).toLocaleString()}</div>
-            <div className="db-aff-detail-metric__label">Pool remaining</div>
-          </div>
-        </div>
-
-        {/* Pool progress */}
-        <div className="db-dark-card" style={{ marginBottom: 18 }}>
-          <div className="db-dark-card__title">Affiliate Pool</div>
-          <PoolBar used={prog.usedPool} total={prog.totalPool} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12, color: 'rgba(13,11,34,0.45)' }}>
-            <span>Programme ends: <strong style={{ color: '#0D0B22' }}>{prog.endsDate}</strong></span>
-            <span>Payout delay: <strong style={{ color: '#0D0B22' }}>{prog.payoutDelay}</strong></span>
-          </div>
-        </div>
-
-        {/* Key highlights */}
-        <div className="db-dark-card" style={{ marginBottom: 18 }}>
-          <div className="db-dark-card__title">What You Get</div>
-          <div className="db-aff-detail-highlights">
-            {prog.highlights.map((h, i) => (
-              <div key={i} className="db-aff-detail-hl">
-                <div className="db-aff-detail-hl__icon" style={{ background: `${prog.tagColor}18`, border: `1px solid ${prog.tagColor}40` }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={prog.tagColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <span>{h}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Referral link (shown after enrollment OR always) */}
-        <div className="db-dark-card" style={{ marginBottom: 18 }}>
-          <div className="db-dark-card__title">Your Referral Link for This Program</div>
-          <div className="db-referral-link-value" style={{ marginTop: 10 }}>
-            <span>{referralLink}</span>
-            <button className="db-wallet-copy-btn" onClick={() => copy(referralLink, 'ref-detail')}>
-              <Icon.copy /> {copied === 'ref-detail' ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <div className="db-aff-share-row" style={{ marginTop: 12 }}>
-            {[
-              { label: 'Telegram', color: '#229ED9', href: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=Invest+in+${encodeURIComponent(prog.tokenName)}+on+Growith` },
-              { label: 'Twitter / X', color: '#1DA1F2', href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(referralLink)}&text=Investing+in+${encodeURIComponent(prog.tokenTicker)}+via+Growith+%F0%9F%9A%80` },
-              { label: 'WhatsApp', color: '#25D366', href: `https://wa.me/?text=${encodeURIComponent('Join Growith and invest in ' + prog.tokenName + ': ' + referralLink)}` },
-            ].map(s => (
-              <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
-                className="db-share-btn" style={{ borderColor: s.color, color: s.color }}>
-                {s.label}
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Rules */}
-        <div className="db-dark-card">
-          <div className="db-dark-card__title">Programme Rules</div>
-          <ol className="db-aff-rules-list">
-            {prog.rules.map((r, i) => (
-              <li key={i}>{r}</li>
-            ))}
-          </ol>
-        </div>
-
-        <div className="db-info-box" style={{ marginTop: 18 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div>Commissions are credited after your referral&apos;s KYC is approved and payment confirmed. Contact <a href="mailto:affiliates@growith.io" className="db-link">affiliates@growith.io</a> for questions.</div>
-        </div>
-      </div>
-    );
-  };
-
-  // Affiliate program is coming soon — overlay is permanent and cannot be dismissed
-  const showOverlay = true;
-
-  return (
-    <div className="db-tab-content" style={{ position: 'relative' }}>
-      {/* Blurred content */}
-      <div style={{ filter: showOverlay ? 'blur(6px)' : 'none', pointerEvents: showOverlay ? 'none' : 'auto', userSelect: showOverlay ? 'none' : 'auto', opacity: showOverlay ? 0.45 : 1 }}>
-        {step === 'tokens'   && <StepTokens />}
-        {step === 'programs' && selectedToken   && <StepPrograms />}
-        {step === 'detail'   && selectedProgram && <StepDetail />}
-      </div>
-
-      {/* Coming Soon overlay */}
-      {showOverlay && (
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10,
-      }}>
-        <div style={{
-          position: 'relative',
-          background: 'linear-gradient(135deg, rgba(20,16,50,0.96) 0%, rgba(30,18,70,0.96) 100%)',
-          border: '1.5px solid rgba(157,111,255,0.35)',
-          borderRadius: 20,
-          padding: '44px 48px',
-          textAlign: 'center',
-          maxWidth: 420,
-          width: '90%',
-          boxShadow: '0 8px 48px rgba(107,53,255,0.25)',
-        }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'rgba(157,111,255,0.12)',
-            border: '1.5px solid rgba(157,111,255,0.35)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 20px',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <div style={{
-            display: 'inline-block',
-            background: 'rgba(157,111,255,0.12)',
-            border: '1px solid rgba(157,111,255,0.3)',
-            borderRadius: 20,
-            padding: '4px 14px',
-            fontSize: 11,
-            fontWeight: 700,
-            color: '#9D6FFF',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            marginBottom: 16,
-          }}>Coming Soon</div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 12px' }}>
-            Affiliate Program
-          </h2>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: 0 }}>
-            Our affiliate program is launching very soon. Earn commissions by referring investors — stay tuned for updates.
-          </p>
-        </div>
-      </div>
-      )}
-    </div>
-  );
-}
-
-const COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua & Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia & Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (DRC)","Congo (Republic)","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts & Nevis","Saint Lucia","Saint Vincent & Grenadines","Samoa","San Marino","São Tomé & Príncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad & Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+const COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua & Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia & Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (DRC)","Congo (Republic)","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts & Nevis","Saint Lucia","Saint Vincent & Grenadines","Samoa","San Marino","SÃ£o TomÃ© & PrÃ­ncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad & Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
 function KycFileUploadBox({ field, label, preview, error, accept = 'image/*,application/pdf', onChange }) {
   // preview can be null or { url, isPdf, name }
@@ -3017,7 +2440,7 @@ function KycFileUploadBox({ field, label, preview, error, accept = 'image/*,appl
                 <div className="kyc-pdf-card__info">
                   <span className="kyc-pdf-card__badge">PDF</span>
                   <span className="kyc-pdf-card__name" title={fileName}>
-                    {fileName.length > 28 ? fileName.slice(0, 25) + '…' : fileName}
+                    {fileName.length > 28 ? fileName.slice(0, 25) + 'â€¦' : fileName}
                   </span>
                   <a
                     href={previewUrl}
@@ -3050,11 +2473,55 @@ function KycFileUploadBox({ field, label, preview, error, accept = 'image/*,appl
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             <span className="kyc-upload-cta">Click to upload</span>
             <span className="kyc-upload-hint">{label}</span>
-            <span className="kyc-upload-size">JPG, PNG or PDF · Max 8 MB</span>
+            <span className="kyc-upload-size">JPG, PNG or PDF Â· Max 8 MB</span>
           </div>
         )}
       </label>
       <span className="kyc-form__error" style={{ marginTop: 4 }}>{error || ''}</span>
+    </div>
+  );
+}
+
+const KYC_FIELD_LABELS = {
+  fullName: 'Full Legal Name',
+  dob: 'Date of Birth',
+  nationality: 'Nationality',
+  country: 'Country of Residence',
+  city: 'City',
+  state: 'State / Province',
+  phone: 'Phone Number',
+  address: 'Street Address',
+  aadhaarNumber: 'Aadhaar Number',
+  aadhaarFront: 'Aadhaar Front',
+  aadhaarBack: 'Aadhaar Back',
+  panNumber: 'PAN Number',
+  panFront: 'PAN Front',
+  primaryType: 'Document Type',
+  primaryFront: 'Document Front',
+  primaryBack: 'Document Back',
+  secondaryName: 'Supporting Document Name',
+  secondaryFile: 'Supporting Document',
+};
+
+function KycValidationModalBody({ intro, errors }) {
+  const items = Object.entries(errors).filter(([, msg]) => msg);
+  return (
+    <div className="kyc-validation-modal">
+      {intro && <p className="kyc-validation-modal__intro">{intro}</p>}
+      <ul className="kyc-validation-modal__list">
+        {items.map(([key, msg]) => (
+          <li key={key} className={key === '_general' ? 'kyc-validation-modal__item--general' : ''}>
+            {key === '_general' ? (
+              <span>{msg}</span>
+            ) : (
+              <>
+                <strong>{KYC_FIELD_LABELS[key] || key}</strong>
+                <span>{msg}</span>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -3066,10 +2533,39 @@ function TabVerification({ investor, onNav }) {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
   const [toast, setToast] = useState({ open: false, message: '', type: 'error' });
+  const [validationModal, setValidationModal] = useState({ open: false, title: '', intro: '', errors: {} });
   const showToast = (message, type = 'error') => setToast({ open: true, message, type });
   const closeToast = () => setToast(t => ({ ...t, open: false }));
+  const showValidationModal = (title, errors, intro = 'Please fix the following and try again.') => {
+    setValidationModal({ open: true, title, intro, errors });
+  };
+  const closeValidationModal = () => setValidationModal(m => ({ ...m, open: false }));
+  const closeValidationModalAndFix = () => {
+    const errs = { ...validationModal.errors };
+    closeValidationModal();
+    if (errs && !errs._general) scrollToFirstKycError(errs);
+  };
+  const scrollToFirstKycError = (errs) => {
+    const firstKey = Object.keys(errs)[0];
+    if (!firstKey) return;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[name="${firstKey}"], #kf-${firstKey}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el?.focus) el.focus();
+    });
+  };
+  const kycValidationModal = (
+    <Modal
+      isOpen={validationModal.open}
+      onClose={closeValidationModalAndFix}
+      title={validationModal.title}
+      type="error"
+    >
+      <KycValidationModalBody intro={validationModal.intro} errors={validationModal.errors} />
+    </Modal>
+  );
   const [form, setForm] = useState({
-    // Initialize empty — useEffect below populates from registered fullName once user data is loaded.
+    // Initialize empty â€” useEffect below populates from registered fullName once user data is loaded.
     // Avoids the brief placeholder "Nicholas Ergemia" flash if INVESTOR default is active.
     fullName:    (investor.name && investor.name !== INVESTOR.name) ? investor.name : '',
     dob:         '',
@@ -3096,7 +2592,7 @@ function TabVerification({ investor, onNav }) {
     });
   }, [investor.name]);
 
-  // ── Document upload state ──
+  // â”€â”€ Document upload state â”€â”€
   const [docs, setDocs] = useState({
     primaryType:    '',
     primaryFront:   null,
@@ -3120,7 +2616,7 @@ function TabVerification({ investor, onNav }) {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [stage]);
 
-  // ── Country → document config ──
+  // â”€â”€ Country â†’ document config â”€â”€
   const DOC_CONFIG = {
     India: {
       label: 'Primary Identity Document',
@@ -3168,7 +2664,7 @@ function TabVerification({ investor, onNav }) {
     return cfg.types.find(t => t.id === docs.primaryType) || null;
   };
 
-  // Already approved — show status only
+  // Already approved â€” show status only
   if (investor.kycStatus === 'approved') {
     return (
       <div className="db-tab-content">
@@ -3181,7 +2677,7 @@ function TabVerification({ investor, onNav }) {
         </div>
         <div className="db-alert db-alert--success">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <div><strong>Full KYC Approval Granted</strong> — Identity verified. Sanctions screening passed. You are cleared to invest.</div>
+          <div><strong>Full KYC Approval Granted</strong> â€” Identity verified. Sanctions screening passed. You are cleared to invest.</div>
         </div>
       </div>
     );
@@ -3206,7 +2702,7 @@ function TabVerification({ investor, onNav }) {
             </svg>
           </div>
           <h2 className="kyc-pending-title">Verification In Progress</h2>
-          <p className="kyc-pending-desc">Our compliance team is reviewing your documents. This typically takes <strong>1–2 business days</strong>. We'll notify you by email once your account is verified.</p>
+          <p className="kyc-pending-desc">Our compliance team is reviewing your documents. This typically takes <strong>1â€“2 business days</strong>. We'll notify you by email once your account is verified.</p>
           <div className="kyc-pending-steps">
             <div className="kyc-ps kyc-ps--done"><span className="kyc-ps__dot" />Personal Info Submitted</div>
             <div className="kyc-ps kyc-ps--done"><span className="kyc-ps__dot" />Documents Uploaded</div>
@@ -3228,7 +2724,7 @@ function TabVerification({ investor, onNav }) {
     );
   }
 
-  // ── Stage 0: Terms & Consent ──
+  // â”€â”€ Stage 0: Terms & Consent â”€â”€
   if (stage === 'terms') {
     const handleTermsScroll = (e) => {
       const el = e.currentTarget;
@@ -3281,7 +2777,7 @@ function TabVerification({ investor, onNav }) {
 
         <div className="kyc-terms-container">
           <div className="kyc-terms__scroll" onScroll={handleTermsScroll}>
-            <h2 className="kyc-terms__heading">KYC Verification — Consent &amp; Terms of Use</h2>
+            <h2 className="kyc-terms__heading">KYC Verification â€” Consent &amp; Terms of Use</h2>
             <p className="kyc-terms__intro">Please read the following carefully. By proceeding, you grant Growith (the Platform) your explicit consent to collect, process, and verify your personal data as described below, in compliance with applicable data protection and anti-money-laundering legislation.</p>
 
             <h3 className="kyc-terms__section-title">1. Purpose of Identity Verification</h3>
@@ -3324,10 +2820,10 @@ function TabVerification({ investor, onNav }) {
             <p className="kyc-terms__body">Growith may share your submitted documents and personal information with licensed third-party KYC/AML verification providers for identity validation purposes. These providers are contractually obligated to maintain confidentiality and comply with applicable data-protection regulations.</p>
 
             <h3 className="kyc-terms__section-title">7. Data Retention</h3>
-            <p className="kyc-terms__body">Your KYC data and documents will be retained for the minimum period required by applicable law, typically 5–7 years following the end of the business relationship. After this period, data will be securely deleted or anonymised in accordance with our data retention policy.</p>
+            <p className="kyc-terms__body">Your KYC data and documents will be retained for the minimum period required by applicable law, typically 5â€“7 years following the end of the business relationship. After this period, data will be securely deleted or anonymised in accordance with our data retention policy.</p>
 
             <h3 className="kyc-terms__section-title">8. Your Rights</h3>
-            <p className="kyc-terms__body">Subject to applicable laws, you have the right to access the personal data we hold about you, request correction of inaccurate data, request deletion of your data (subject to legal retention obligations), object to or restrict certain types of processing, and withdraw consent at any time — though this may affect your ability to use the platform. To exercise these rights, contact our Data Protection Officer at <strong>privacy@growith.io</strong>.</p>
+            <p className="kyc-terms__body">Subject to applicable laws, you have the right to access the personal data we hold about you, request correction of inaccurate data, request deletion of your data (subject to legal retention obligations), object to or restrict certain types of processing, and withdraw consent at any time â€” though this may affect your ability to use the platform. To exercise these rights, contact our Data Protection Officer at <strong>privacy@growith.io</strong>.</p>
 
             <h3 className="kyc-terms__section-title">9. Regulatory Compliance</h3>
             <p className="kyc-terms__body">Growith operates in compliance with applicable laws and regulations, including SEBI (India), SEC (USA), CBUAE (UAE), FCA (UK), and other relevant regulatory bodies depending on jurisdiction. Our KYC process is periodically audited by independent compliance professionals to ensure continued adherence to regulatory standards.</p>
@@ -3337,8 +2833,8 @@ function TabVerification({ investor, onNav }) {
 
             <div className="kyc-terms__scroll-indicator">
               {termsScrolled
-                ? <span className="kyc-terms__si kyc-terms__si--done">✓ You have read the full document</span>
-                : <span className="kyc-terms__si">↓ Scroll to the bottom to continue</span>
+                ? <span className="kyc-terms__si kyc-terms__si--done">âœ“ You have read the full document</span>
+                : <span className="kyc-terms__si">â†“ Scroll to the bottom to continue</span>
               }
             </div>
           </div>
@@ -3361,7 +2857,7 @@ function TabVerification({ investor, onNav }) {
             disabled={!termsAccepted}
             onClick={() => setStage('info')}
           >
-            I Agree — Continue to Personal Info
+            I Agree â€” Continue to Personal Info
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
         </div>
@@ -3369,7 +2865,7 @@ function TabVerification({ investor, onNav }) {
     );
   }
 
-  // ── Stage 1: Personal Info form ──
+  // â”€â”€ Stage 1: Personal Info form â”€â”€
   if (stage === 'info') {
     const handleChange = (e) => {
       const { name, value } = e.target;
@@ -3379,11 +2875,11 @@ function TabVerification({ investor, onNav }) {
 
     const validate = () => {
       const errs = {};
-      // Full name: letters, spaces, apostrophes, hyphens only; 2–80 chars
+      // Full name: letters, spaces, apostrophes, hyphens only; 2â€“80 chars
       if (!form.fullName.trim()) {
         errs.fullName = 'Full name is required';
       } else if (!/^[a-zA-Z\s'\-\.]{2,80}$/.test(form.fullName.trim())) {
-        errs.fullName = 'Name can only contain letters, spaces, hyphens and apostrophes (2–80 chars)';
+        errs.fullName = 'Name can only contain letters, spaces, hyphens and apostrophes (2â€“80 chars)';
       }
       // DOB
       if (!form.dob) errs.dob = 'Date of birth is required';
@@ -3406,7 +2902,7 @@ function TabVerification({ investor, onNav }) {
       } else if (form.state.trim().length > 100) {
         errs.state = 'State name too long (max 100 characters)';
       }
-      // Phone: optional leading +, 7–15 digits (spaces/dashes allowed between digits)
+      // Phone: optional leading +, 7â€“15 digits (spaces/dashes allowed between digits)
       if (!form.phone.trim()) {
         errs.phone = 'Phone number is required';
       } else if (!/^\+?[\d\s\-]{7,20}$/.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 7) {
@@ -3419,13 +2915,14 @@ function TabVerification({ investor, onNav }) {
         errs.address = 'Address too long (max 200 characters)';
       }
       setErrors(errs);
-      return Object.keys(errs).length === 0;
+      return errs;
     };
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      if (!validate()) {
-        showToast('Please fix the errors highlighted below before continuing.');
+      const errs = validate();
+      if (Object.keys(errs).length > 0) {
+        showValidationModal('Please correct your personal information', errs);
         return;
       }
       setStage('docs');
@@ -3434,6 +2931,7 @@ function TabVerification({ investor, onNav }) {
     return (
       <div className="db-tab-content">
         <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
+        {kycValidationModal}
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
             <h1 className="db-h1">Identity Verification</h1>
@@ -3501,7 +2999,7 @@ function TabVerification({ investor, onNav }) {
                 </span>
               </label>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: '-4px 0 8px', lineHeight: 1.5 }}>
-                This is the legal name you provided at signup. It cannot be edited here — please contact support if it needs to be corrected.
+                This is the legal name you provided at signup. It cannot be edited here â€” please contact support if it needs to be corrected.
               </div>
               <input
                 className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`}
@@ -3535,7 +3033,7 @@ function TabVerification({ investor, onNav }) {
             <div className="kyc-form__group">
               <label className="kyc-form__label">Country of Residence <span className="kyc-form__req">*</span></label>
               <select className={`kyc-form__input kyc-form__select${errors.country ? ' kyc-form__input--err' : ''}`} name="country" value={form.country} onChange={handleChange}>
-                <option value="">Select country…</option>
+                <option value="">Select countryâ€¦</option>
                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <span className="kyc-form__error">{errors.country || ''}</span>
@@ -3587,7 +3085,7 @@ function TabVerification({ investor, onNav }) {
     );
   }
 
-  // ── Stage 2: Document Upload ──
+  // â”€â”€ Stage 2: Document Upload â”€â”€
   if (stage === 'docs') {
     const cfg = getDocConfig(form.country);
     const selectedType = getSelectedType();
@@ -3638,28 +3136,29 @@ function TabVerification({ investor, onNav }) {
         if (!docs.aadhaarFront) errs.aadhaarFront = 'Aadhaar front image is required';
         if (!docs.aadhaarBack)  errs.aadhaarBack  = 'Aadhaar back image is required';
         if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(docs.panNumber.trim()))
-          errs.panNumber = 'Invalid PAN — format must be ABCDE1234F';
+          errs.panNumber = 'Invalid PAN â€” format must be ABCDE1234F';
         if (!docs.panFront) errs.panFront = 'PAN front image is required';
       } else {
         if (!docs.primaryType)  errs.primaryType  = 'Please select a document type';
         if (!docs.primaryFront) errs.primaryFront = 'Front image is required';
         if (needsBack && !docs.primaryBack) errs.primaryBack = 'Back image is required';
       }
-      // supporting doc (name + file) is optional — no validation needed
+      // supporting doc (name + file) is optional â€” no validation needed
       setDocErrors(errs);
-      return Object.keys(errs).length === 0;
+      return errs;
     };
 
     const handleDocSubmit = async (e) => {
       e.preventDefault();
-      if (!validateDocs()) {
-        showToast('Some required fields or documents are missing. Please check the errors below.');
+      const errs = validateDocs();
+      if (Object.keys(errs).length > 0) {
+        showValidationModal('Please correct your documents', errs);
         return;
       }
       setIsLoading(true);
       setApiError('');
       try {
-        // ── Build file map — same fields as the old FormData ──
+        // â”€â”€ Build file map â€” same fields as the old FormData â”€â”€
         const filesToUpload = {};
         if (form.country === 'India') {
           filesToUpload.aadhaarFront = docs.aadhaarFront;
@@ -3673,19 +3172,19 @@ function TabVerification({ investor, onNav }) {
           if (docs.secondaryFile) filesToUpload.supportingDoc = docs.secondaryFile;
         }
 
-        // ── Step 1: Get pre-signed S3 upload URLs ──
+        // â”€â”€ Step 1: Get pre-signed S3 upload URLs â”€â”€
         const fieldNames = Object.keys(filesToUpload);
         const urlRes = await apiService.getKycUploadUrls(fieldNames);
         const uploadData = urlRes.data;
 
-        // ── Step 2: Upload files directly to S3 (supports up to 20 MB each) ──
+        // â”€â”€ Step 2: Upload files directly to S3 (supports up to 20 MB each) â”€â”€
         await Promise.all(
           fieldNames.map((field) =>
             apiService.uploadFileToS3(uploadData[field].uploadUrl, filesToUpload[field])
           )
         );
 
-        // ── Step 3: Submit KYC with S3 keys — same fields as before ──
+        // â”€â”€ Step 3: Submit KYC with S3 keys â€” same fields as before â”€â”€
         const [y, mo, d] = form.dob.split('-');
         const payload = {
           fullLegalName:      form.fullName.trim(),
@@ -3725,11 +3224,11 @@ function TabVerification({ investor, onNav }) {
         setStage('pending');
       } catch (err) {
         const msg = err.message || '';
-        if (msg.includes('too large') || msg.includes('8 MB') || msg.includes('413')) {
-          setApiError('One or more files exceed the 8 MB limit. Please go back, reduce the file size, and try again.');
-        } else {
-          setApiError(msg || 'Upload failed. Please try again.');
-        }
+        const apiErrMsg = msg.includes('too large') || msg.includes('8 MB') || msg.includes('413')
+          ? 'One or more files exceed the 8 MB limit. Please go back, reduce the file size, and try again.'
+          : (msg || 'Upload failed. Please try again.');
+        setApiError(apiErrMsg);
+        showValidationModal('KYC submission failed', { _general: apiErrMsg }, 'Something went wrong while submitting. Please review and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -3738,6 +3237,7 @@ function TabVerification({ investor, onNav }) {
     return (
       <div className="db-tab-content">
         <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
+        {kycValidationModal}
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
             <h1 className="db-h1">Identity Verification</h1>
@@ -3774,10 +3274,10 @@ function TabVerification({ investor, onNav }) {
 
         <form className="kyc-form" onSubmit={handleDocSubmit} noValidate>
 
-          {/* ── Primary ID Sections ── */}
+          {/* â”€â”€ Primary ID Sections â”€â”€ */}
           {form.country === 'India' ? (
             <>
-              {/* Section 1: Aadhaar Card — compulsory */}
+              {/* Section 1: Aadhaar Card â€” compulsory */}
               <div className="kyc-doc-section">
                 <div className="kyc-doc-section__header">
                   <div className="kyc-doc-section__num">1</div>
@@ -3814,7 +3314,7 @@ function TabVerification({ investor, onNav }) {
                 </div>
               </div>
 
-              {/* Section 2: PAN Card — compulsory */}
+              {/* Section 2: PAN Card â€” compulsory */}
               <div className="kyc-doc-section">
                 <div className="kyc-doc-section__header">
                   <div className="kyc-doc-section__num">2</div>
@@ -3891,7 +3391,7 @@ function TabVerification({ investor, onNav }) {
             </div>
           )}
 
-          {/* ── Supporting Document ── */}
+          {/* â”€â”€ Supporting Document â”€â”€ */}
           <div className="kyc-doc-section">
             <div className="kyc-doc-section__header">
               <div className="kyc-doc-section__num">{form.country === 'India' ? 3 : 2}</div>
@@ -3916,13 +3416,13 @@ function TabVerification({ investor, onNav }) {
             <KycFileUploadBox field="secondaryFile" label="Upload document" preview={docPreviews.secondaryFile} error={docErrors.secondaryFile} accept="image/*,application/pdf" onChange={handleFileChange('secondaryFile')} />
           </div>
 
-          {/* ── Image quality notice ── */}
+          {/* â”€â”€ Image quality notice â”€â”€ */}
           <div className="kyc-address-disclaimer" style={{ marginBottom: 16 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <span>All uploaded images must be clear, well-lit, and unedited. Blurry, cropped, or altered documents will be rejected and may delay your verification.</span>
           </div>
 
-          {/* ── Upload size notice ── */}
+          {/* â”€â”€ Upload size notice â”€â”€ */}
           <div className="kyc-address-disclaimer" style={{ marginBottom: 16 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <span><strong>Max file size: 8 MB per document.</strong> Accepted formats: JPG, PNG, WEBP, PDF. If your file is larger, compress it using a free online tool (e.g. ilovepdf.com for PDFs, tinypng.com for images) before uploading.</span>
@@ -3952,7 +3452,7 @@ function TabVerification({ investor, onNav }) {
   return null;
 }
 
-/* ── Settings ───────────────────────────────────── */
+/* â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function TabSettings({ investor }) {
   const [editing, setEditing] = useState(false);
   const [profile, setProfile] = useState({
@@ -3985,7 +3485,7 @@ function TabSettings({ investor }) {
         </div>
       </div>
 
-      {/* ── Profile Hero Card ── */}
+      {/* â”€â”€ Profile Hero Card â”€â”€ */}
       <div className="db-profile-hero">
         <div className="db-profile-hero__bg" />
         <div className="db-profile-hero__content">
@@ -4018,7 +3518,7 @@ function TabSettings({ investor }) {
         </div>
       </div>
 
-      {/* ── Profile Fields ── */}
+      {/* â”€â”€ Profile Fields â”€â”€ */}
       <div className="db-settings-card db-profile-details">
         <div className="db-settings-card__title">Personal Information</div>
         <div className="db-profile-fields">
@@ -4079,7 +3579,7 @@ function TabSettings({ investor }) {
             </span>
           </div>
           <div className="db-settings-field"><span className="db-form-label">Network</span><span className="db-settings-value">Polygon (MATIC)</span></div>
-          <div className="db-settings-field"><span className="db-form-label">Custody Type</span><span className="db-settings-value">HSM-backed · Growith Custodian</span></div>
+          <div className="db-settings-field"><span className="db-form-label">Custody Type</span><span className="db-settings-value">HSM-backed Â· Growith Custodian</span></div>
           <div className="db-alert db-alert--info" style={{ marginTop: 12, padding: '10px 14px', fontSize: 13 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <span>This is a custodial wallet managed by Growith. Self-custody migration available in Phase 5.</span>
@@ -4090,8 +3590,8 @@ function TabSettings({ investor }) {
         <div className="db-settings-card">
           <div className="db-settings-card__title">Security</div>
           <div className="db-settings-field"><span className="db-form-label">2FA</span><span className="db-settings-value db-green">Enabled (Authenticator App)</span></div>
-          <div className="db-settings-field"><span className="db-form-label">Last Login</span><span className="db-settings-value">Mar 12, 2026 · 09:41 UTC</span></div>
-          <div className="db-settings-field"><span className="db-form-label">Session</span><span className="db-settings-value">Active · Chrome · Warsaw, PL</span></div>
+          <div className="db-settings-field"><span className="db-form-label">Last Login</span><span className="db-settings-value">Mar 12, 2026 Â· 09:41 UTC</span></div>
+          <div className="db-settings-field"><span className="db-form-label">Session</span><span className="db-settings-value">Active Â· Chrome Â· Warsaw, PL</span></div>
           <button className="db-btn db-btn--secondary" style={{ marginTop: 12 }}>Change Password</button>
         </div>
       </div>
@@ -4119,9 +3619,9 @@ function TabSettings({ investor }) {
   );
 }
 
-/* ══════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MAIN DASHBOARD
-   ══════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const NAV_ITEMS = [
   { id: 'overview',      label: 'Overview',      Icon: Icon.overview },
   { id: 'portfolio',     label: 'Portfolio',      Icon: Icon.portfolio },
@@ -4139,17 +3639,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  /* Affiliate application — none | pending | approved | rejected */
+  const [affiliateApp, setAffiliateApp] = useState(null);
   /* Enrolled affiliate programs — lifted here so the sidebar can show sub-items */
-  const [enrolledPrograms, setEnrolledPrograms] = useState({});  // programId → true
+  const [enrolledPrograms, setEnrolledPrograms] = useState({});  // programId â†’ true
   /* When set, the affiliate tab opens directly to this program's detail view */
   const [directAffProgId, setDirectAffProgId] = useState(null);
   /* Pending purchases from invest tab (not yet admin-approved) */
   const [pendingPurchases, setPendingPurchases] = useState([]);
   /* Approved purchases from API (status === 'approved') */
   const [approvedPurchases, setApprovedPurchases] = useState([]);
-  /* Wallet info from API — approved token holdings, balances */
+  /* Wallet info from API â€” approved token holdings, balances */
   const [walletData, setWalletData] = useState(null);
-  /* Available tokens for investment — fetched from real API */
+  /* Available tokens for investment â€” fetched from real API */
   const [availableTokens, setAvailableTokens] = useState(AVAILABLE_TOKENS);
   /* Wallet transaction history from API */
   const [walletTransactions, setWalletTransactions] = useState([]);
@@ -4182,15 +3684,15 @@ const Dashboard = () => {
         'awaiting_screenshot',
       ]);
 
-      // ── Wallet info (approved holdings, balance, address) ──
+      // â”€â”€ Wallet info (approved holdings, balance, address) â”€â”€
       // No longer fetched separately; approved requests are extracted below
 
-      // ── Pending purchase requests ──
+      // â”€â”€ Pending purchase requests â”€â”€
       if (requestsResult.status === 'fulfilled') {
         const res = requestsResult.value;
         const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
 
-        // Approved requests → show in Approved Tokens section
+        // Approved requests â†’ show in Approved Tokens section
         const approved = list
           .filter(r => normalizeStatus(r.status) === 'approved')
           .map(r => ({
@@ -4201,7 +3703,7 @@ const Dashboard = () => {
             amount:       Number(r.tokenQty  || r.qty    || 0),
             invested:     Number(r.amountUsd || r.amount || 0),
             currentValue: Number(r.amountUsd || r.amount || 0),
-            lockExpiry:   '—',
+            lockExpiry:   'â€”',
             status:       'active',
             date:         r.reviewedAt || r.updatedAt || r.createdAt
               ? new Date(r.reviewedAt || r.updatedAt || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -4236,11 +3738,11 @@ const Dashboard = () => {
         console.warn('getTokenRequests failed:', requestsResult.reason?.message);
       }
 
-      // ── ShivAI token data from investor API ──
+      // â”€â”€ ShivAI token data from investor API â”€â”€
       if (tokenResult.status === 'fulfilled') {
         const raw = tokenResult.value?.data ?? tokenResult.value;
         if (raw) {
-          // priceUsd is the actual current token price from the API — use it directly
+          // priceUsd is the actual current token price from the API â€” use it directly
           const effectivePrice = raw.priceUsd != null ? Number(raw.priceUsd) : EFFECTIVE_TOKEN_PRICE;
           const normalPrice    = raw.normalPriceUsd != null ? Number(raw.normalPriceUsd) : effectivePrice;
           const totalSupply    = Number(raw.totalSupply    || 1000000);
@@ -4273,7 +3775,7 @@ const Dashboard = () => {
         console.warn('getToken failed:', tokenResult.reason?.message);
       }
 
-      // ── My Purchases (dedicated endpoint, complements getTokenRequests) ──
+      // â”€â”€ My Purchases (dedicated endpoint, complements getTokenRequests) â”€â”€
       if (myPurchasesResult.status === 'fulfilled') {
         const res = myPurchasesResult.value;
         const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
@@ -4308,13 +3810,13 @@ const Dashboard = () => {
         console.warn('getMyPurchases failed:', myPurchasesResult.reason?.message);
       }
 
-      // ── Wallet Transactions ──
+      // â”€â”€ Wallet Transactions â”€â”€
       if (walletTxResult.status === 'fulfilled') {
         const res = walletTxResult.value;
         // Response shape: { data: { transactions: [...], pagination: {...} }, success: true }
         const raw = res?.data?.transactions ?? res?.transactions ?? (Array.isArray(res?.data) ? res.data : null) ?? (Array.isArray(res) ? res : []);
         const list = Array.isArray(raw) ? raw : [];
-        // Normalize API type names → typeConfig keys
+        // Normalize API type names â†’ typeConfig keys
         const typeMap = { purchase: 'investment', token_purchase: 'investment', commission: 'affiliate', withdrawal: 'redeem', kyc: 'kyc', onboarding: 'onboarding' };
         const mapped = list.map((tx, i) => {
           const rawType = (tx.type || tx.transactionType || tx.category || 'purchase').toLowerCase();
@@ -4327,13 +3829,13 @@ const Dashboard = () => {
             desc:   tx.description || '',
             date:   rawDate
               ? new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-              : '—',
+              : 'â€”',
             time:   rawDate
               ? new Date(rawDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
               : '',
             status: (tx.status || 'pending').toLowerCase(),
-            hash:   tx.hash || tx.txHash || tx.reference || tx.ref || tx.purchaseRef || tx.id || '—',
-            method: tx.method || tx.paymentMethod || (`${tx.currency || 'USD'} · ${tx.description || ''}`.trim().replace(/·\s*$/, '')),
+            hash:   tx.hash || tx.txHash || tx.reference || tx.ref || tx.purchaseRef || tx.id || 'â€”',
+            method: tx.method || tx.paymentMethod || (`${tx.currency || 'USD'} Â· ${tx.description || ''}`.trim().replace(/Â·\s*$/, '')),
           };
         });
         setWalletTransactions(mapped);
@@ -4341,7 +3843,7 @@ const Dashboard = () => {
         console.warn('getWalletTransactions failed:', walletTxResult.reason?.message);
       }
 
-      // ── Wallet Requests (withdrawal / redemption requests) ──
+      // â”€â”€ Wallet Requests (withdrawal / redemption requests) â”€â”€
       if (walletReqResult.status === 'fulfilled') {
         const res = walletReqResult.value;
         const list = Array.isArray(res) ? res
@@ -4354,11 +3856,11 @@ const Dashboard = () => {
           amount:    Number(r.amount || r.amountUsd || r.value || 0),
           currency:  r.currency || 'USD',
           status:    (r.status || 'pending').toLowerCase(),
-          walletAddr: r.walletAddress || r.toAddress || r.address || '—',
+          walletAddr: r.walletAddress || r.toAddress || r.address || 'â€”',
           notes:     r.notes || r.description || r.reason || '',
           date:      (r.date || r.createdAt)
             ? new Date(r.date || r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : '—',
+            : 'â€”',
           reviewedAt: (r.reviewedAt || r.updatedAt)
             ? new Date(r.reviewedAt || r.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : null,
@@ -4368,7 +3870,7 @@ const Dashboard = () => {
         console.warn('getWalletRequests failed:', walletReqResult.reason?.message);
       }
 
-      // ── Direct Airdrops ──
+      // â”€â”€ Direct Airdrops â”€â”€
       if (airdropsResult.status === 'fulfilled') {
         const res = airdropsResult.value;
         const list = Array.isArray(res) ? res
@@ -4388,7 +3890,7 @@ const Dashboard = () => {
           status:      (a.status || 'completed').toLowerCase(),
           date:        (a.createdAt || a.date)
             ? new Date(a.createdAt || a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : '—',
+            : 'â€”',
           completedAt: a.completedAt
             ? new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : null,
@@ -4416,18 +3918,18 @@ const Dashboard = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Real user: Recoil atom (live) with direct secureStorage read as instant fallback ──
+  // â”€â”€ Real user: Recoil atom (live) with direct secureStorage read as instant fallback â”€â”€
   const recoilUser = useRecoilValue(userState);
   const [, setToken] = useRecoilState(authTokenState);
   const [, setUser] = useRecoilState(userState);
-  // If Recoil hasn’t been seeded yet on this render cycle, read directly from cache
+  // If Recoil hasnâ€™t been seeded yet on this render cycle, read directly from cache
   // so we never fall back to the mock INVESTOR object while the atom is initializing.
   const u = recoilUser || getUser();
 
   // Normalise API response to the shape the dashboard expects, keeping mock
   // values as fallbacks so nothing breaks while backend fields are rolled out.
 
-  // Map backend uppercase enum values → internal lowercase keys
+  // Map backend uppercase enum values â†’ internal lowercase keys
   const KYC_STATUS_MAP = {
     PENDING_APPROVAL: 'pending',
     APPROVED:         'approved',
@@ -4452,11 +3954,36 @@ const Dashboard = () => {
     joinedDate:            u?.joinedDate  || u?.createdAt  || INVESTOR.joinedDate,
     tier:                  u?.tier                        || INVESTOR.tier,
     affiliateCode:         u?.affiliateCode               || INVESTOR.affiliateCode,
+    affiliateStatus:       u?.affiliateStatus             || INVESTOR.affiliateStatus,
     referralCount:         u?.referralCount        ?? INVESTOR.referralCount,
     totalReferralEarned:   u?.totalReferralEarned  ?? INVESTOR.totalReferralEarned,
     pendingReferralPayout: u?.pendingReferralPayout ?? INVESTOR.pendingReferralPayout,
     linkedAccounts:        u?.linkedAccounts       || INVESTOR.linkedAccounts,
   };
+
+  const affiliateUserKey = u?.id || u?._id || investor.email;
+
+  useEffect(() => {
+    const stored = loadAffiliateApplication(affiliateUserKey);
+    const apiStatus = investor.affiliateStatus;
+    if (apiStatus === AFFILIATE_STATUS.APPROVED) {
+      setAffiliateApp(prev => ({ ...prev, status: AFFILIATE_STATUS.APPROVED, ...(stored || {}) }));
+    } else if (stored?.status) {
+      setAffiliateApp(stored);
+    } else if (apiStatus && apiStatus !== AFFILIATE_STATUS.NONE) {
+      setAffiliateApp({ status: apiStatus });
+    } else {
+      setAffiliateApp({ status: AFFILIATE_STATUS.NONE });
+    }
+  }, [affiliateUserKey, investor.affiliateStatus]);
+
+  const handleAffiliateAppChange = useCallback((next) => {
+    setAffiliateApp(next);
+    saveAffiliateApplication(affiliateUserKey, next);
+  }, [affiliateUserKey]);
+
+  const isAffiliateApproved = affiliateApp?.status === AFFILIATE_STATUS.APPROVED
+    || investor.affiliateStatus === AFFILIATE_STATUS.APPROVED;
 
   const handleLogout = () => {
     setToken(null);
@@ -4466,16 +3993,16 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-  // Derive active tab from URL segment, e.g. /dashboard/portfolio → 'portfolio'
+  // Derive active tab from URL segment, e.g. /dashboard/portfolio â†’ 'portfolio'
   const tabFromUrl = pathname.split('/dashboard')[1]?.replace('/', '') || 'overview';
   const activeTab = VALID_TABS.has(tabFromUrl) ? tabFromUrl : 'overview';
 
-  // KYC gate — tabs locked until KYC approved, EXCEPT invest/wallet/transactions are open
+  // KYC gate â€” tabs locked until KYC approved, EXCEPT invest/wallet/transactions are open
   const kycApproved = investor.kycStatus === 'approved';
   const KYC_FREE_TABS = new Set(['verification', 'settings', 'invest', 'wallet', 'transactions']);
   const isTabLocked = (id) => !kycApproved && !KYC_FREE_TABS.has(id);
 
-  // On mount: if not KYC-approved and trying to access a locked tab → redirect to verification
+  // On mount: if not KYC-approved and trying to access a locked tab â†’ redirect to verification
   // Also redirect away from verification tab if KYC is already approved
   useEffect(() => {
     if (!kycApproved && !KYC_FREE_TABS.has(activeTab)) {
@@ -4492,7 +4019,7 @@ const Dashboard = () => {
     setSidebarOpen(false);
   };
 
-  // Refresh all data + profile on every tab switch (skip first render — mount effect handles it)
+  // Refresh all data + profile on every tab switch (skip first render â€” mount effect handles it)
   useEffect(() => {
     if (isInitialTabMount.current) {
       isInitialTabMount.current = false;
@@ -4526,7 +4053,17 @@ const Dashboard = () => {
         setPendingPurchases(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'screenshot_uploaded', screenshotFile: file } : p));
       }} />;
       case 'wallet':       return <TabWallet investor={investor} pendingPurchases={pendingPurchases} approvedPurchases={approvedPurchases} walletData={walletData} walletRequests={walletRequests} directAirdrops={directAirdrops} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onNav={handleNav} />;
-      case 'affiliate':    return <TabAffiliate investor={investor} enrolled={enrolledPrograms} setEnrolled={setEnrolledPrograms} directProgramId={directAffProgId} onClearDirect={() => setDirectAffProgId(null)} />;
+      case 'affiliate':    return (
+        <TabAffiliate
+          investor={investor}
+          affiliateApp={affiliateApp}
+          onAffiliateAppChange={handleAffiliateAppChange}
+          enrolled={enrolledPrograms}
+          setEnrolled={setEnrolledPrograms}
+          directProgramId={directAffProgId}
+          onClearDirect={() => setDirectAffProgId(null)}
+        />
+      );
       case 'verification': return <TabVerification investor={investor} onNav={handleNav} />;
       case 'settings':     return <TabSettings investor={investor} />;
       default:             return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} directAirdrops={directAirdrops} onNav={handleNav} />;
@@ -4538,7 +4075,7 @@ const Dashboard = () => {
       {/* Mobile overlay */}
       {sidebarOpen && <div className="db-overlay" onClick={() => setSidebarOpen(false)} />}
 
-      {/* ── Sidebar ── */}
+      {/* â”€â”€ Sidebar â”€â”€ */}
       <aside className={`db-sidebar ${sidebarOpen ? 'db-sidebar--open' : ''}`}>
         {/* Brand */}
         <div className="db-sidebar-brand">
@@ -4554,7 +4091,7 @@ const Dashboard = () => {
         {/* Nav */}
         <nav className="db-sidebar-nav">
           {NAV_ITEMS.filter(item => !(item.id === 'verification' && kycApproved)).map(item => {
-            const enrolledList = item.id === 'affiliate'
+            const enrolledList = item.id === 'affiliate' && isAffiliateApproved
               ? AFFILIATE_PROGRAMS.filter(p => enrolledPrograms[p.id])
               : [];
             return (
@@ -4600,7 +4137,7 @@ const Dashboard = () => {
             Invest Now
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
-          <p className="db-sidebar-invest-sub">ShivAI Token · LIVE</p>
+          <p className="db-sidebar-invest-sub">ShivAI Token Â· LIVE</p>
         </div>
 
         {/* KYC status chip at bottom */}
@@ -4619,7 +4156,7 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* ── Main area ── */}
+      {/* â”€â”€ Main area â”€â”€ */}
       <div className="db-main">
         {/* Top Bar */}
         <header className="db-topbar">

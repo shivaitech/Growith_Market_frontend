@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const Modal = ({ isOpen, onClose, title, message, type = 'info', buttons = [] }) => {
+const Modal = ({ isOpen, onClose, title, message, type = 'info', buttons = [], children }) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -98,10 +98,12 @@ const Modal = ({ isOpen, onClose, title, message, type = 'info', buttons = [] })
 
         {/* Body */}
         <div style={{ padding: '20px 24px' }}>
-          <p style={{
-            margin: 0, fontSize: '14px', lineHeight: '1.6',
-            color: 'rgba(255,255,255,0.7)',
-          }}>{message}</p>
+          {children ?? (
+            <p style={{
+              margin: 0, fontSize: '14px', lineHeight: '1.6',
+              color: 'rgba(255,255,255,0.7)',
+            }}>{message}</p>
+          )}
         </div>
 
         {/* Footer */}
