@@ -3158,69 +3158,36 @@ function TabVerification({ investor, onNav }) {
       setIsLoading(true);
       setApiError('');
       try {
-        // â”€â”€ Build file map â€” same fields as the old FormData â”€â”€
-        const filesToUpload = {};
-        if (form.country === 'India') {
-          filesToUpload.aadhaarFront = docs.aadhaarFront;
-          filesToUpload.aadhaarBack  = docs.aadhaarBack;
-          filesToUpload.panFront     = docs.panFront;
-          if (docs.secondaryFile) filesToUpload.supportingDoc = docs.secondaryFile;
-        } else {
-          filesToUpload.aadhaarFront = docs.primaryFront;
-          filesToUpload.aadhaarBack  = docs.primaryBack || docs.primaryFront;
-          filesToUpload.panFront     = docs.primaryFront;
-          if (docs.secondaryFile) filesToUpload.supportingDoc = docs.secondaryFile;
-        }
-
-        // â”€â”€ Step 1: Get pre-signed S3 upload URLs â”€â”€
-        const fieldNames = Object.keys(filesToUpload);
-        const urlRes = await apiService.getKycUploadUrls(fieldNames);
-        const uploadData = urlRes.data;
-
-        // â”€â”€ Step 2: Upload files directly to S3 (supports up to 20 MB each) â”€â”€
-        await Promise.all(
-          fieldNames.map((field) =>
-            apiService.uploadFileToS3(uploadData[field].uploadUrl, filesToUpload[field])
-          )
-        );
-
-        // â”€â”€ Step 3: Submit KYC with S3 keys â€” same fields as before â”€â”€
         const [y, mo, d] = form.dob.split('-');
-        const payload = {
-          fullLegalName:      form.fullName.trim(),
-          dateOfBirth:        `${d}-${mo}-${y}`,
-          nationality:        form.nationality.trim(),
-          countryOfResidence: form.country,
-          city:               form.city.trim(),
-          stateProvince:      form.state.trim(),
-          phoneNumber:        form.phone.trim(),
-          streetAddress:      form.address.trim(),
-          termsAgreed:        true,
-          aadhaarFrontKey:    uploadData.aadhaarFront.key,
-          aadhaarFrontUrl:    uploadData.aadhaarFront.publicUrl,
-          aadhaarBackKey:     uploadData.aadhaarBack.key,
-          aadhaarBackUrl:     uploadData.aadhaarBack.publicUrl,
-          panFrontKey:        uploadData.panFront.key,
-          panFrontUrl:        uploadData.panFront.publicUrl,
-        };
+        const formData = new FormData();
+        formData.append('fullLegalName', form.fullName.trim());
+        formData.append('dateOfBirth', `${d}-${mo}-${y}`);
+        formData.append('nationality', form.nationality.trim());
+        formData.append('countryOfResidence', form.country);
+        formData.append('city', form.city.trim());
+        formData.append('stateProvince', form.state.trim());
+        formData.append('phoneNumber', form.phone.trim());
+        formData.append('streetAddress', form.address.trim());
+        formData.append('termsAgreed', 'true');
 
         if (form.country === 'India') {
-          payload.aadhaarNumber = docs.aadhaarNumber.replace(/[\s-]/g, '');
-          payload.panNumber     = docs.panNumber.trim().toUpperCase();
+          formData.append('aadhaarNumber', docs.aadhaarNumber.replace(/[\s-]/g, ''));
+          formData.append('panNumber', docs.panNumber.trim().toUpperCase());
+          formData.append('aadhaarFront', docs.aadhaarFront);
+          formData.append('aadhaarBack', docs.aadhaarBack);
+          formData.append('panFront', docs.panFront);
         } else {
-          payload.aadhaarNumber = docs.primaryNumber || 'N/A';
-          payload.panNumber     = docs.primaryType ? docs.primaryType.toUpperCase() : 'N/A';
+          formData.append('aadhaarNumber', docs.primaryNumber || 'N/A');
+          formData.append('panNumber', docs.primaryType ? docs.primaryType.toUpperCase() : 'N/A');
+          formData.append('aadhaarFront', docs.primaryFront);
+          formData.append('aadhaarBack', docs.primaryBack || docs.primaryFront);
+          formData.append('panFront', docs.primaryFront);
         }
 
-        if (uploadData.supportingDoc) {
-          payload.supportingDocKey = uploadData.supportingDoc.key;
-          payload.supportingDocUrl = uploadData.supportingDoc.publicUrl;
-        }
-        if (docs.secondaryName?.trim()) {
-          payload.supportingDocName = docs.secondaryName.trim();
-        }
+        if (docs.secondaryFile) formData.append('supportingDoc', docs.secondaryFile);
+        if (docs.secondaryName?.trim()) formData.append('supportingDocName', docs.secondaryName.trim());
 
-        await apiService.submitKycWithKeys(payload);
+        await apiService.submitKyc(formData);
         setStage('pending');
       } catch (err) {
         const msg = err.message || '';
