@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Toast from '../../components/Toast';
+import Modal from '../../components/Modal';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
@@ -2867,6 +2868,50 @@ function KycFileUploadBox({ field, label, preview, error, accept = 'image/*,appl
   );
 }
 
+const KYC_FIELD_LABELS = {
+  fullName: 'Full Legal Name',
+  dob: 'Date of Birth',
+  nationality: 'Nationality',
+  country: 'Country of Residence',
+  city: 'City',
+  state: 'State / Province',
+  phone: 'Phone Number',
+  address: 'Street Address',
+  aadhaarNumber: 'Aadhaar Number',
+  aadhaarFront: 'Aadhaar Front',
+  aadhaarBack: 'Aadhaar Back',
+  panNumber: 'PAN Number',
+  panFront: 'PAN Front',
+  primaryType: 'Document Type',
+  primaryFront: 'Document Front',
+  primaryBack: 'Document Back',
+  secondaryName: 'Supporting Document Name',
+  secondaryFile: 'Supporting Document',
+};
+
+function KycValidationModalBody({ intro, errors }) {
+  const items = Object.entries(errors).filter(([, msg]) => msg);
+  return (
+    <div className="kyc-validation-modal">
+      {intro && <p className="kyc-validation-modal__intro">{intro}</p>}
+      <ul className="kyc-validation-modal__list">
+        {items.map(([key, msg]) => (
+          <li key={key} className={key === '_general' ? 'kyc-validation-modal__item--general' : ''}>
+            {key === '_general' ? (
+              <span>{msg}</span>
+            ) : (
+              <>
+                <strong>{KYC_FIELD_LABELS[key] || key}</strong>
+                <span>{msg}</span>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function TabVerification({ investor, onNav }) {
   const [stage, setStage] = useState('terms');  // 'terms' | 'info' | 'docs' | 'pending'
   const [termsScrolled, setTermsScrolled] = useState(false);
@@ -2874,8 +2919,37 @@ function TabVerification({ investor, onNav }) {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
   const [toast, setToast] = useState({ open: false, message: '', type: 'error' });
+  const [validationModal, setValidationModal] = useState({ open: false, title: '', intro: '', errors: {} });
   const showToast = (message, type = 'error') => setToast({ open: true, message, type });
   const closeToast = () => setToast(t => ({ ...t, open: false }));
+  const showValidationModal = (title, errors, intro = 'Please fix the following and try again.') => {
+    setValidationModal({ open: true, title, intro, errors });
+  };
+  const closeValidationModal = () => setValidationModal(m => ({ ...m, open: false }));
+  const closeValidationModalAndFix = () => {
+    const errs = { ...validationModal.errors };
+    closeValidationModal();
+    if (errs && !errs._general) scrollToFirstKycError(errs);
+  };
+  const scrollToFirstKycError = (errs) => {
+    const firstKey = Object.keys(errs)[0];
+    if (!firstKey) return;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[name="${firstKey}"], #kf-${firstKey}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el?.focus) el.focus();
+    });
+  };
+  const kycValidationModal = (
+    <Modal
+      isOpen={validationModal.open}
+      onClose={closeValidationModalAndFix}
+      title={validationModal.title}
+      type="error"
+    >
+      <KycValidationModalBody intro={validationModal.intro} errors={validationModal.errors} />
+    </Modal>
+  );
   const [form, setForm] = useState({
     fullName:    investor.name || '',
     dob:         '',
@@ -3211,13 +3285,14 @@ function TabVerification({ investor, onNav }) {
         errs.address = 'Address too long (max 200 characters)';
       }
       setErrors(errs);
-      return Object.keys(errs).length === 0;
+      return errs;
     };
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      if (!validate()) {
-        showToast('Please fix the errors highlighted below before continuing.');
+      const errs = validate();
+      if (Object.keys(errs).length > 0) {
+        showValidationModal('Please correct your personal information', errs);
         return;
       }
       setStage('docs');
@@ -3226,6 +3301,7 @@ function TabVerification({ investor, onNav }) {
     return (
       <div className="db-tab-content">
         <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
+        {kycValidationModal}
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
             <h1 className="db-h1">Identity Verification</h1>
@@ -3398,13 +3474,14 @@ function TabVerification({ investor, onNav }) {
       }
       // supporting doc (name + file) is optional — no validation needed
       setDocErrors(errs);
-      return Object.keys(errs).length === 0;
+      return errs;
     };
 
     const handleDocSubmit = async (e) => {
       e.preventDefault();
-      if (!validateDocs()) {
-        showToast('Some required fields or documents are missing. Please check the errors below.');
+      const errs = validateDocs();
+      if (Object.keys(errs).length > 0) {
+        showValidationModal('Please correct your documents', errs);
         return;
       }
       setIsLoading(true);
@@ -3443,11 +3520,11 @@ function TabVerification({ investor, onNav }) {
         setStage('pending');
       } catch (err) {
         const msg = err.message || '';
-        if (msg.includes('too large') || msg.includes('8 MB') || msg.includes('413')) {
-          setApiError('One or more files exceed the 8 MB limit. Please go back, reduce the file size, and try again.');
-        } else {
-          setApiError(msg || 'Upload failed. Please try again.');
-        }
+        const apiErrMsg = msg.includes('too large') || msg.includes('8 MB') || msg.includes('413')
+          ? 'One or more files exceed the 8 MB limit. Please go back, reduce the file size, and try again.'
+          : (msg || 'Upload failed. Please try again.');
+        setApiError(apiErrMsg);
+        showValidationModal('KYC submission failed', { _general: apiErrMsg }, 'Something went wrong while submitting. Please review and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -3456,6 +3533,7 @@ function TabVerification({ investor, onNav }) {
     return (
       <div className="db-tab-content">
         <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
+        {kycValidationModal}
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
             <h1 className="db-h1">Identity Verification</h1>

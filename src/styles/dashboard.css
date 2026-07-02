@@ -4035,6 +4035,44 @@
   font-size: 13px;
   margin-bottom: 16px;
 }
+.kyc-validation-modal__intro {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+}
+.kyc-validation-modal__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kyc-validation-modal__list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.kyc-validation-modal__list li strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fca5a5;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.kyc-validation-modal__list li span {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+}
+.kyc-validation-modal__item--general {
+  background: rgba(239, 68, 68, 0.12);
+}
 .kyc-form__submit {
   display: flex;
   align-items: center;
