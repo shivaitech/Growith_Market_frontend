@@ -4,30 +4,37 @@ const steps = [
   {
     id: 1,
     step: 'Step 1',
-    title: 'Explore Verified Offerings',
-    desc: 'Browse curated digital securities across startups, real estate, media, and structured projects. Every listing is pre-screened before publication.',
+    title: 'Discover Opportunities',
+    desc: 'Explore innovative startups and high-growth projects across AI, real estate, media and other future-focused sectors. Each opportunity includes key information to help you understand the business and its vision.',
     img: 'onePic1-removebg-preview.png',
   },
   {
     id: 2,
     step: 'Step 2',
-    title: 'Review Issuer & Valuation',
-    desc: 'Access the full offering pack: issuer structure, independent valuation basis, risk disclosures, and smart contract summary. Each asset undergoes legal, structural, and financial due diligence before listing.',
+    title: 'Learn About the Opportunity',
+    desc: 'Review the business, its vision, important documents and key information before deciding whether you would like to participate.',
     img: 'onePic2-removebg-preview.png',
   },
   {
     id: 3,
     step: 'Step 3',
-    title: 'Complete Investor Verification',
-    desc: 'Submit identity details and pass KYC/AML screening. A secure custodial wallet is created upon approval.',
+    title: 'Verify Your Account',
+    desc: 'Complete a simple identity verification process so that you can access participation opportunities available on the platform.',
     img: 'onePic3-removebg-preview.png',
   },
   {
     id: 4,
     step: 'Step 4',
-    title: 'Invest & Receive Token Allocation',
-    desc: 'Confirm investment at the defined issuance price. Upon payment clearance, tokens are minted directly to your custodial wallet with a full audit trail.',
+    title: 'Participate & Receive Digital Ownership',
+    desc: 'Once your participation is completed, your Digital Ownership Stake (DOS) is recorded securely in your Growith wallet and can be viewed and managed anytime.',
     img: 'onepic4-removebg-preview.png',
+  },
+  {
+    id: 5,
+    step: 'Step 5',
+    title: 'Track Your Ownership',
+    desc: 'View your holdings, participation history and future opportunities through your Growith dashboard.',
+    img: 'onePic3-removebg-preview.png',
   },
 ]
 
@@ -92,8 +99,9 @@ export default function Portfolio() {
       <div className="shape" />
       <div className="container">
         <div className="block-text center">
-          <h6 className="sub-heading"><span>Investor Process</span></h6>
-          <h3 className="heading">How Participation <br /> Works</h3>
+          <h6 className="sub-heading"><span>Your Journey on Growith</span></h6>
+          <h3 className="heading">Start Your Ownership Journey</h3>
+          <p>Discover opportunities, complete a simple verification process and participate digitally in just a few steps.</p>
         </div>
 
         <div className="timeline">

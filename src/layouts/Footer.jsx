@@ -5,11 +5,15 @@ const PUBLIC_API_ORIGIN = (() => {
   try { return new URL(import.meta.env.VITE_API_BASE_URL).origin } catch { return '' }
 })()
 
+const SLOGAN_PILLS = ['Discover', 'Own', 'Grow']
+
+const FOOTER_CHIPS = ['Innovative Startups', 'High-Growth Projects', 'Digital Ownership']
+
 const platformLinks = [
   { label: 'Home', path: '/' },
-  { label: 'Marketplace', path: '/nft' },
+  { label: 'Opportunities', path: '/nft' },
   { label: 'Blog', path: '/blog' },
-  { label: 'About Us', path: '/about' },
+  { label: 'Our Story', path: '/about' },
   { label: 'Contact', path: '/contact' },
 ]
 
@@ -62,11 +66,54 @@ const socialIcons = [
   },
 ]
 
+function FooterLinkColumn({ title, links, accordionId, openSection, onToggle }) {
+  const isOpen = openSection === accordionId
+
+  return (
+    <>
+      <div className="ft-grid__col ft-grid__col--desktop">
+        <h6 className="ft-grid__col-title">{title}</h6>
+        <ul className="ft-grid__links">
+          {links.map((link) => (
+            <li key={link.label}>
+              <Link to={link.path}>{link.label}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className={`ft-accordion ft-accordion--mobile${isOpen ? ' is-open' : ''}`}>
+        <button
+          type="button"
+          className="ft-accordion__trigger"
+          aria-expanded={isOpen}
+          onClick={() => onToggle(isOpen ? null : accordionId)}
+        >
+          <span>{title}</span>
+          <svg className="ft-accordion__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <div className="ft-accordion__panel" hidden={!isOpen}>
+          <ul className="ft-grid__links">
+            {links.map((link) => (
+              <li key={link.label}>
+                <Link to={link.path} onClick={() => onToggle(null)}>{link.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
   const [alreadySubscribed, setAlreadySubscribed] = useState(false)
   const [error, setError] = useState('')
+  const [openSection, setOpenSection] = useState(null)
 
   const handleSubscribe = async (e) => {
     e.preventDefault()
@@ -102,35 +149,47 @@ export default function Footer() {
 
   return (
     <footer id="footer" className="footer footer--redesign">
+      <div className="ft-glow ft-glow--left" aria-hidden="true" />
+      <div className="ft-glow ft-glow--right" aria-hidden="true" />
+
       {/* Newsletter banner */}
       <div className="ft-newsletter">
         <div className="container">
-          <div className="ft-newsletter__inner">
-            <div className="ft-newsletter__text">
-              <h4 className="ft-newsletter__heading">Stay Ahead of Emerging Opportunities</h4>
-              <p className="ft-newsletter__sub">Receive early access updates, upcoming offerings, market insights, and investor announcements.</p>
+          <div className="ft-newsletter__card">
+            <div className="ft-newsletter__inner">
+              <div className="ft-newsletter__text">
+                <span className="ft-newsletter__badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6L12 2z" fill="currentColor"/>
+                  </svg>
+                  Early access
+                </span>
+                <h4 className="ft-newsletter__heading">Be First to Discover What&apos;s Next</h4>
+                <p className="ft-newsletter__sub">Receive updates on new opportunities, upcoming offerings and future-focused businesses.</p>
+              </div>
+              <form className="ft-newsletter__form" onSubmit={handleSubscribe}>
+                <div className="ft-newsletter__input-wrap">
+                  <svg className="ft-newsletter__input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.8"/>
+                    <path d="M2 7l10 7 10-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit">
+                  Get Early Access
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </form>
+              {error && <p className="ft-newsletter__error" role="alert">{error}</p>}
             </div>
-            <form className="ft-newsletter__form" onSubmit={handleSubscribe}>
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <button type="submit">Get Early Access</button>
-            </form>
-            {error && (
-              <div style={{
-                marginTop: 12,
-                color: '#fca5a5',
-                fontSize: 12,
-                background: 'rgba(239,68,68,0.08)',
-                border: '1px solid rgba(239,68,68,0.25)',
-                padding: '8px 12px',
-                borderRadius: 8,
-              }}>{error}</div>
-            )}
           </div>
         </div>
       </div>
@@ -143,42 +202,63 @@ export default function Footer() {
             <Link to="/" className="ft-grid__logo">
               <img src="/assets/images/growith_logo_transparent.png" alt="Growith" />
             </Link>
-            <p className="ft-grid__slogan">INVEST. GROW. REPEAT.</p>
+            <div className="ft-slogan-pills" aria-label="Discover. Own. Grow.">
+              {SLOGAN_PILLS.map((pill) => (
+                <span key={pill} className="ft-slogan-pill">{pill}</span>
+              ))}
+            </div>
+            <p className="ft-grid__slogan ft-grid__slogan--desktop">DISCOVER. OWN. GROW.</p>
+            <p className="ft-grid__desc ft-grid__desc--lead">
+              Don&apos;t just watch the future being built. Own a part of it.
+            </p>
             <p className="ft-grid__desc">
-              Access curated private market opportunities across AI, infrastructure, deep technology, and emerging growth sectors.
+              Access innovative startups and high-growth projects through digital ownership and early participation opportunities.
             </p>
 
-          </div>
+            <div className="ft-quick-links">
+              <Link to="/nft" className="ft-quick-link">Opportunities</Link>
+              <Link to="/about" className="ft-quick-link">Our Story</Link>
+              <Link to="/contact" className="ft-quick-link">Contact</Link>
+            </div>
 
-          {/* Platform links */}
-          <div className="ft-grid__col">
-            <h6 className="ft-grid__col-title">Platform</h6>
-            <ul className="ft-grid__links">
-              {platformLinks.map((link) => (
-                <li key={link.label}>
-                  <Link to={link.path}>{link.label}</Link>
+            <ul className="ft-grid__social">
+              {socialIcons.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href} aria-label={item.label}>{item.svg}</a>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Legal links */}
-          <div className="ft-grid__col">
-            <h6 className="ft-grid__col-title">Legal</h6>
-            <ul className="ft-grid__links">
-              {legalLinks.map((link) => (
-                <li key={link.label}>
-                  <Link to={link.path}>{link.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterLinkColumn
+            title="Platform"
+            links={platformLinks}
+            accordionId="platform"
+            openSection={openSection}
+            onToggle={setOpenSection}
+          />
+
+          <FooterLinkColumn
+            title="Legal"
+            links={legalLinks}
+            accordionId="legal"
+            openSection={openSection}
+            onToggle={setOpenSection}
+          />
         </div>
 
         {/* Bottom bar */}
         <div className="ft-bottom-bar">
-          <p>© {new Date().getFullYear()} Growith. All rights reserved.</p>
-          <p className="ft-bottom-bar__reg">Transparent · Verified · Compliance-First Investing</p>
+          <p className="ft-bottom-bar__copy">© {new Date().getFullYear()} Growith. All rights reserved.</p>
+          <div className="ft-bottom-bar__micro">
+            <p className="ft-bottom-bar__tagline">Building Access to Tomorrow&apos;s Businesses</p>
+            <div className="ft-bottom-bar__chips">
+              {FOOTER_CHIPS.map((chip) => (
+                <span key={chip} className="ft-bottom-chip">{chip}</span>
+              ))}
+            </div>
+            <p className="ft-bottom-bar__reg ft-bottom-bar__reg--desktop">Innovative Startups • High-Growth Projects • Digital Ownership</p>
+          </div>
         </div>
       </div>
       {/* ── Success Modal ── */}

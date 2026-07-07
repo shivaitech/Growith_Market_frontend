@@ -347,15 +347,15 @@ textarea.form-control { resize: vertical; min-height: 120px; }
   .banner-left { padding: 80px 0 40px; }
 }
 .banner-heading {
-  font-size: 60px;
+  font-size: 44px;
   line-height: 1.2;
   margin-bottom: 40px;
 }
 @media only screen and (max-width: 1200px) {
-  .banner-heading { font-size: 48px; }
+  .banner-heading { font-size: 36px; }
 }
 @media only screen and (max-width: 767px) {
-  .banner-heading { font-size: 36px; }
+  .banner-heading { font-size: 28px; }
 }
 .banner-desc {
   padding-right: 130px;

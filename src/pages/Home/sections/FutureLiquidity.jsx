@@ -24,10 +24,14 @@ export default function FutureLiquidity() {
       <div className="container">
         <div className="block-text center">
           <h6 className="sub-heading"><span>Long-Term Vision</span></h6>
-          <h3 className="heading">Future Liquidity &amp; Exchange Vision</h3>
+          <h3 className="heading">Our Long-Term Vision</h3>
           <p className="fl-intro">
-            Growith is building long-term infrastructure for regulated digital private markets, including future
-            peer-to-peer transfer functionality between verified and whitelisted investors within the ecosystem.
+            Growith is building for the long term with the vision of making private market opportunities more accessible,
+            transparent and digitally connected for verified participants.
+          </p>
+          <p className="fl-intro fl-intro--secondary">
+            As the ecosystem evolves, additional participation and transfer capabilities will become available in
+            accordance with applicable frameworks and platform policies.
           </p>
         </div>
 
@@ -41,8 +45,8 @@ export default function FutureLiquidity() {
             Target Framework Readiness: <strong>&nbsp;Q3 2027</strong>
           </div>
           <p className="fl-teaser__text">
-            The platform is actively developing the technical, operational, and compliance framework for broader
-            digital asset accessibility — offering investors <strong>early-stage access before broader market infrastructure matures.</strong>
+            We continue to build the technology, operational processes, participation and transfer frameworks that can
+            support a broader ecosystem of digital ownership opportunities in the future.
           </p>
         </div>
 

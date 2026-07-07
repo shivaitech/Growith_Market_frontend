@@ -119,7 +119,7 @@ function FeaturedCard({ item }) {
           <p style={{
             fontSize: '13px', lineHeight: '1.6',
             color: 'rgba(255,255,255,0.5)', marginBottom: '18px',
-            display: '-webkit-box', WebkitLineClamp: '2',
+            display: '-webkit-box', WebkitLineClamp: '4',
             WebkitBoxOrient: 'vertical', overflow: 'hidden',
           }}>
             {item.shortDescription}
@@ -134,7 +134,7 @@ function FeaturedCard({ item }) {
           marginBottom: '18px',
         }}>
           <div>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Price</p>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Current DOS Price</p>
             <p style={{ fontSize: '14px', fontWeight: '700', color: '#DEC7FF', fontFamily: "'Conthrax', sans-serif" }}>
               {item.issuancePrice || item.price}
             </p>
@@ -195,7 +195,7 @@ export default function Project() {
       <div className="container-main relative z-10">
         <div className="block-text center mb-10">
           <h6 className="sub-heading"><span>Live & Upcoming Offerings</span></h6>
-          <h3 className="heading font-heading font-bold text-white">FEATURED TOKENS</h3>
+          <h3 className="heading font-heading font-bold text-white">Featured Opportunities</h3>
         </div>
 
         <div className="featured-tokens-slider-wrap">

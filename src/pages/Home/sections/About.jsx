@@ -171,8 +171,8 @@ const features = [
         <polyline points="9 22 9 12 15 12 15 22" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'UAE-Structured',
-    text: 'Issued through a compliant RAKEZ-established holding structure',
+    label: 'UAE Structured',
+    text: 'Operated through a UAE-based corporate structure.',
   },
   {
     icon: (
@@ -180,8 +180,38 @@ const features = [
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    label: 'KYC / AML Verified',
-    text: 'Access limited to verified participants only',
+    label: 'Verified Members Only',
+    text: 'Participation available exclusively to verified members.',
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#9D6FFF" strokeWidth="2"/>
+        <line x1="2" y1="12" x2="22" y2="12" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    label: 'Private Opportunities',
+    text: 'Access innovative startups and high-growth projects.',
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#9D6FFF" strokeWidth="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    label: 'Digital Ownership',
+    text: 'Secure digital records of your participation and holdings.',
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    label: 'Blockchain-Backed Transparency',
+    text: 'Ownership records supported by blockchain technology for added transparency.',
   },
   {
     icon: (
@@ -192,38 +222,8 @@ const features = [
         <line x1="16" y1="17" x2="8" y2="17" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
-    label: 'Security-Backed Offerings',
-    text: 'Structured around real business and asset value',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-    label: 'Transparent & On-Chain',
-    text: 'Secure issuance and tracking on Polygon blockchain',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#9D6FFF" strokeWidth="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-    label: 'Secure Custodial Wallets',
-    text: 'Institutional-grade digital asset protection',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="#9D6FFF" strokeWidth="2"/>
-        <line x1="2" y1="12" x2="22" y2="12" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-    ),
-    label: 'Private Market Access',
-    text: 'Opportunities traditionally reserved for institutional investors',
+    label: 'Early Stage Opportunities',
+    text: 'Participate before opportunities become mainstream.',
   },
 ]
 
@@ -245,13 +245,18 @@ export default function About() {
             <HexVisual />
           </div>
           <div className="abt__content">
-            <p>Growith is a regulated digital investment platform giving verified investors access to high-growth private opportunities across AI, startups, real-world assets, and structured ventures.</p>
+            <p>Growith gives everyday investors access to innovative startups and high-growth projects that are traditionally available only to large investors and institutions.</p>
+            <p>Through Digital Ownership Stakes (DOS), you can participate in the growth journey of future-focused businesses and projects from an early stage.</p>
             <p>Every offering is transparently issued on-chain through a compliant framework designed for security, clarity, and long-term participation.</p>
             <span className="abt__divider" />
             <p><strong>Now Live: ShivAI</strong></p>
-            <p>A fast-growing Voice AI SaaS company building AI-powered business communication solutions across India, the Middle East, and global markets.</p>
+            <p><strong>Building the AI Workforce of the Future.</strong></p>
+            <p>ShivAI is creating AI Employees that can talk, sell, support customers and help businesses operate 24/7.</p>
+            <p>Every business hires people. In the future, every business will also hire AI Employees.</p>
+            <p>ShivAI is building the platform that makes it possible.</p>
+            <p>Participate in the early growth journey of ShivAI through Growith.</p>
             <span className="abt__divider" />
-            <p className="abt__note">Growith is not a crypto trading platform. It is structured infrastructure for regulated private market investments.</p>
+            <p className="abt__note">Growith is focused on Digital Ownership opportunities in innovative businesses and projects.</p>
           </div>
         </div>
 

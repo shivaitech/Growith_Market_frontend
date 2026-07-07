@@ -6,16 +6,21 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 import { tokenOfferings } from "../../../data";
 
-const WORDS = [
-  "Private Digital Securities",
-  "Regulated Investments",
-  "Wealth Growth Opportunities",
-  "Exclusive Access",
-  "Future Unicorns",
+const HEADLINES = [
+  { before: "Don't Just Watch. ", highlight: "Own A Part Of It.", after: "" },
+  { before: "Own ", highlight: "Tomorrow's Breakthrough", after: " Today." },
+  { before: "The ", highlight: "Next Big Companies", after: " Start Today." },
 ];
 
+const GRADIENT_TEXT = {
+  background: "linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  backgroundClip: "text",
+};
+
 export default function Banner() {
-  const [wordIndex, setWordIndex] = useState(0);
+  const [headlineIndex, setHeadlineIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [activeIdx, setActiveIdx] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState(null);
@@ -24,7 +29,7 @@ export default function Banner() {
     const timer = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
-        setWordIndex((i) => (i + 1) % WORDS.length);
+        setHeadlineIndex((i) => (i + 1) % HEADLINES.length);
         setVisible(true);
       }, 450);
     }, 2800);
@@ -44,39 +49,34 @@ export default function Banner() {
             <div className="banner__left">
               <div className="block-text">
                 <h6 className="sub-heading">
-                  UAE-Structured Private Investment Platform
+                  Private Opportunities. Digital Ownership.
                 </h6>
                 <h2 className="heading banner-heading">
-                  Access{" "}
                   <span
-                    className="banner-animated-word"
+                    className="banner-animated-headline"
                     style={{
                       opacity: visible ? 1 : 0,
                       transform: visible ? "translateY(0)" : "translateY(12px)",
                       transition: "opacity 0.45s ease, transform 0.45s ease",
-                      display: "inline-block",
-                      background:
-                        "linear-gradient(264.28deg, #DEC7FF -38.2%, #5C27FE 103.12%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
                     }}
                   >
-                    {WORDS[wordIndex]}
-                  </span>{" "}
-                  with Confidence
+                    {HEADLINES[headlineIndex].before}
+                    <span className="banner-animated-word" style={GRADIENT_TEXT}>
+                      {HEADLINES[headlineIndex].highlight}
+                    </span>
+                    {HEADLINES[headlineIndex].after}
+                  </span>
                 </h2>
                 <p className="desc">
-                  Invest in structured, UAE-Structured digital assets backed by legal
-                  documentation, compliance screening, and on-chain
-                  transparency.
+                  Access early-stage opportunities in AI, startups and high-growth
+                  projects through a secure, digital ownership platform.
                 </p>
                 <div className="banner-cta-group">
-                  <Link to="/token/shivai" className="action-btn">
-                    <span>Explore Live Offering</span>
+                  <Link to="/nft" className="action-btn">
+                    <span>Explore Opportunities</span>
                   </Link>
                   <Link to="/about" className="action-btn banner-cta-secondary">
-                    <span>Review Documentation</span>
+                    <span>How It Works</span>
                   </Link>
                 </div>
               </div>

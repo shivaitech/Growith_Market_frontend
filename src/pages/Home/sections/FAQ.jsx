@@ -33,7 +33,7 @@ export default function FAQ() {
             <div className="block-text center">
               <h6 className="sub-heading"><span>FAQs</span></h6>
               <h3 className="heading">Frequently <br /> Asked Questions</h3>
-              <p>Everything you need to know about private offerings, compliance, token structure, and participation.</p>
+              <p>Everything you need to know about Growith, Digital Ownership and how participation works.</p>
             </div>
             <div className="faq__main flat-tabs">
               <ul className="menu-tab">
