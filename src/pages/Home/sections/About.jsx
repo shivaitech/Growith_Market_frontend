@@ -247,7 +247,7 @@ export default function About() {
           <div className="abt__content">
             <p>Growith gives everyday investors access to innovative startups and high-growth projects that are traditionally available only to large investors and institutions.</p>
             <p>Through Digital Ownership Stakes (DOS), you can participate in the growth journey of future-focused businesses and projects from an early stage.</p>
-            <p>Every offering is transparently issued on-chain through a compliant framework designed for security, clarity, and long-term participation.</p>
+            <p>Every opportunity on Growith follows a structured participation process with digital ownership records and transparent investor access.</p>
             <span className="abt__divider" />
             <p><strong>Now Live: ShivAI</strong></p>
             <p><strong>Building the AI Workforce of the Future.</strong></p>

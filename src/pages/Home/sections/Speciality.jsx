@@ -90,9 +90,11 @@ export default function Speciality() {
       <div className="shape right" />
       <div className="container">
         <div className="block-text center">
+          <h6 className="sub-heading"><span>Built for Trusted Digital Ownership</span></h6>
           <h3 className="heading speciality-heading">
-            <span className="speciality-heading__line">Simple Access.</span>
-            <span className="speciality-heading__line">Structured Participation.</span>
+            <span className="speciality-heading__line">Access Opportunities.</span>
+            <span className="speciality-heading__line">Own Digitally.</span>
+            <span className="speciality-heading__line">Participate Transparently.</span>
           </h3>
           <p>Growith combines digital ownership, transparent record-keeping and a structured participation process to make access to innovative businesses and projects simple and secure.</p>
         </div>
