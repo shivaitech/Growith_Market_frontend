@@ -1071,6 +1071,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
   const [purchaseId] = useState(() => Math.random().toString(36).slice(2, 10).toUpperCase());
   const [stripeLoading, setStripeLoading] = useState(false);
   const [qrZoomed, setQrZoomed] = useState(false);
+  const [fileSizeModal, setFileSizeModal] = useState({ open: false, files: [] });
   const { copy, copied } = useCopyText();
   const formRef = useRef(null);
   const fileRef = useRef(null);
@@ -1122,6 +1123,19 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
   const handleScreenshotChange = e => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_UPLOAD_FILE_SIZE) {
+      setFileSizeModal({
+        open: true,
+        files: [{
+          key: 'screenshot',
+          label: 'Payment Screenshot',
+          name: file.name || 'Unnamed file',
+          sizeMb: formatFileSizeMb(file.size),
+        }],
+      });
+      e.target.value = '';
+      return;
+    }
     setScreenshot(file);
     setScreenshotError(false);
     const reader = new FileReader();
@@ -1730,6 +1744,12 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
         </div>
       )}
 
+      <FileSizeLimitModal
+        isOpen={fileSizeModal.open}
+        onClose={() => setFileSizeModal({ open: false, files: [] })}
+        files={fileSizeModal.files}
+      />
+
       {/* â”€â”€ QR Zoom Modal â”€â”€ */}
       {qrZoomed && (
         <div
@@ -1844,6 +1864,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
   const [uploadingId, setUploadingId] = useState(null);
   const [localPreviews, setLocalPreviews] = useState({});
   const [uploadErrors, setUploadErrors] = useState({});
+  const [fileSizeModal, setFileSizeModal] = useState({ open: false, files: [] });
   const fileRefs = useRef({});
 
   const statusStyles = {
@@ -1869,6 +1890,19 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
 
   const handleScreenshotUpload = async (purchaseId, file, purchase) => {
     if (!file) return;
+    if (file.size > MAX_UPLOAD_FILE_SIZE) {
+      setFileSizeModal({
+        open: true,
+        files: [{
+          key: `screenshot-${purchaseId}`,
+          label: 'Payment Screenshot',
+          name: file.name || 'Unnamed file',
+          sizeMb: formatFileSizeMb(file.size),
+        }],
+      });
+      if (fileRefs.current[purchaseId]) fileRefs.current[purchaseId].value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => setLocalPreviews(prev => ({ ...prev, [purchaseId]: ev.target.result }));
     reader.readAsDataURL(file);
@@ -1897,6 +1931,11 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
 
   return (
     <div className="db-tab-content">
+      <FileSizeLimitModal
+        isOpen={fileSizeModal.open}
+        onClose={() => setFileSizeModal({ open: false, files: [] })}
+        files={fileSizeModal.files}
+      />
       <div className="db-welcome-bar">
         <div>
           <h1 className="db-h1">Transaction History</h1>
@@ -2503,6 +2542,57 @@ const KYC_FIELD_LABELS = {
   secondaryFile: 'Supporting Document',
 };
 
+const MAX_UPLOAD_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
+
+function formatFileSizeMb(bytes) {
+  return (bytes / 1024 / 1024).toFixed(1);
+}
+
+/** Returns oversized file entries: [{ key, label, name, sizeMb }] */
+function getOversizedFiles(entries) {
+  return entries
+    .filter(({ file }) => file && file.size > MAX_UPLOAD_FILE_SIZE)
+    .map(({ key, label, file }) => ({
+      key,
+      label: label || key,
+      name: file.name || 'Unnamed file',
+      sizeMb: formatFileSizeMb(file.size),
+    }));
+}
+
+function FileSizeLimitModalBody({ files }) {
+  return (
+    <div className="kyc-validation-modal">
+      <p className="kyc-validation-modal__intro">
+        Maximum file size is <strong>8 MB</strong>. The following file{files.length > 1 ? 's exceed' : ' exceeds'} the limit:
+      </p>
+      <ul className="kyc-validation-modal__list">
+        {files.map((f) => (
+          <li key={f.key || f.name}>
+            <strong>{f.label}</strong>
+            <span>
+              &ldquo;{f.name}&rdquo; is {f.sizeMb} MB (max 8 MB). Please compress or choose a smaller file.
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FileSizeLimitModal({ isOpen, onClose, files = [] }) {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Maximum file size reached"
+      type="error"
+    >
+      <FileSizeLimitModalBody files={files} />
+    </Modal>
+  );
+}
+
 function KycValidationModalBody({ intro, errors }) {
   const items = Object.entries(errors).filter(([, msg]) => msg);
   return (
@@ -3092,7 +3182,6 @@ function TabVerification({ investor, onNav }) {
     const needsBack = selectedType?.sides?.includes('back');
 
     const ALLOWED_KYC_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
-    const MAX_KYC_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
 
     const handleFileChange = (field) => (e) => {
       const file = e.target.files?.[0];
@@ -3104,8 +3193,20 @@ function TabVerification({ investor, onNav }) {
         return;
       }
 
-      if (file.size > MAX_KYC_FILE_SIZE) {
-        setDocErrors(prev => ({ ...prev, [field]: `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 8 MB. Please compress or resize the file and try again.` }));
+      if (file.size > MAX_UPLOAD_FILE_SIZE) {
+        const sizeMb = formatFileSizeMb(file.size);
+        const fieldLabel = KYC_FIELD_LABELS[field] || field;
+        setDocErrors(prev => ({
+          ...prev,
+          [field]: `File is too large (${sizeMb} MB). Maximum allowed size is 8 MB.`,
+        }));
+        showValidationModal(
+          'Maximum file size reached',
+          {
+            [field]: `"${file.name}" is ${sizeMb} MB (max 8 MB). Please compress or choose a smaller file.`,
+          },
+          'Maximum file size is 8 MB. The following file exceeds the limit:'
+        );
         e.target.value = '';
         return;
       }
@@ -3143,7 +3244,23 @@ function TabVerification({ investor, onNav }) {
         if (!docs.primaryFront) errs.primaryFront = 'Front image is required';
         if (needsBack && !docs.primaryBack) errs.primaryBack = 'Back image is required';
       }
-      // supporting doc (name + file) is optional â€” no validation needed
+
+      const sizeChecks = [
+        { key: 'aadhaarFront', file: docs.aadhaarFront },
+        { key: 'aadhaarBack', file: docs.aadhaarBack },
+        { key: 'panFront', file: docs.panFront },
+        { key: 'primaryFront', file: docs.primaryFront },
+        { key: 'primaryBack', file: docs.primaryBack },
+        { key: 'secondaryFile', file: docs.secondaryFile },
+      ];
+      const oversized = getOversizedFiles(
+        sizeChecks.map(({ key, file }) => ({ key, label: KYC_FIELD_LABELS[key], file }))
+      );
+      oversized.forEach((f) => {
+        errs[f.key] = `"${f.name}" is ${f.sizeMb} MB (max 8 MB). Please compress or choose a smaller file.`;
+      });
+
+      // supporting doc (name + file) is optional â€” no validation needed beyond size
       setDocErrors(errs);
       return errs;
     };
@@ -3152,7 +3269,18 @@ function TabVerification({ investor, onNav }) {
       e.preventDefault();
       const errs = validateDocs();
       if (Object.keys(errs).length > 0) {
-        showValidationModal('Please correct your documents', errs);
+        const sizeOnly = Object.fromEntries(
+          Object.entries(errs).filter(([, msg]) => String(msg).includes('max 8 MB'))
+        );
+        if (Object.keys(sizeOnly).length > 0 && Object.keys(sizeOnly).length === Object.keys(errs).length) {
+          showValidationModal(
+            'Maximum file size reached',
+            sizeOnly,
+            'Maximum file size is 8 MB. The following file(s) exceed the limit:'
+          );
+        } else {
+          showValidationModal('Please correct your documents', errs);
+        }
         return;
       }
       setIsLoading(true);
@@ -3430,13 +3558,26 @@ function TabSettings({ investor }) {
     dob: '1990-06-15',
   });
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const [fileSizeModal, setFileSizeModal] = useState({ open: false, files: [] });
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
+    if (!file) return;
+    if (file.size > MAX_UPLOAD_FILE_SIZE) {
+      setFileSizeModal({
+        open: true,
+        files: [{
+          key: 'avatar',
+          label: 'Profile Photo',
+          name: file.name || 'Unnamed file',
+          sizeMb: formatFileSizeMb(file.size),
+        }],
+      });
+      e.target.value = '';
+      return;
     }
+    const url = URL.createObjectURL(file);
+    setAvatarUrl(url);
   };
 
   const handleSave = () => {
@@ -3445,6 +3586,11 @@ function TabSettings({ investor }) {
 
   return (
     <div className="db-tab-content">
+      <FileSizeLimitModal
+        isOpen={fileSizeModal.open}
+        onClose={() => setFileSizeModal({ open: false, files: [] })}
+        files={fileSizeModal.files}
+      />
       <div className="db-welcome-bar">
         <div>
           <h1 className="db-h1">Account Settings</h1>
