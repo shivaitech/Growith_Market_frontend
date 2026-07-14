@@ -86,20 +86,48 @@ class ApiService {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = {};
     if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
-    const response = await fetch(url, { method: 'POST', headers, body: formData });
+
+    let response;
+    try {
+      response = await fetch(url, { method: 'POST', headers, body: formData });
+    } catch (networkErr) {
+      const err = new Error(networkErr?.message || 'Failed to fetch');
+      err.name = networkErr?.name || 'TypeError';
+      err.isNetworkError = true;
+      err.cause = networkErr;
+      throw err;
+    }
+
     if (!response.ok) {
       let errMessage = `HTTP error! status: ${response.status}`;
       if (response.status === 413) {
         errMessage = 'One or more files exceed the maximum allowed size of 8 MB. Please reduce the file size and try again.';
       } else {
-        try { const b = await response.json(); if (b?.message) errMessage = b.message; } catch {}
+        try {
+          const b = await response.json();
+          if (b?.message) errMessage = b.message;
+          else if (b?.error) errMessage = typeof b.error === 'string' ? b.error : b.message || errMessage;
+        } catch {
+          try {
+            const text = await response.text();
+            if (text && text.length < 300) errMessage = text;
+          } catch { /* ignore */ }
+        }
       }
       if (this._isTokenError(response.status, errMessage)) {
         this._handleUnauthorized();
       }
-      throw new Error(errMessage);
+      const err = new Error(errMessage);
+      err.status = response.status;
+      err.isAuthError = this._isTokenError(response.status, errMessage);
+      throw err;
     }
-    return response.json();
+
+    try {
+      return await response.json();
+    } catch {
+      return { success: true };
+    }
   }
 
   async put(endpoint, data) {

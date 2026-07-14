@@ -13,6 +13,12 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import TabAffiliate from './TabAffiliate';
 import { AFFILIATE_PROGRAMS, AFFILIATE_STATUS, loadAffiliateApplication, saveAffiliateApplication } from './affiliateData';
+import {
+  MAX_UPLOAD_FILE_SIZE,
+  formatFileSizeMb,
+  getFriendlyUploadError,
+  compressImageForUpload,
+} from '../../utils/uploadHelpers';
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    PRE-LAUNCH PRICING  â€” 50% early investor discount until April 15
@@ -1160,7 +1166,8 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
       const res = await apiService.createTokenRequest(fd);
       apiId = res?.data?.id || res?.id || null;
     } catch (err) {
-      setApiError(err?.message || 'Failed to submit request. Please try again.');
+      const friendly = getFriendlyUploadError(err, { context: 'upload' });
+      setApiError(friendly.message);
       return; // do NOT proceed to success screen
     }
 
@@ -1921,7 +1928,8 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
       await apiService.createTokenRequest(fd);
     } catch (err) {
       console.warn('screenshot upload failed:', err?.message);
-      setUploadErrors(prev => ({ ...prev, [purchaseId]: 'Upload failed. Please try again.' }));
+      const friendly = getFriendlyUploadError(err, { context: 'upload' });
+      setUploadErrors(prev => ({ ...prev, [purchaseId]: friendly.message }));
       setUploadingId(null);
       return;
     }
@@ -2541,12 +2549,6 @@ const KYC_FIELD_LABELS = {
   secondaryName: 'Supporting Document Name',
   secondaryFile: 'Supporting Document',
 };
-
-const MAX_UPLOAD_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
-
-function formatFileSizeMb(bytes) {
-  return (bytes / 1024 / 1024).toFixed(1);
-}
 
 /** Returns oversized file entries: [{ key, label, name, sizeMb }] */
 function getOversizedFiles(entries) {
@@ -3183,7 +3185,7 @@ function TabVerification({ investor, onNav }) {
 
     const ALLOWED_KYC_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
 
-    const handleFileChange = (field) => (e) => {
+    const handleFileChange = (field) => async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
@@ -3195,7 +3197,6 @@ function TabVerification({ investor, onNav }) {
 
       if (file.size > MAX_UPLOAD_FILE_SIZE) {
         const sizeMb = formatFileSizeMb(file.size);
-        const fieldLabel = KYC_FIELD_LABELS[field] || field;
         setDocErrors(prev => ({
           ...prev,
           [field]: `File is too large (${sizeMb} MB). Maximum allowed size is 8 MB.`,
@@ -3203,7 +3204,7 @@ function TabVerification({ investor, onNav }) {
         showValidationModal(
           'Maximum file size reached',
           {
-            [field]: `"${file.name}" is ${sizeMb} MB (max 8 MB). Please compress or choose a smaller file.`,
+            [field]: `"${file.name}" is ${sizeMb} MB (max 8 MB). Please retake with lower resolution or compress the file.`,
           },
           'Maximum file size is 8 MB. The following file exceeds the limit:'
         );
@@ -3211,8 +3212,39 @@ function TabVerification({ investor, onNav }) {
         return;
       }
 
-      const preview = { url: URL.createObjectURL(file), isPdf: file.type === 'application/pdf', name: file.name };
-      setDocs(prev => ({ ...prev, [field]: file }));
+      let uploadFile = file;
+      try {
+        // Phone camera photos are often large — compress before attach for reliable mobile uploads
+        if (file.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || '')) {
+          uploadFile = await compressImageForUpload(file);
+        }
+      } catch {
+        uploadFile = file;
+      }
+
+      if (uploadFile.size > MAX_UPLOAD_FILE_SIZE) {
+        const sizeMb = formatFileSizeMb(uploadFile.size);
+        setDocErrors(prev => ({
+          ...prev,
+          [field]: `File is still too large (${sizeMb} MB) after compression. Max 8 MB.`,
+        }));
+        showValidationModal(
+          'Maximum file size reached',
+          {
+            [field]: `"${file.name}" is still ${sizeMb} MB after compression (max 8 MB). Please retake a closer photo or use a smaller file.`,
+          },
+          'Maximum file size is 8 MB. The following file exceeds the limit:'
+        );
+        e.target.value = '';
+        return;
+      }
+
+      const preview = {
+        url: URL.createObjectURL(uploadFile),
+        isPdf: uploadFile.type === 'application/pdf',
+        name: uploadFile.name,
+      };
+      setDocs(prev => ({ ...prev, [field]: uploadFile }));
       setDocPreviews(prev => ({ ...prev, [field]: preview }));
       if (docErrors[field]) setDocErrors(prev => ({ ...prev, [field]: '' }));
     };
@@ -3318,12 +3350,9 @@ function TabVerification({ investor, onNav }) {
         await apiService.submitKyc(formData);
         setStage('pending');
       } catch (err) {
-        const msg = err.message || '';
-        const apiErrMsg = msg.includes('too large') || msg.includes('8 MB') || msg.includes('413')
-          ? 'One or more files exceed the 8 MB limit. Please go back, reduce the file size, and try again.'
-          : (msg || 'Upload failed. Please try again.');
-        setApiError(apiErrMsg);
-        showValidationModal('KYC submission failed', { _general: apiErrMsg }, 'Something went wrong while submitting. Please review and try again.');
+        const friendly = getFriendlyUploadError(err, { context: 'kyc' });
+        setApiError(friendly.message);
+        showValidationModal(friendly.title, { _general: friendly.message }, 'Please review the issue below and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -3520,7 +3549,7 @@ function TabVerification({ investor, onNav }) {
           {/* â”€â”€ Upload size notice â”€â”€ */}
           <div className="kyc-address-disclaimer" style={{ marginBottom: 16 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span><strong>Max file size: 8 MB per document.</strong> Accepted formats: JPG, PNG, WEBP, PDF. If your file is larger, compress it using a free online tool (e.g. ilovepdf.com for PDFs, tinypng.com for images) before uploading.</span>
+            <span><strong>Max file size: 8 MB per document.</strong> Accepted formats: JPG, PNG, WEBP, PDF. Phone camera photos are automatically compressed for upload. If upload fails, use Wi‑Fi or retake a clearer, closer photo.</span>
           </div>
 
           {apiError && <div className="kyc-form__api-error">{apiError}</div>}
