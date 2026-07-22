@@ -7645,3 +7645,943 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .db-pending-tokens-grid { grid-template-columns: 1fr; }
   .db-usdt-actions { gap: 10px; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   All selectors below are verified real classNames from
+   src/pages/Dashboard/index.jsx cross-checked against their
+   dark-mode rules above. Activated via body[data-theme="light"]
+   (set by useTheme() in src/hooks/useTheme.js).
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Page shell / layout ─────────────────────────────────── */
+body[data-theme="light"] .db-shell {
+  background: #F5F6FA !important;
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-overlay {
+  background: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-tab-content {
+  background-color: transparent !important;
+}
+body[data-theme="light"] .db-page {
+  background: #F5F6FA !important;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+body[data-theme="light"] .db-sidebar {
+  background: #FFFFFF !important;
+  border-right: 1px solid rgba(13,11,34,0.08) !important;
+  box-shadow: 1px 0 0 rgba(13,11,34,0.04) !important;
+}
+body[data-theme="light"] .db-sidebar-brand {
+  border-bottom: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-brand-sub {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-sidebar-close {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-nav-item {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-nav-item:hover {
+  color: #0D0B22 !important;
+  background: rgba(13,11,34,0.05) !important;
+}
+body[data-theme="light"] .db-nav-item--active {
+  color: #5C27FE !important;
+  background: rgba(92,39,254,0.1) !important;
+  border: 1px solid rgba(92,39,254,0.25) !important;
+}
+body[data-theme="light"] .db-nav-item--active svg {
+  color: #5C27FE !important;
+}
+body[data-theme="light"] .db-nav-item--locked:hover {
+  background: transparent !important;
+  color: inherit !important;
+}
+body[data-theme="light"] .db-nav-item--logout {
+  color: rgba(220,38,38,0.8) !important;
+}
+body[data-theme="light"] .db-nav-item--logout:hover {
+  color: #DC2626 !important;
+  background: rgba(220,38,38,0.08) !important;
+}
+body[data-theme="light"] .db-nav-sub-item {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-nav-sub-item:hover {
+  color: #5C27FE !important;
+  background: rgba(92,39,254,0.08) !important;
+}
+body[data-theme="light"] .db-sidebar-footer {
+  border-top: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-sidebar-user {
+  background: rgba(13,11,34,0.03) !important;
+}
+body[data-theme="light"] .db-sidebar-user-name {
+  color: rgba(13,11,34,0.9) !important;
+}
+body[data-theme="light"] .db-sidebar-invest-sub {
+  color: rgba(13,11,34,0.45) !important;
+}
+
+/* ── Topbar ──────────────────────────────────────────────── */
+body[data-theme="light"] .db-topbar {
+  background: rgba(255,255,255,0.85) !important;
+  border-bottom: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-hamburger {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-hamburger:hover {
+  color: #0D0B22 !important;
+  background: rgba(13,11,34,0.06) !important;
+}
+body[data-theme="light"] .db-topbar-title {
+  color: rgba(13,11,34,0.9) !important;
+}
+body[data-theme="light"] .db-icon-btn {
+  background: rgba(13,11,34,0.04) !important;
+  border: 1px solid rgba(13,11,34,0.1) !important;
+  color: rgba(13,11,34,0.65) !important;
+}
+body[data-theme="light"] .db-icon-btn:hover {
+  color: #0D0B22 !important;
+  background: rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-notif-dot {
+  border: 1.5px solid #FFFFFF !important;
+}
+
+/* ── Welcome bar / headings ──────────────────────────────── */
+body[data-theme="light"] .db-h1,
+body[data-theme="light"] .db-h2 {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-muted {
+  color: rgba(13,11,34,0.65) !important;
+}
+body[data-theme="light"] .db-section-title {
+  color: rgba(13,11,34,0.55) !important;
+}
+
+/* ── Alerts (general case, not inside white cards) ───────── */
+body[data-theme="light"] .db-alert--success {
+  background: rgba(22,163,74,0.08) !important;
+  border: 1px solid rgba(22,163,74,0.25) !important;
+  color: rgba(13,11,34,0.85) !important;
+}
+body[data-theme="light"] .db-alert--info {
+  background: rgba(37,99,235,0.06) !important;
+  border: 1px solid rgba(37,99,235,0.2) !important;
+  color: rgba(13,11,34,0.8) !important;
+}
+body[data-theme="light"] .db-alert--warning {
+  background: rgba(180,83,9,0.07) !important;
+  border-color: rgba(180,83,9,0.25) !important;
+  color: rgba(13,11,34,0.85) !important;
+}
+
+/* ── Live offer / promo banner card ──────────────────────── */
+body[data-theme="light"] .db-live-offer-card {
+  background: linear-gradient(135deg, rgba(92,39,254,0.06) 0%, rgba(157,111,255,0.03) 100%) !important;
+  border: 1px solid rgba(92,39,254,0.2) !important;
+}
+body[data-theme="light"] .db-live-offer-card__img {
+  border-right: 1px solid rgba(92,39,254,0.12) !important;
+}
+body[data-theme="light"] .db-live-offer-card__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-live-offer-card__desc {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-live-offer-card__stats span {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-live-offer-card__stats strong {
+  color: #5C27FE !important;
+}
+body[data-theme="light"] .db-live-offer-card__note {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-live-offer-card__close {
+  background: rgba(13,11,34,0.06) !important;
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-live-offer-card__close:hover {
+  background: rgba(13,11,34,0.12) !important;
+  color: #0D0B22 !important;
+}
+
+/* ── Chart card (Overview sparklines) ────────────────────── */
+body[data-theme="light"] .db-chart-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+  color: rgba(13,11,34,0.85) !important;
+  box-shadow: 0 1px 3px rgba(13,11,34,0.04) !important;
+}
+body[data-theme="light"] .db-chart-card__value {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-chart-card__change {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-chart-card__labels {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-chart-card__legend > span {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-chart-card .db-green {
+  color: #16A34A !important;
+}
+
+/* ── Activity feed (Overview) ────────────────────────────── */
+body[data-theme="light"] .db-activity-row {
+  border-bottom: 1px solid rgba(13,11,34,0.07) !important;
+}
+body[data-theme="light"] .db-activity-label {
+  color: rgba(13,11,34,0.85) !important;
+}
+body[data-theme="light"] .db-activity-date {
+  color: rgba(13,11,34,0.5) !important;
+}
+
+/* ── Transactions — summary tiles / filter pills ─────────── */
+body[data-theme="light"] .db-tx-summary-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+  box-shadow: 0 1px 3px rgba(13,11,34,0.04) !important;
+}
+body[data-theme="light"] .db-tx-summary-label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-tx-summary-value {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-filter-pill {
+  border: 1px solid rgba(13,11,34,0.1) !important;
+  background: rgba(13,11,34,0.03) !important;
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-filter-pill:hover {
+  border-color: rgba(92,39,254,0.35) !important;
+  color: rgba(13,11,34,0.85) !important;
+}
+body[data-theme="light"] .db-filter-pill--active {
+  background: rgba(92,39,254,0.1) !important;
+  border-color: rgba(92,39,254,0.4) !important;
+  color: #5C27FE !important;
+}
+
+/* ── Wallet tab ───────────────────────────────────────────── */
+body[data-theme="light"] .db-wallet-balance-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-wallet-balance-card--main {
+  background: linear-gradient(135deg, rgba(157,111,255,0.12), rgba(92,39,254,0.06)) !important;
+  border-color: rgba(92,39,254,0.25) !important;
+}
+body[data-theme="light"] .db-wallet-balance-card__label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-wallet-balance-card__value {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-wallet-balance-card__sub {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-wallet-section-header {
+  background: rgba(13,11,34,0.03) !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-wallet-section-title {
+  color: rgba(13,11,34,0.9) !important;
+}
+body[data-theme="light"] .db-wallet-section-count {
+  color: rgba(13,11,34,0.65) !important;
+  background: rgba(13,11,34,0.06) !important;
+}
+body[data-theme="light"] .db-wallet-empty {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-wallet-token-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+  box-shadow: 0 1px 3px rgba(13,11,34,0.04) !important;
+}
+body[data-theme="light"] .db-wallet-token-card:hover {
+  border-color: rgba(92,39,254,0.3) !important;
+  box-shadow: 0 8px 24px rgba(92,39,254,0.1) !important;
+}
+body[data-theme="light"] .db-wallet-token-card__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-wallet-token-card__ticker {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-wallet-token-card__logo {
+  border: 1.5px solid rgba(13,11,34,0.1) !important;
+}
+body[data-theme="light"] .db-wallet-token-card__stats {
+  border-top: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-wallet-token-stat span {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-wallet-token-stat strong {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-wallet-tx-list {
+  border: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-wallet-tx-row {
+  border-bottom: 1px solid rgba(13,11,34,0.06) !important;
+}
+body[data-theme="light"] .db-wallet-tx-row:hover {
+  background: rgba(13,11,34,0.02) !important;
+}
+body[data-theme="light"] .db-wallet-tx-name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-wallet-tx-ticker {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-wallet-tx-date {
+  color: rgba(13,11,34,0.35) !important;
+}
+body[data-theme="light"] .db-wallet-tx-amt {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-wallet-tx-logo {
+  border: 1px solid rgba(13,11,34,0.08) !important;
+}
+
+/* ── Token holding unified card ───────────────────────────── */
+body[data-theme="light"] .db-token-holding-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+  box-shadow: 0 1px 3px rgba(13,11,34,0.04) !important;
+}
+body[data-theme="light"] .db-token-holding-card:hover {
+  border-color: rgba(92,39,254,0.3) !important;
+  box-shadow: 0 8px 24px rgba(92,39,254,0.1) !important;
+}
+body[data-theme="light"] .db-token-holding-card__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-token-holding-card__ticker {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-token-holding-card__balance-label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-token-holding-card__balance-value {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-token-holding-card__balance-usd {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-token-holding-card__stat span {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-token-holding-card__stat strong {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-token-holding-card__footer {
+  border-top: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-token-holding-card__sources {
+  color: rgba(13,11,34,0.5) !important;
+}
+
+/* ── Token breakdown rows inside modal ────────────────────── */
+body[data-theme="light"] .db-token-detail-row {
+  background: rgba(92,39,254,0.03) !important;
+  border: 1px solid rgba(13,11,34,0.07) !important;
+}
+body[data-theme="light"] .db-token-detail-row__stats span,
+body[data-theme="light"] .db-token-detail-row__ref span,
+body[data-theme="light"] .db-token-detail-row__note span {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-token-detail-row__stats strong {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-token-detail-row__ref,
+body[data-theme="light"] .db-token-detail-row__note {
+  border-top: 1px solid rgba(13,11,34,0.06) !important;
+}
+body[data-theme="light"] .db-token-detail-row__ref strong,
+body[data-theme="light"] .db-token-detail-row__note strong {
+  color: rgba(13,11,34,0.85) !important;
+}
+
+/* ── Holdings empty state ─────────────────────────────────── */
+body[data-theme="light"] .db-holdings-empty__title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-holdings-empty__sub {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-holdings-empty__sub strong {
+  color: #5C27FE !important;
+}
+
+/* ── Modals ───────────────────────────────────────────────── */
+body[data-theme="light"] .db-modal-box {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(13,11,34,0.1) !important;
+  box-shadow: 0 24px 64px rgba(13,11,34,0.25) !important;
+}
+body[data-theme="light"] .db-modal-header {
+  background: rgba(13,11,34,0.03) !important;
+  border-bottom: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-modal-close {
+  background: rgba(13,11,34,0.06) !important;
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-modal-close:hover {
+  background: rgba(220,38,38,0.12) !important;
+  color: #DC2626 !important;
+}
+body[data-theme="light"] .db-modal-row {
+  border-bottom: 1px solid rgba(13,11,34,0.07) !important;
+}
+body[data-theme="light"] .db-modal-row span:first-child {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-modal-row strong {
+  color: #0D0B22 !important;
+}
+
+/* ── Intent form — dark variant used for USDT payment step ── */
+body[data-theme="light"] .db-intent-form-wrap--dark {
+  background: #FFFFFF !important;
+  border-color: rgba(92,39,254,0.15) !important;
+  box-shadow: 0 4px 24px rgba(92,39,254,0.1) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-detail-label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-detail-value {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-details {
+  background: rgba(92,39,254,0.03) !important;
+  border-color: rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-detail-row {
+  border-bottom-color: rgba(13,11,34,0.06) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-wallet-copy-btn {
+  background: rgba(92,39,254,0.08) !important;
+  border-color: rgba(92,39,254,0.25) !important;
+  color: #5C27FE !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-wallet-copy-btn:hover {
+  background: rgba(92,39,254,0.16) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-screenshot-section .db-muted {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-screenshot-title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-addr {
+  color: rgba(13,11,34,0.8) !important;
+}
+
+/* ── Intent form header (token identity bar — purple gradient, kept) ── */
+body[data-theme="light"] .db-intent-form-header__name {
+  color: #fff !important;
+}
+body[data-theme="light"] .db-intent-form-header__ticker {
+  color: rgba(255,255,255,0.75) !important;
+}
+body[data-theme="light"] .db-intent-form-header__close {
+  background: rgba(255,255,255,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  color: rgba(255,255,255,0.9) !important;
+}
+
+/* ── USDT payment flow ────────────────────────────────────── */
+body[data-theme="light"] .db-usdt-card-btn {
+  background: linear-gradient(135deg, rgba(99,91,255,0.08) 0%, rgba(157,111,255,0.04) 100%) !important;
+  border: 1px solid rgba(99,91,255,0.3) !important;
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-usdt-card-btn:hover {
+  background: linear-gradient(135deg, rgba(99,91,255,0.16) 0%, rgba(157,111,255,0.08) 100%) !important;
+  border-color: rgba(99,91,255,0.5) !important;
+}
+body[data-theme="light"] .db-usdt-card-btn__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-usdt-card-btn__sub {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-usdt-pay-divider {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-usdt-pay-divider::before,
+body[data-theme="light"] .db-usdt-pay-divider::after {
+  background: rgba(13,11,34,0.1) !important;
+}
+body[data-theme="light"] .db-usdt-wallets-col {
+  background: rgba(92,39,254,0.03) !important;
+  border: 1px solid rgba(13,11,34,0.07) !important;
+}
+body[data-theme="light"] .db-usdt-wallets-label {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-usdt-wallet-btn {
+  background: rgba(13,11,34,0.03) !important;
+  border: 1px solid rgba(13,11,34,0.08) !important;
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-usdt-wallet-btn:hover {
+  background: rgba(92,39,254,0.08) !important;
+  border-color: rgba(92,39,254,0.3) !important;
+}
+body[data-theme="light"] .db-usdt-wallet-btn__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-usdt-wallet-btn__sub {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-usdt-send-currency {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-usdt-send-hint {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-usdt-addr-block {
+  background: rgba(92,39,254,0.04) !important;
+  border: 1px solid rgba(92,39,254,0.15) !important;
+}
+body[data-theme="light"] .db-usdt-addr-label {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-usdt-optional {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-usdt-qr-label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-usdt-qr-view-overlay {
+  background: rgba(13,11,34,0.85) !important;
+  color: #fff !important;
+}
+body[data-theme="light"] .db-usdt-details {
+  background: rgba(92,39,254,0.03) !important;
+  border: 1px solid rgba(13,11,34,0.07) !important;
+}
+body[data-theme="light"] .db-usdt-detail-row {
+  border-bottom: 1px solid rgba(13,11,34,0.06) !important;
+}
+body[data-theme="light"] .db-usdt-detail-label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-usdt-detail-value {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-usdt-addr {
+  color: rgba(13,11,34,0.8) !important;
+}
+body[data-theme="light"] .db-usdt-screenshot-title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-usdt-screenshot-upload {
+  background: rgba(92,39,254,0.03) !important;
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-usdt-screenshot-upload:hover {
+  background: rgba(92,39,254,0.07) !important;
+}
+body[data-theme="light"] .db-usdt-screenshot-remove {
+  background: rgba(13,11,34,0.6) !important;
+  color: #fff !important;
+}
+
+/* ── Pending purchases / tokens (Transactions + Wallet tabs) ── */
+body[data-theme="light"] .db-pending-card__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-pending-card__meta {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-pending-card__ref {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-pending-uploading {
+  background: rgba(13,11,34,0.5) !important;
+  color: #fff !important;
+}
+body[data-theme="light"] .db-pending-token-card__name {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-pending-token-card__ticker {
+  color: rgba(13,11,34,0.5) !important;
+}
+
+/* ── Pre-launch banner ────────────────────────────────────── */
+body[data-theme="light"] .db-prelaunch-banner__title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-prelaunch-price-old {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .db-prelaunch-arrow {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-prelaunch-saving {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-prelaunch-countdown__block {
+  background: rgba(13,11,34,0.05) !important;
+  border: 1px solid rgba(245,158,11,0.3) !important;
+}
+body[data-theme="light"] .db-prelaunch-countdown__label {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-prelaunch-countdown__remaining {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-price-old {
+  color: rgba(13,11,34,0.38) !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+body[data-theme="light"] .db-btn--ghost {
+  color: rgba(13,11,34,0.6) !important;
+  border: 1.5px solid rgba(13,11,34,0.15) !important;
+}
+body[data-theme="light"] .db-btn--ghost:hover {
+  color: #0D0B22 !important;
+  border-color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-btn--primary {
+  color: #fff !important;
+}
+body[data-theme="light"] .db-btn--loading,
+body[data-theme="light"] .db-btn--loading:hover {
+  border: 1.5px solid rgba(13,11,34,0.2) !important;
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .db-btn--outline-sm:hover:not(:disabled) {
+  border-color: #B45309 !important;
+  color: #B45309 !important;
+}
+
+/* ── Spinner ──────────────────────────────────────────────── */
+body[data-theme="light"] .db-spinner {
+  border: 2px solid rgba(13,11,34,0.15) !important;
+  border-top-color: #5C27FE !important;
+}
+
+/* ── Profile hero / avatar edit ───────────────────────────── */
+body[data-theme="light"] .db-profile-avatar {
+  border: 4px solid #FFFFFF !important;
+}
+body[data-theme="light"] .db-profile-avatar-edit {
+  border: 2px solid #FFFFFF !important;
+}
+body[data-theme="light"] .db-profile-hero__edit-btn {
+  color: #fff !important;
+}
+
+/* ── Sidebar avatar / topbar avatar (gradient, text stays white) ── */
+body[data-theme="light"] .db-sidebar-avatar,
+body[data-theme="light"] .db-topbar-avatar {
+  color: #fff !important;
+}
+
+/* ── Token card select indicator (gradient button, text stays white) ── */
+body[data-theme="light"] .db-token-card__select-indicator {
+  color: #fff !important;
+}
+
+/* ── Sidebar / Topbar invest CTA (gradient buttons, text stays white) ── */
+body[data-theme="light"] .db-sidebar-invest-btn,
+body[data-theme="light"] .db-topbar-invest-btn,
+body[data-theme="light"] .db-live-invest-btn,
+body[data-theme="light"] .db-holdings-empty__btn {
+  color: #fff !important;
+}
+
+/* ── KYC steps (db-kyc-step__* — Verification tab progress list) ── */
+body[data-theme="light"] .db-kyc-step__label {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-kyc-step--locked .db-kyc-step__label {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-kyc-step__desc {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-kyc-step--locked .db-kyc-step__num {
+  background: rgba(13,11,34,0.04) !important;
+  border: 1.5px solid rgba(13,11,34,0.12) !important;
+  color: rgba(13,11,34,0.35) !important;
+}
+
+/* ── KYC verification tab (kyc-* prefix — stepper, forms, uploads) ── */
+body[data-theme="light"] .kyc-stepper__num {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .kyc-stepper__label {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .kyc-stepper__step--active .kyc-stepper__num {
+  color: #fff !important;
+}
+body[data-theme="light"] .kyc-stepper__step--active .kyc-stepper__label {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-stepper__step--done .kyc-stepper__label {
+  color: rgba(13,11,34,0.65) !important;
+}
+body[data-theme="light"] .kyc-info-banner {
+  background: rgba(92,39,254,0.05) !important;
+  border: 1px solid rgba(92,39,254,0.18) !important;
+  color: rgba(13,11,34,0.75) !important;
+}
+body[data-theme="light"] .kyc-form__label {
+  color: rgba(13,11,34,0.8) !important;
+}
+body[data-theme="light"] .kyc-form__input {
+  background: #F5F3FF !important;
+  border: 1.5px solid rgba(92,39,254,0.2) !important;
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-form__input:focus {
+  background: #FFFFFF !important;
+}
+body[data-theme="light"] .kyc-validation-modal__intro {
+  color: rgba(13,11,34,0.7) !important;
+}
+body[data-theme="light"] .kyc-validation-modal__list li span {
+  color: rgba(13,11,34,0.8) !important;
+}
+body[data-theme="light"] .kyc-form__select option {
+  background: #FFFFFF !important;
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-address-disclaimer {
+  color: rgba(13,11,34,0.75) !important;
+}
+body[data-theme="light"] .kyc-doc-section {
+  background: rgba(92,39,254,0.02) !important;
+  border: 1px solid rgba(92,39,254,0.15) !important;
+}
+body[data-theme="light"] .kyc-doc-section__title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-doc-section__sub {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .kyc-doc-type {
+  background: rgba(13,11,34,0.02) !important;
+  border: 1.5px solid rgba(13,11,34,0.1) !important;
+}
+body[data-theme="light"] .kyc-doc-type:hover {
+  border-color: rgba(92,39,254,0.4) !important;
+  background: rgba(92,39,254,0.05) !important;
+}
+body[data-theme="light"] .kyc-doc-type--active {
+  background: rgba(92,39,254,0.08) !important;
+}
+body[data-theme="light"] .kyc-doc-type__radio {
+  border: 2px solid rgba(13,11,34,0.2) !important;
+}
+body[data-theme="light"] .kyc-doc-type__label {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-doc-type__sides {
+  color: rgba(13,11,34,0.45) !important;
+}
+body[data-theme="light"] .kyc-upload-col__label {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .kyc-upload-box {
+  border: 2px dashed rgba(92,39,254,0.3) !important;
+}
+body[data-theme="light"] .kyc-upload-empty {
+  background: rgba(13,11,34,0.015) !important;
+}
+body[data-theme="light"] .kyc-upload-box:hover .kyc-upload-empty {
+  background: rgba(92,39,254,0.05) !important;
+}
+body[data-theme="light"] .kyc-upload-hint {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .kyc-upload-size {
+  color: rgba(13,11,34,0.35) !important;
+}
+body[data-theme="light"] .kyc-pdf-card__name {
+  color: rgba(13,11,34,0.8) !important;
+}
+body[data-theme="light"] .kyc-back-btn {
+  border: 1.5px solid rgba(13,11,34,0.15) !important;
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .kyc-back-btn:hover {
+  background: rgba(13,11,34,0.05) !important;
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-iframe-wrap {
+  background: rgba(13,11,34,0.03) !important;
+}
+body[data-theme="light"] .kyc-iframe-placeholder__inner {
+  color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .kyc-pending-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(92,39,254,0.12) !important;
+  box-shadow: 0 2px 10px rgba(92,39,254,0.06) !important;
+}
+body[data-theme="light"] .kyc-pending-title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-pending-desc {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .kyc-ps {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .kyc-ps__dot {
+  background: rgba(13,11,34,0.18) !important;
+}
+body[data-theme="light"] .kyc-pending-invest-hint {
+  color: rgba(13,11,34,0.4) !important;
+}
+
+/* ── KYC terms & consent screen ───────────────────────────── */
+body[data-theme="light"] .kyc-terms__scroll {
+  border: 1px solid rgba(13,11,34,0.1) !important;
+  background: rgba(13,11,34,0.02) !important;
+}
+body[data-theme="light"] .kyc-terms__heading {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-terms__intro {
+  color: rgba(13,11,34,0.72) !important;
+}
+body[data-theme="light"] .kyc-terms__section-title {
+  color: #5C27FE !important;
+}
+body[data-theme="light"] .kyc-terms__body {
+  color: rgba(13,11,34,0.65) !important;
+}
+body[data-theme="light"] .kyc-terms__list {
+  color: rgba(13,11,34,0.62) !important;
+}
+body[data-theme="light"] .kyc-terms__scroll-indicator {
+  border-top: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .kyc-terms__si {
+  color: rgba(13,11,34,0.4) !important;
+}
+body[data-theme="light"] .kyc-terms__accept {
+  background: rgba(92,39,254,0.04) !important;
+  border: 1px solid rgba(92,39,254,0.25) !important;
+}
+body[data-theme="light"] .kyc-terms__checkbox-label {
+  color: rgba(13,11,34,0.8) !important;
+}
+
+/* ── Affiliate — back button ──────────────────────────────── */
+body[data-theme="light"] .db-aff-back-btn {
+  border: 1px solid rgba(13,11,34,0.12) !important;
+  background: rgba(13,11,34,0.04) !important;
+  color: rgba(13,11,34,0.65) !important;
+}
+body[data-theme="light"] .db-aff-back-btn:hover {
+  background: rgba(92,39,254,0.1) !important;
+  border-color: rgba(92,39,254,0.4) !important;
+  color: #5C27FE !important;
+}
+
+/* ── Affiliate — hero banner (promo gradient, kept dark for contrast with its own text — override text colors only) ── */
+body[data-theme="light"] .db-aff-hero__title {
+  color: #fff !important;
+}
+body[data-theme="light"] .db-aff-hero__desc {
+  color: rgba(255,255,255,0.65) !important;
+}
+body[data-theme="light"] .db-aff-hero__earn-card {
+  background: rgba(255,255,255,0.1) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+body[data-theme="light"] .db-aff-hero__earn-label {
+  color: rgba(255,255,255,0.55) !important;
+}
+body[data-theme="light"] .db-aff-hero__earn-sub {
+  color: rgba(255,255,255,0.5) !important;
+}
+
+/* ── Affiliate — approved hero (promo gradient, kept — text stays white) ── */
+body[data-theme="light"] .db-aff-approved-hero__title {
+  color: #fff !important;
+}
+body[data-theme="light"] .db-aff-approved-hero__desc {
+  color: rgba(255,255,255,0.62) !important;
+}
+body[data-theme="light"] .db-aff-code-chip__label {
+  color: rgba(255,255,255,0.55) !important;
+}
+
+/* ── Affiliate — welcome banner (green success banner) ────── */
+body[data-theme="light"] .db-aff-welcome-banner strong {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-aff-welcome-banner span {
+  color: rgba(13,11,34,0.6) !important;
+}
+body[data-theme="light"] .db-aff-welcome-banner__close {
+  background: rgba(13,11,34,0.08) !important;
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-aff-welcome-banner__close:hover {
+  background: rgba(13,11,34,0.14) !important;
+  color: #0D0B22 !important;
+}
+
+/* ── Affiliate — CTA / link copy buttons (gradient, text stays white) ── */
+body[data-theme="light"] .db-aff-cta-btn {
+  color: #fff !important;
+}
+body[data-theme="light"] .db-aff-cta-btn:disabled {
+  color: rgba(255,255,255,0.85) !important;
+}
+body[data-theme="light"] .db-aff-link-copy-btn {
+  color: #fff !important;
+}
+
+/* ── Tier card active badge (gradient pill, text stays white) ── */
+body[data-theme="light"] .db-tier-card__active-badge {
+  color: #fff !important;
+}
+
+/* ── Theme toggle button accents ── */
+.db-theme-toggle {
+  color: #DEC7FF;
+}
+body[data-theme="light"] .db-theme-toggle {
+  color: #F59E0B !important;
+  background: rgba(245,158,11,0.08) !important;
+  border-color: rgba(245,158,11,0.3) !important;
+}
+body[data-theme="light"] .db-theme-toggle:hover {
+  background: rgba(245,158,11,0.14) !important;
+}
+

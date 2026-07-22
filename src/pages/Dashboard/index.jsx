@@ -2,6 +2,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Toast from '../../components/Toast';
 import Modal from '../../components/Modal';
+import useTheme from '../../hooks/useTheme';
 import { createStripePaymentIntent, saveStripeCheckoutSession } from '../../utils/stripeCheckout';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
@@ -3781,6 +3782,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   /* Affiliate application — none | pending | approved | rejected */
   const [affiliateApp, setAffiliateApp] = useState(null);
   /* Enrolled affiliate programs — lifted here so the sidebar can show sub-items */
@@ -4312,6 +4314,23 @@ const Dashboard = () => {
             <button className="db-topbar-invest-btn" onClick={() => handleNav('invest')}>
               <span className="db-invest-live-dot" />
               <span>Invest Now</span>
+            </button>
+            <button
+              className="db-icon-btn db-theme-toggle"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4"/>
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              )}
             </button>
             <button className="db-icon-btn" aria-label="Notifications">
               <Icon.bell />
