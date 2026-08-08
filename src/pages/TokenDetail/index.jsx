@@ -110,6 +110,7 @@ export default function TokenDetail() {
   const activeDocCat = docCategories[docTab] || ''
   const [voiceAIExpanded, setVoiceAIExpanded] = useState(false)
   const [imgHovered, setImgHovered] = useState(false)
+  const [priceHistoryOpen, setPriceHistoryOpen] = useState(false)
 
   return (
     <>
@@ -229,13 +230,22 @@ export default function TokenDetail() {
               <h1 className="td-hero__title">{token.title}</h1>
               <p className="td-hero__desc">{token.shortDescription}</p>
 
+              {token.priceHistory && token.priceHistory.length > 0 && (
+                <button type="button" className="td-price-history-btn" onClick={() => setPriceHistoryOpen(true)}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                  </svg>
+                  View Price History
+                </button>
+              )}
+
               {/* Key stats */}
               <div className="td-stats-grid">
                 {[
                   { label: 'Issuance Price',  value: token.issuancePrice },
+                  { label: 'Current Price',   value: token.currentPrice || token.issuancePrice },
                   { label: 'Min. Investment', value: token.minInvestment },
                   { label: 'Max. Investment', value: token.maxInvestment },
-                  { label: 'Transfer Access', value: token.transferAccess || 'Upto 5% Monthly Unlock' },
                   { label: 'Total Supply',    value: token.totalSupply },
                   { label: 'Blockchain',      value: `${token.blockchain} (${token.tokenStandard})` },
                 ].map(s => (
@@ -661,6 +671,48 @@ export default function TokenDetail() {
           </div>
         </div>
       </section>
+
+      {/* ══════ Price History Modal ══════ */}
+      {priceHistoryOpen && token.priceHistory && (
+        <div className="td-price-modal-overlay" onClick={() => setPriceHistoryOpen(false)}>
+          <div className="td-price-modal" onClick={e => e.stopPropagation()}>
+            <div className="td-price-modal__header">
+              <div>
+                <h3 className="td-price-modal__title">Price History</h3>
+                <p className="td-price-modal__sub">{token.name || token.title} · {token.ticker || ''}</p>
+              </div>
+              <button type="button" className="td-price-modal__close" onClick={() => setPriceHistoryOpen(false)} aria-label="Close">✕</button>
+            </div>
+            <div className="td-price-modal__body">
+              {[...token.priceHistory]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map((entry, i, arr) => {
+                  const isLatest = i === 0
+                  const prev = arr[i + 1]
+                  const parsePrice = v => parseFloat(String(v).replace(/[^0-9.]/g, ''))
+                  const delta = prev ? parsePrice(entry.price) - parsePrice(prev.price) : null
+                  return (
+                    <div key={entry.date + entry.price} className={`td-price-entry${isLatest ? ' td-price-entry--latest' : ''}`}>
+                      <div className="td-price-entry__date">
+                        {new Date(entry.date + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {isLatest && <span className="td-price-entry__badge">Current</span>}
+                      </div>
+                      <div className="td-price-entry__row">
+                        <span className="td-price-entry__price">{entry.price}</span>
+                        {delta != null && (
+                          <span className={`td-price-entry__delta ${delta >= 0 ? 'td-price-entry__delta--up' : 'td-price-entry__delta--down'}`}>
+                            {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}${Math.abs(delta).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}
+                          </span>
+                        )}
+                      </div>
+                      {entry.note && <p className="td-price-entry__note">{entry.note}</p>}
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
