@@ -230,26 +230,70 @@ export default function TokenDetail() {
               <h1 className="td-hero__title">{token.title}</h1>
               <p className="td-hero__desc">{token.shortDescription}</p>
 
-              {token.priceHistory && token.priceHistory.length > 0 && (
-                <button type="button" className="td-price-history-btn" onClick={() => setPriceHistoryOpen(true)}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-                  </svg>
-                  View Price History
-                </button>
+              {/* Price overview — launch date, issuance price → current price */}
+              {(token.issuancePrice || token.currentPrice) && (
+                <div className="td-price-overview">
+                  <div className="td-price-overview__row">
+                    {token.priceHistory?.[0]?.date && (
+                      <div className="td-price-overview__item">
+                        <span className="td-price-overview__label">Launch Date</span>
+                        <span className="td-price-overview__value">
+                          {new Date(token.priceHistory[0].date + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                    )}
+                    <div className="td-price-overview__item">
+                      <span className="td-price-overview__label">Issuance Price</span>
+                      <span className="td-price-overview__value td-price-overview__value--dull">{token.issuancePrice}</span>
+                    </div>
+                    <svg className="td-price-overview__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M13 6l6 6-6 6"/>
+                    </svg>
+                    <div className="td-price-overview__item td-price-overview__item--current">
+                      <span className="td-price-overview__label">Current Price</span>
+                      <span className="td-price-overview__value td-price-overview__value--current">{token.currentPrice || token.issuancePrice}</span>
+                      {token.priceHistory?.length > 0 && (
+                        <span className="td-price-overview__updated">
+                          Updated {new Date(token.priceHistory[token.priceHistory.length - 1].date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                    {token.priceHistory && token.priceHistory.length > 0 && (
+                      <button type="button" className="td-price-history-btn" onClick={() => setPriceHistoryOpen(true)}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                        </svg>
+                        History
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
 
               {/* Key stats */}
               <div className="td-stats-grid">
                 {[
-                  { label: 'Issuance Price',  value: token.issuancePrice },
-                  { label: 'Current Price',   value: token.currentPrice || token.issuancePrice },
-                  { label: 'Min. Investment', value: token.minInvestment },
-                  { label: 'Max. Investment', value: token.maxInvestment },
-                  { label: 'Total Supply',    value: token.totalSupply },
-                  { label: 'Blockchain',      value: `${token.blockchain} (${token.tokenStandard})` },
+                  {
+                    label: 'Min. Investment', value: token.minInvestment,
+                    icon: <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>,
+                  },
+                  {
+                    label: 'Max. Investment', value: token.maxInvestment,
+                    icon: <><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>,
+                  },
+                  {
+                    label: 'Total Supply', value: token.totalSupply,
+                    icon: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></>,
+                  },
+                  {
+                    label: 'Blockchain', value: `${token.blockchain} (${token.tokenStandard})`,
+                    icon: <><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M12 11l8-4.5M12 11v9M12 11L4 6.5"/></>,
+                  },
                 ].map(s => (
                   <div key={s.label} className="td-stat">
+                    <svg className="td-stat__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      {s.icon}
+                    </svg>
                     <span className="td-stat__label">{s.label}</span>
                     <span className="td-stat__value">{s.value}</span>
                   </div>
