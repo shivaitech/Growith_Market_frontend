@@ -25,11 +25,12 @@ import {
    PRE-LAUNCH PRICING  — 50% early investor discount until April 15
    ═══════════════════════════════════════════════════════════ */
 
-const TOKEN_NORMAL_PRICE   = 10;    // $10.00 per token after launch
-const TOKEN_PRELAUNCH_PRICE = 5;    // $5.00 per token — 50% off until Apr 16
-const PRELAUNCH_END         = new Date('2026-04-16T00:00:00+05:30'); // midnight IST Apr 16
-const IS_PRELAUNCH          = Date.now() < PRELAUNCH_END.getTime();
-const EFFECTIVE_TOKEN_PRICE = IS_PRELAUNCH ? TOKEN_PRELAUNCH_PRICE : TOKEN_NORMAL_PRICE;
+const PRELAUNCH_END = new Date('2026-04-16T00:00:00+05:30'); // midnight IST Apr 16
+const IS_PRELAUNCH  = Date.now() < PRELAUNCH_END.getTime();
+
+/* Current issuance price — used as the fallback until the live API response
+   (raw.priceUsd from /tokens) arrives. Last updated Aug 6, 2026. */
+const CURRENT_TOKEN_PRICE = 0.012;
 
 /* ═══════════════════════════════════════════════════════════
    MOCK DATA  — replace with API calls in production
@@ -64,7 +65,7 @@ const HOLDINGS = [
   {
     id: 1,
     token: 'ShivAI',
-    ticker: 'SHIV',
+    ticker: 'DOS',
     logo: '/assets/images/icon/shivAiToken.png',
     image: '/assets/images/partner/MainShiv.jpeg',
     amount: 250000,
@@ -77,7 +78,7 @@ const HOLDINGS = [
     status: 'locked',
     blockchain: 'Polygon',
     contract: '0x3f5CE91d4A458B72b5a4cB4d5F6e7B8C9D0E1234',
-    priceHistory: [0.0095, 0.0096, 0.0098, 0.0099, 0.0097, 0.0100, 0.0101, 0.0103, 0.0104, 0.0105, 0.0107, 0.0110],
+    priceHistory: [0.0095, 0.0096, 0.0098, 0.0099, 0.0097, 0.0100, 0.0101, 0.0103, 0.0104, 0.0105, 0.0107, 0.012],
   },
 ];
 
@@ -101,11 +102,11 @@ const KYC_STEPS = [
 
 const AVAILABLE_TOKENS = [
   {
-    id: 1, slug: 'shivai', name: 'ShivAI Token', ticker: 'SHIV',
+    id: 1, slug: 'shivai', name: 'ShivAI Token', ticker: 'DOS',
     logo: '/assets/images/icon/shivAiToken.png',
     image: '/assets/images/partner/MainShiv.jpeg',
-    price: IS_PRELAUNCH ? '$5.00' : '$10.00',
-    normalPrice: '$10.00',
+    price: `$${CURRENT_TOKEN_PRICE.toFixed(3)}`,
+    normalPrice: `$${CURRENT_TOKEN_PRICE.toFixed(3)}`,
     minInvest: '$500', maxInvest: '$25,000',
     lock: '12 months', status: 'LIVE',
     raised: 100000000, target: 1000000000,
@@ -606,8 +607,8 @@ function TokenHoldingDetailsModal({ holding, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             <img src={holding.logo} alt="" style={{ width: 40, height: 40, borderRadius: 10, background: '#1a1a2e', flexShrink: 0 }} onError={e => { e.target.style.display='none'; }} />
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{holding.token}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{holding.ticker} · {fmt(holding.totalTokens)} tokens · ${fmt(holding.totalValue)}</div>
+              <div className="db-modal-header__title">{holding.token}</div>
+              <div className="db-modal-header__sub">{holding.ticker} · {fmt(holding.totalTokens)} tokens · ${fmt(holding.totalValue)}</div>
             </div>
           </div>
           <button className="db-modal-close" onClick={onClose}>✕</button>
@@ -622,7 +623,7 @@ function TokenHoldingDetailsModal({ holding, onClose }) {
                 <span className={`db-wallet-tag ${e.kind === 'airdrop' ? 'db-wallet-tag--purple' : 'db-wallet-tag--green'}`} style={{ textTransform: 'capitalize', fontSize: 11 }}>
                   {e.kind === 'airdrop' ? (e.airdropType ? `${e.airdropType} Airdrop` : 'Airdrop') : 'Purchase'}
                 </span>
-                {e.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{e.kind === 'airdrop' ? 'Received' : 'Approved'} · {e.date}</span>}
+                {e.date && <span className="db-token-detail-row__date">{e.kind === 'airdrop' ? 'Received' : 'Approved'} · {e.date}</span>}
               </div>
               <div className="db-token-detail-row__stats">
                 <div><span>Tokens</span><strong>{fmt(e.amount)} {holding.ticker}</strong></div>
@@ -725,11 +726,11 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             <span className="db-live-offer-card__badge">
               <span className="db-invest-live-dot" /> LIVE
             </span>
-            <span className="db-live-offer-card__name">ShivAI Token · SHIV</span>
+            <span className="db-live-offer-card__name">ShivAI Token · DOS</span>
           </div>
           <p className="db-live-offer-card__desc">AI-powered infrastructure. Minimum investment $500 — UAE Holding-Backed private placement.</p>
           <div className="db-live-offer-card__stats">
-            <div><span>Price</span><strong>$0.01</strong></div>
+            <div><span>Price</span><strong>$0.012</strong></div>
             <div><span>Min.</span><strong>$500</strong></div>
             <div><span>Lock</span><strong>12 months</strong></div>
           </div>
@@ -781,7 +782,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             <div className="db-chart-card__value">${total.toLocaleString()}</div>
             {pnl > 0
               ? <div className="db-chart-card__change db-green" style={{ color: '#4ade80' }}>▲ +${pnl.toLocaleString()} (+{pnlPct}%) since entry</div>
-              : <div className="db-chart-card__change" style={{ color: 'rgba(255,255,255,0.4)' }}>Invest to start building your portfolio</div>
+              : <div className="db-chart-card__change">Invest to start building your portfolio</div>
             }
           </div>
           <div className="db-chart-card__legend">
@@ -888,7 +889,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
   const totalTokensHeld = approvedPurchases.reduce((s, h) => s + (h.amount || 0), 0) + airdropTokensHeld;
   const totalValue     = approvedPurchases.reduce((s, h) => s + (h.currentValue || h.invested || 0), 0) + airdropValue;
   const hasAnyHoldings = approvedPurchases.length > 0 || directAirdrops.length > 0;
-  const tokenPrice     = token?.price ? parseFloat(token.price.replace('$', '')) : EFFECTIVE_TOKEN_PRICE;
+  const tokenPrice     = token?.price ? parseFloat(token.price.replace('$', '')) : CURRENT_TOKEN_PRICE;
   const liveValue      = totalTokensHeld > 0 ? totalTokensHeld * tokenPrice : 0;
   const effectiveValue = liveValue > 0 ? liveValue : totalValue;
   const pnl            = effectiveValue - totalInvested;
@@ -1083,7 +1084,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
   const formRef = useRef(null);
   const fileRef = useRef(null);
 
-  const tokenPrice = selectedToken ? parseFloat(selectedToken.price.replace('$', '')) : EFFECTIVE_TOKEN_PRICE;
+  const tokenPrice = selectedToken ? parseFloat(selectedToken.price.replace('$', '')) : CURRENT_TOKEN_PRICE;
   const tokenQty = amount && !isNaN(amount) && Number(amount) >= 500
     ? Math.floor(Number(amount) / tokenPrice)
     : 0;
@@ -1258,7 +1259,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {lastRefreshed && (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+            <span className="db-last-refreshed">
               Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -1464,10 +1465,10 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               </svg>
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 18, color: '#fff', marginBottom: 8 }}>
+              <div className="db-kyc-gate-title">
                 KYC Verification Required
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, maxWidth: 340, lineHeight: 1.6 }}>
+              <div className="db-kyc-gate-desc">
                 {investor?.kycStatus === 'rejected'
                   ? 'Your KYC was rejected. Please resubmit your documents in the Verification tab before completing payment.'
                   : 'Your KYC is currently under review. You will be able to complete your payment once your identity is verified.'}
@@ -1521,7 +1522,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                     View
                   </span>
                 </button>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', textAlign: 'center', marginTop: 2 }}>No memo required</div>
+                <div className="db-usdt-qr-memo-note">No memo required</div>
                 <div className="db-usdt-network-badge">TRC20 · Tron</div>
               </div>
               <div className="db-usdt-info-col">
@@ -2037,7 +2038,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No transactions yet</td></tr>
+              <tr><td colSpan={7} className="db-tx-empty-cell">No transactions yet</td></tr>
             ) : filtered.map((tx, idx) => {
               const s = statusStyles[tx.status] || statusStyles.pending;
               const tc = typeConfig[tx.type] || typeConfig.onboarding;
@@ -2053,10 +2054,10 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
                   <td className="db-tx-amount" style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>
                     {tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : <span className="db-muted">—</span>}
                   </td>
-                  <td className="db-tx-method" style={{ maxWidth: 220, whiteSpace: 'normal', fontSize: 12, color: 'rgba(255,255,255,0.55)' }} title={tx.desc}>{tx.desc || tx.method || '—'}</td>
+                  <td className="db-tx-method" style={{ maxWidth: 220, whiteSpace: 'normal', fontSize: 12 }} title={tx.desc}>{tx.desc || tx.method || '—'}</td>
                   <td className="db-tx-date">
                     <div>{tx.date}</div>
-                    {tx.time && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{tx.time}</div>}
+                    {tx.time && <div className="db-tx-date__time">{tx.time}</div>}
                   </td>
                   <td>
                     <span className="db-tx-status" style={{ color: s.color, background: s.bg }}>
@@ -2074,7 +2075,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
       {/* Mobile cards */}
       <div className="db-tx-cards-mobile">
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No transactions yet</div>
+          <div className="db-tx-empty-cell">No transactions yet</div>
         ) : filtered.map(tx => {
           const s = statusStyles[tx.status] || statusStyles.pending;
           const tc = typeConfig[tx.type] || typeConfig.onboarding;
@@ -2094,7 +2095,7 @@ function TabTransactions({ pendingPurchases = [], walletTransactions = [], onUpl
               </div>
               <div className="db-tx-mcard__details">
                 <div className="db-tx-mcard__row"><span>Amount</span><strong style={{ color: tx.type === 'redeem' ? '#F59E0B' : tx.type === 'affiliate' ? '#9D6FFF' : '#22C55E' }}>{tx.amount ? `${tx.type === 'redeem' ? '−' : '+'}$${tx.amount.toLocaleString()} ${tx.currency || 'USD'}` : '—'}</strong></div>
-                <div className="db-tx-mcard__row"><span>Details</span><strong style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>{tx.desc || tx.method || '—'}</strong></div>
+                <div className="db-tx-mcard__row"><span>Details</span><strong className="db-tx-mcard__detail-value">{tx.desc || tx.method || '—'}</strong></div>
                 <div className="db-tx-mcard__row"><span>Reference</span><strong className="db-tx-hash">{tx.hash}</strong></div>
               </div>
             </div>
@@ -2178,7 +2179,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {lastRefreshed && (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+            <span className="db-last-refreshed">
               Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -2199,7 +2200,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
           Active Tokens (All)
-          <span style={{ marginLeft: 8, fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+          <span className="db-wallet-section-count">
             {approvedRows.length + airdropRows.length} total
           </span>
         </div>
@@ -2261,8 +2262,8 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <img src={viewToken.logo} alt="" style={{ width: 36, height: 36, borderRadius: 8, background: '#1a1a2e' }} onError={e => { e.target.style.display='none'; }} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{viewToken.token}</div>
-                  <div style={{ fontSize: 12, color: '#888' }}>{viewToken.ticker}</div>
+                  <div className="db-modal-header__title">{viewToken.token}</div>
+                  <div className="db-modal-header__sub">{viewToken.ticker}</div>
                 </div>
               </div>
               <button className="db-modal-close" onClick={() => setViewToken(null)}>✕</button>
@@ -2436,7 +2437,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 <div className="db-wallet-tx-info">
                   <span className="db-wallet-tx-name" style={{ textTransform: 'capitalize' }}>{r.type.replace(/_/g, ' ')}</span>
                   <span className="db-wallet-tx-date">{r.date}{r.reviewedAt ? ` · Reviewed ${r.reviewedAt}` : ''}</span>
-                  {r.notes ? <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2, display: 'block' }}>{r.notes}</span> : null}
+                  {r.notes ? <span className="db-wallet-tx-note">{r.notes}</span> : null}
                 </div>
                 <div className="db-wallet-tx-mid">
                   <strong className="db-wallet-tx-qty">${r.amount?.toLocaleString()} {r.currency}</strong>
@@ -3091,23 +3092,17 @@ function TabVerification({ investor, onNav }) {
                   Locked
                 </span>
               </label>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: '-4px 0 8px', lineHeight: 1.5 }}>
+              <div className="db-kyc-locked-hint">
                 This is the legal name you provided at signup. It cannot be edited here — please contact support if it needs to be corrected.
               </div>
               <input
-                className={`kyc-form__input${errors.fullName ? ' kyc-form__input--err' : ''}`}
+                className={`kyc-form__input kyc-form__input--locked${errors.fullName ? ' kyc-form__input--err' : ''}`}
                 name="fullName"
                 value={form.fullName}
                 readOnly
                 tabIndex={-1}
                 placeholder="As on your passport/ID"
                 maxLength={80}
-                style={{
-                  background: 'rgba(157,111,255,0.06)',
-                  cursor: 'not-allowed',
-                  color: '#fff',
-                  fontWeight: 600,
-                }}
               />
               <span className="kyc-form__error">{errors.fullName || ''}</span>
             </div>
@@ -3521,7 +3516,7 @@ function TabVerification({ investor, onNav }) {
             <div className="kyc-doc-section__header">
               <div className="kyc-doc-section__num">{form.country === 'India' ? 3 : 2}</div>
               <div>
-                <h3 className="kyc-doc-section__title">Supporting Document <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>Optional</span></h3>
+                <h3 className="kyc-doc-section__title">Supporting Document <span className="kyc-doc-section__optional-tag">Optional</span></h3>
                 <p className="kyc-doc-section__sub">Proof of address or additional verification (e.g. utility bill, bank statement).</p>
               </div>
             </div>
@@ -3583,9 +3578,9 @@ function TabSettings({ investor }) {
   const [profile, setProfile] = useState({
     name: investor.name,
     email: investor.email,
-    phone: '+48 600 123 456',
-    country: 'Poland',
-    dob: '1990-06-15',
+    phone: investor.phone || '',
+    country: investor.country || '',
+    dob: investor.dob || '',
   });
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [fileSizeModal, setFileSizeModal] = useState({ open: false, files: [] });
@@ -3682,22 +3677,28 @@ function TabSettings({ investor }) {
           <div className="db-profile-field">
             <label className="db-form-label">Phone Number</label>
             {editing
-              ? <input className="db-form-input" value={profile.phone} onChange={e => setProfile(p => ({...p, phone: e.target.value}))} />
-              : <span className="db-settings-value">{profile.phone}</span>
+              ? <input className="db-form-input" value={profile.phone} onChange={e => setProfile(p => ({...p, phone: e.target.value}))} placeholder="Add phone number" />
+              : <span className="db-settings-value">{profile.phone || 'N/A'}</span>
             }
           </div>
           <div className="db-profile-field">
             <label className="db-form-label">Date of Birth</label>
             {editing
               ? <input className="db-form-input" type="date" value={profile.dob} onChange={e => setProfile(p => ({...p, dob: e.target.value}))} />
-              : <span className="db-settings-value">{new Date(profile.dob + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              : (
+                <span className="db-settings-value">
+                  {profile.dob
+                    ? new Date(profile.dob + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                    : 'N/A'}
+                </span>
+              )
             }
           </div>
           <div className="db-profile-field">
             <label className="db-form-label">Country</label>
             {editing
-              ? <input className="db-form-input" value={profile.country} onChange={e => setProfile(p => ({...p, country: e.target.value}))} />
-              : <span className="db-settings-value">{profile.country}</span>
+              ? <input className="db-form-input" value={profile.country} onChange={e => setProfile(p => ({...p, country: e.target.value}))} placeholder="Add country" />
+              : <span className="db-settings-value">{profile.country || 'N/A'}</span>
             }
           </div>
         </div>
@@ -3887,7 +3888,7 @@ const Dashboard = () => {
         const raw = tokenResult.value?.data ?? tokenResult.value;
         if (raw) {
           // priceUsd is the actual current token price from the API — use it directly
-          const effectivePrice = raw.priceUsd != null ? Number(raw.priceUsd) : EFFECTIVE_TOKEN_PRICE;
+          const effectivePrice = raw.priceUsd != null ? Number(raw.priceUsd) : CURRENT_TOKEN_PRICE;
           const normalPrice    = raw.normalPriceUsd != null ? Number(raw.normalPriceUsd) : effectivePrice;
           const totalSupply    = Number(raw.totalSupply    || 1000000);
           const avSupply       = Number(raw.availableSupply || 900000);
@@ -3896,11 +3897,11 @@ const Dashboard = () => {
             id:          raw._id || raw.id || 1,
             slug:        raw.slug || 'shivai',
             name:        raw.name || 'ShivAI Token',
-            ticker:      raw.symbol || raw.ticker || 'SHIV',
+            ticker:      raw.symbol || raw.ticker || 'DOS',
             logo:        raw.logo || raw.logoUrl || '/assets/images/icon/shivAiToken.png',
             image:       raw.image || raw.bannerImage || '/assets/images/partner/MainShiv.jpeg',
-            price:       `$${effectivePrice.toFixed(2)}`,
-            normalPrice: `$${normalPrice.toFixed(2)}`,
+            price:       `$${effectivePrice.toFixed(3)}`,
+            normalPrice: `$${normalPrice.toFixed(3)}`,
             minInvest:   raw.minInvestment ? `$${Number(raw.minInvestment).toLocaleString()}` : '$500',
             maxInvest:   raw.maxInvestment ? `$${Number(raw.maxInvestment).toLocaleString()}` : '$25,000',
             lock:        raw.lockPeriod || raw.lockDuration || '12 months',
@@ -4093,6 +4094,9 @@ const Dashboard = () => {
   const investor = {
     name:                  u?.name        || u?.fullName   || INVESTOR.name,
     email:                 u?.email                       || INVESTOR.email,
+    phone:                 u?.phone       || u?.phoneNumber || '',
+    country:               u?.country     || u?.countryOfResidence || '',
+    dob:                   u?.dob         || u?.dateOfBirth || '',
     kycStatus:             normalizedKycStatus,
     walletAddress:         u?.walletAddress               || INVESTOR.walletAddress,
     joinedDate:            u?.joinedDate  || u?.createdAt  || INVESTOR.joinedDate,

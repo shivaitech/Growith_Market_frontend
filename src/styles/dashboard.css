@@ -274,7 +274,8 @@
 .db-sidebar-brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  position: relative;
   padding: 24px 20px 20px;
   border-bottom: 1px solid rgba(92, 39, 254, 0.12);
 }
@@ -283,8 +284,9 @@
   text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  align-items: flex-start;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
 }
 
 .db-brand-logo {
@@ -293,17 +295,26 @@
   width: auto;
   max-width: 145px;
   object-fit: contain;
+  margin: 0 auto;
 }
 
 .db-brand-sub {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9D6FFF;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding-left: 2px;
+  background: rgba(157, 111, 255, 0.12);
+  border: 1px solid rgba(157, 111, 255, 0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-top: 2px;
 }
 
 .db-sidebar-close {
+  position: absolute;
+  right: 20px;
+  top: 24px;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.5);
@@ -640,6 +651,11 @@
   color: rgba(255, 255, 255, 0.72);
   font-size: 14px;
   line-height: 1.5;
+}
+
+.db-last-refreshed {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .db-section-title {
@@ -1708,6 +1724,13 @@
 .db-tx-table th:first-child { padding-left: 24px; width: 40px; }
 .db-tx-table th:last-child { padding-right: 24px; }
 
+.db-tx-empty-cell {
+  text-align: center;
+  padding: 32px 0;
+  color: rgba(13, 11, 34, 0.4);
+  font-size: 14px;
+}
+
 .db-tx-table tbody tr {
   border-bottom: 1px solid rgba(13, 11, 34, 0.06);
   transition: background 0.15s;
@@ -1777,6 +1800,11 @@
 .db-tx-date {
   color: rgba(13, 11, 34, 0.55);
   font-size: 13px;
+}
+.db-tx-date__time {
+  font-size: 11px;
+  color: rgba(13, 11, 34, 0.35);
+  margin-top: 2px;
 }
 
 .db-tx-status {
@@ -1868,6 +1896,12 @@
   font-size: 13px;
   font-weight: 600;
   color: #0D0B22;
+}
+
+.db-tx-mcard__detail-value {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: rgba(13, 11, 34, 0.5) !important;
 }
 
 .db-tx-mcard__row .db-tx-hash {
@@ -5121,6 +5155,18 @@
   background: rgba(255,255,255,0.06);
 }
 .kyc-form__input--err { border-color: rgba(239,68,68,0.6) !important; }
+.kyc-form__input--locked {
+  background: rgba(157,111,255,0.06);
+  cursor: not-allowed;
+  color: #fff;
+  font-weight: 600;
+}
+.db-kyc-locked-hint {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin: -4px 0 8px;
+  line-height: 1.5;
+}
 .kyc-form__error { font-size: 12px; color: #f87171; min-height: 18px; display: block; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .kyc-form__api-error {
   background: rgba(239,68,68,0.1);
@@ -5261,6 +5307,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-size: 13px; font-weight: 700; color: #fff;
 }
 .kyc-doc-section__title { font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 3px; }
+.kyc-doc-section__optional-tag { font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 400; }
 .kyc-doc-section__sub  { font-size: 12.5px; color: rgba(255,255,255,0.45); margin: 0; }
 
 /* Doc type radio cards */
@@ -6312,6 +6359,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 10px;
   flex-wrap: wrap;
 }
+.db-token-detail-row__date {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
 .db-token-detail-row__stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -6419,6 +6470,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border-radius: 20px;
   padding: 4px 14px;
   letter-spacing: 0.04em;
+}
+
+.db-usdt-qr-memo-note {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* KYC gate shown on the Invest tab when KYC isn't approved yet */
+.db-kyc-gate-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.db-kyc-gate-desc {
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  max-width: 340px;
+  line-height: 1.6;
 }
 
 /* Details rows */
@@ -6850,6 +6922,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.03);
 }
+.db-modal-header__title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+}
+.db-modal-header__sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
 .db-modal-close {
   background: rgba(255,255,255,0.07);
   border: none;
@@ -6940,6 +7021,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .db-wallet-tx-date {
   font-size: 11px;
   color: rgba(255,255,255,0.3);
+}
+.db-wallet-tx-note {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+  display: block;
 }
 .db-wallet-tx-mid {
   display: flex;
@@ -7681,6 +7768,14 @@ body[data-theme="light"] .db-sidebar-brand {
 body[data-theme="light"] .db-brand-sub {
   color: rgba(13,11,34,0.45) !important;
 }
+/* Logo PNG is designed for a dark backdrop (light/white wordmark) —
+   give it a dark pill so it stays legible on the white light-mode sidebar. */
+body[data-theme="light"] .db-brand-logo {
+  background: #0B0E2A !important;
+  border-radius: 10px !important;
+  padding: 8px 14px !important;
+  box-sizing: content-box !important;
+}
 body[data-theme="light"] .db-sidebar-close {
   color: rgba(13,11,34,0.55) !important;
 }
@@ -7765,6 +7860,9 @@ body[data-theme="light"] .db-h2 {
 }
 body[data-theme="light"] .db-muted {
   color: rgba(13,11,34,0.65) !important;
+}
+body[data-theme="light"] .db-last-refreshed {
+  color: rgba(13,11,34,0.4) !important;
 }
 body[data-theme="light"] .db-section-title {
   color: rgba(13,11,34,0.55) !important;
@@ -7957,6 +8055,9 @@ body[data-theme="light"] .db-wallet-tx-ticker {
 body[data-theme="light"] .db-wallet-tx-date {
   color: rgba(13,11,34,0.35) !important;
 }
+body[data-theme="light"] .db-wallet-tx-note {
+  color: rgba(13,11,34,0.45) !important;
+}
 body[data-theme="light"] .db-wallet-tx-amt {
   color: rgba(13,11,34,0.4) !important;
 }
@@ -7986,6 +8087,9 @@ body[data-theme="light"] .db-token-holding-card__balance-label {
 body[data-theme="light"] .db-token-holding-card__balance-value {
   color: #0D0B22 !important;
 }
+body[data-theme="light"] .db-token-holding-card__balance-value span {
+  color: #5C27FE !important;
+}
 body[data-theme="light"] .db-token-holding-card__balance-usd {
   color: rgba(13,11,34,0.5) !important;
 }
@@ -8000,6 +8104,15 @@ body[data-theme="light"] .db-token-holding-card__footer {
 }
 body[data-theme="light"] .db-token-holding-card__sources {
   color: rgba(13,11,34,0.5) !important;
+}
+body[data-theme="light"] .db-token-holding-card__btn {
+  background: rgba(92,39,254,0.08) !important;
+  border-color: rgba(92,39,254,0.25) !important;
+  color: #5C27FE !important;
+}
+body[data-theme="light"] .db-token-holding-card__btn:hover {
+  background: rgba(92,39,254,0.16) !important;
+  border-color: rgba(92,39,254,0.45) !important;
 }
 
 /* ── Token breakdown rows inside modal ────────────────────── */
@@ -8044,6 +8157,15 @@ body[data-theme="light"] .db-modal-box {
 body[data-theme="light"] .db-modal-header {
   background: rgba(13,11,34,0.03) !important;
   border-bottom: 1px solid rgba(13,11,34,0.08) !important;
+}
+body[data-theme="light"] .db-modal-header__title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-modal-header__sub {
+  color: rgba(13,11,34,0.55) !important;
+}
+body[data-theme="light"] .db-token-detail-row__date {
+  color: rgba(13,11,34,0.5) !important;
 }
 body[data-theme="light"] .db-modal-close {
   background: rgba(13,11,34,0.06) !important;
@@ -8098,6 +8220,17 @@ body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-screenshot-title {
 }
 body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-addr {
   color: rgba(13,11,34,0.8) !important;
+}
+body[data-theme="light"] .db-intent-form-wrap--dark .db-usdt-qr-memo-note {
+  color: rgba(13,11,34,0.5) !important;
+}
+
+/* ── KYC gate (shown on Invest tab before KYC is approved) ── */
+body[data-theme="light"] .db-kyc-gate-title {
+  color: #0D0B22 !important;
+}
+body[data-theme="light"] .db-kyc-gate-desc {
+  color: rgba(13,11,34,0.6) !important;
 }
 
 /* ── Intent form header (token identity bar — purple gradient, kept) ── */
@@ -8366,6 +8499,13 @@ body[data-theme="light"] .kyc-form__input {
 body[data-theme="light"] .kyc-form__input:focus {
   background: #FFFFFF !important;
 }
+body[data-theme="light"] .kyc-form__input--locked {
+  background: rgba(92,39,254,0.06) !important;
+  color: rgba(13,11,34,0.75) !important;
+}
+body[data-theme="light"] .db-kyc-locked-hint {
+  color: rgba(13,11,34,0.5) !important;
+}
 body[data-theme="light"] .kyc-validation-modal__intro {
   color: rgba(13,11,34,0.7) !important;
 }
@@ -8385,6 +8525,9 @@ body[data-theme="light"] .kyc-doc-section {
 }
 body[data-theme="light"] .kyc-doc-section__title {
   color: #0D0B22 !important;
+}
+body[data-theme="light"] .kyc-doc-section__optional-tag {
+  color: rgba(13,11,34,0.4) !important;
 }
 body[data-theme="light"] .kyc-doc-section__sub {
   color: rgba(13,11,34,0.5) !important;
