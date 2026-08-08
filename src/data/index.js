@@ -54,7 +54,7 @@ export const tokenOfferings = [
     issuancePrice: '$0.01',
     currentPrice: '$0.012',
     priceHistory: [
-      { date: '2026-01-15', price: '$0.01', note: 'Initial issuance price' },
+      { date: '2026-07-18', price: '$0.01', note: 'Initial issuance price' },
       { date: '2026-08-06', price: '$0.012', note: 'Price update' },
     ],
     blockchain: 'Polygon',

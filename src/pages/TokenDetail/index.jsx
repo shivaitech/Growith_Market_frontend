@@ -254,7 +254,7 @@ export default function TokenDetail() {
                       <span className="td-price-overview__value td-price-overview__value--current">{token.currentPrice || token.issuancePrice}</span>
                       {token.priceHistory?.length > 0 && (
                         <span className="td-price-overview__updated">
-                          Updated {new Date(token.priceHistory[token.priceHistory.length - 1].date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          Effective {new Date(token.priceHistory[token.priceHistory.length - 1].date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       )}
                     </div>
