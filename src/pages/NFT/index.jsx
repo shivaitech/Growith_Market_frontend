@@ -241,7 +241,7 @@ export default function NFT() {
                       <div>
                         <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Price</p>
                         <p style={{ fontSize: '14px', fontWeight: '700', color: '#DEC7FF', fontFamily: "'Conthrax', sans-serif" }}>
-                          {token.issuancePrice || token.price}
+                          {token.currentPrice || token.issuancePrice || token.price}
                         </p>
                       </div>
                       <div style={{ textAlign: 'right' }}>

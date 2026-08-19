@@ -136,7 +136,7 @@ function FeaturedCard({ item }) {
           <div>
             <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>Current DOS Price</p>
             <p style={{ fontSize: '14px', fontWeight: '700', color: '#DEC7FF', fontFamily: "'Conthrax', sans-serif" }}>
-              {item.issuancePrice || item.price}
+              {item.currentPrice || item.issuancePrice || item.price}
             </p>
           </div>
           <div style={{ textAlign: 'right' }}>
