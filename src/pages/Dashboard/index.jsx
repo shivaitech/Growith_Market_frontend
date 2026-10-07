@@ -7,6 +7,8 @@ import { createStripePaymentIntent, saveStripeCheckoutSession } from '../../util
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
+import { getStatesForCountry } from '../../utils/countryStates';
+import { extractText, parseKycText, parseAadhaarNumber, parsePanNumber } from '../../utils/kycOcr';
 import { clearAuth, getUser, getToken, setUser as saveUser } from '../../utils/secureStorage';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination as SwiperPagination } from 'swiper/modules';
@@ -414,6 +416,29 @@ const Icon = {
     </svg>
   ),
 };
+
+/* ── KYC required banner (shown on invest / wallet until KYC approved) ── */
+function KycRequiredBanner({ investor, onNav }) {
+  if (investor?.kycStatus === 'approved') return null;
+  const status = investor?.kycStatus;
+  const message = status === 'rejected'
+    ? 'Your KYC was rejected. Please resubmit your documents to start investing.'
+    : (status === 'pending' || status === 'under_review')
+      ? 'Your KYC is under review. You can start investing once it is approved.'
+      : 'Please complete KYC to start investing.';
+  const showCta = status !== 'pending' && status !== 'under_review';
+  return (
+    <div className="db-alert db-alert--warning db-kyc-required" style={{ marginBottom: 24, alignItems: 'center' }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style={{ flex: 1 }}>{message}</div>
+      {showCta && (
+        <button type="button" className="db-btn db-btn--primary" style={{ whiteSpace: 'nowrap' }} onClick={() => onNav?.('verification')}>
+          Complete KYC
+        </button>
+      )}
+    </div>
+  );
+}
 
 /* ── KYC status helpers ─────────────────────────────────────── */
 function KycBadge({ status }) {
@@ -1065,8 +1090,68 @@ function PrelaunchOfferBanner({ onNav }) {
   );
 }
 
-function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading = false, lastRefreshed = null, onRefresh, onAddPendingPurchase }) {
+const AGREEMENT_PDF = '/assets/documents/ShivAI_DOS_Private_Participation_Agreement.pdf';
+
+/* ── One-time Private Participation Agreement (shown when a verified user first starts purchasing) ── */
+function PurchaseAgreementModal({ open, onClose, onAccept }) {
+  const [checked, setChecked] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => { if (open) { setChecked(false); setError(''); } }, [open]);
+  if (!open) return null;
+
+  const handleAccept = async () => {
+    setSubmitting(true);
+    setError('');
+    try {
+      await onAccept();
+    } catch (err) {
+      setError(err?.message || 'We could not record your acceptance. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="db-modal-overlay" onClick={submitting ? undefined : onClose}>
+      <div className="db-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 820, width: '94vw' }}>
+        <div className="db-modal-header">
+          <div>
+            <div className="db-modal-header__title">Private Participation Agreement</div>
+            <div className="db-modal-header__sub">Please review and accept before you start investing. This is a one-time step.</div>
+          </div>
+          <button className="db-modal-close" onClick={onClose} disabled={submitting} aria-label="Close">✕</button>
+        </div>
+        <div className="db-modal-body">
+          <iframe
+            title="Private Participation Agreement"
+            src={`${AGREEMENT_PDF}#toolbar=0&navpanes=0`}
+            style={{ width: '100%', height: '52vh', minHeight: 300, border: '1px solid rgba(128,128,128,0.3)', borderRadius: 10, background: '#fff' }}
+          />
+          <a href={AGREEMENT_PDF} target="_blank" rel="noreferrer" style={{ display: 'inline-block', margin: '10px 0 14px', fontSize: 13, color: '#9D6FFF' }}>
+            Open the full agreement in a new tab ↗
+          </a>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, lineHeight: 1.6, cursor: 'pointer' }}>
+            <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} style={{ marginTop: 4 }} />
+            <span>I have read, understood and agree to be legally bound by the Private Participation Agreement, including the Risk Statement in Schedule 3. I understand that selecting "I Accept" is my electronic signature.</span>
+          </label>
+          {error && <div className="kyc-form__api-error" style={{ marginTop: 12 }}>{error}</div>}
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
+            <button type="button" className="db-btn db-btn--ghost" onClick={onClose} disabled={submitting}>Cancel</button>
+            <button type="button" className="db-btn db-btn--primary" onClick={handleAccept} disabled={!checked || submitting}>
+              {submitting ? 'Recording…' : 'I Accept / Agree'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading = false, lastRefreshed = null, onRefresh, onAddPendingPurchase, onNav, purchaseAgreed = false, onAcceptAgreement }) {
   const navigate = useNavigate();
+  const [agreementFor, setAgreementFor] = useState(null);   // token waiting for the agreement to be accepted
   const [selectedToken, setSelectedToken] = useState(null);
   const [amount, setAmount] = useState('');
   // payStep: 'form' | 'payment' | 'done'
@@ -1090,6 +1175,11 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
     : 0;
 
   const handleSelectToken = t => {
+    // Verified users must accept the Private Participation Agreement once before purchasing
+    if (investor?.kycStatus === 'approved' && !purchaseAgreed) {
+      setAgreementFor(t);
+      return;
+    }
     setSelectedToken(t);
     setAmount('');
     setPayStep('form');
@@ -1277,13 +1367,24 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
 
       <PrelaunchOfferBanner />
 
+      <PurchaseAgreementModal
+        open={!!agreementFor}
+        onClose={() => setAgreementFor(null)}
+        onAccept={async () => {
+          await onAcceptAgreement?.();
+          const t = agreementFor;
+          setAgreementFor(null);
+          if (t) {
+            setSelectedToken(t);
+            setAmount('');
+            setPayStep('form');
+            setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+          }
+        }}
+      />
+
       {/* KYC notice banner when not approved */}
-      {investor?.kycStatus !== 'approved' && (
-        <div className="db-alert db-alert--warning" style={{ marginBottom: 24 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div>Your KYC is {investor?.kycStatus === 'not_started' ? 'not yet submitted' : 'under review'}. You can purchase tokens now — they will be marked <strong>Pending Verification</strong> until your KYC and payment are approved by the admin.</div>
-        </div>
-      )}
+      <KycRequiredBanner investor={investor} onNav={onNav} />
 
       {/* Token cards */}
       <div className="db-section-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1471,7 +1572,9 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               <div className="db-kyc-gate-desc">
                 {investor?.kycStatus === 'rejected'
                   ? 'Your KYC was rejected. Please resubmit your documents in the Verification tab before completing payment.'
-                  : 'Your KYC is currently under review. You will be able to complete your payment once your identity is verified.'}
+                  : (investor?.kycStatus === 'pending' || investor?.kycStatus === 'under_review')
+                    ? 'Your KYC is currently under review. You will be able to complete your payment once your identity is verified.'
+                    : 'Please complete KYC to start investing.'}
               </div>
             </div>
             <div style={{
@@ -1482,8 +1585,11 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               color: investor?.kycStatus === 'rejected' ? '#F87171' : '#F59E0B',
               fontSize: 13, fontWeight: 600,
             }}>
-              {investor?.kycStatus === 'rejected' ? '✕ KYC Rejected' : '⏳ KYC Under Review'}
+              {investor?.kycStatus === 'rejected' ? '✕ KYC Rejected' : (investor?.kycStatus === 'pending' || investor?.kycStatus === 'under_review') ? '⏳ KYC Under Review' : '⚠ KYC Not Completed'}
             </div>
+            {investor?.kycStatus !== 'pending' && investor?.kycStatus !== 'under_review' && (
+              <button type="button" className="db-btn db-btn--primary" onClick={() => onNav?.('verification')}>Complete KYC</button>
+            )}
           </div>
         )}
         <div className="db-intent-form-wrap db-intent-form-wrap--dark" style={{ filter: investor?.kycStatus !== 'approved' ? 'blur(3px)' : 'none', pointerEvents: investor?.kycStatus !== 'approved' ? 'none' : 'auto', userSelect: investor?.kycStatus !== 'approved' ? 'none' : 'auto' }}>
@@ -2195,6 +2301,8 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
         </div>
       </div>
 
+      <KycRequiredBanner investor={investor} onNav={onNav} />
+
       {/* ── Active Tokens (All) — approved + airdrops combined ── */}
       <div className="db-wallet-section-header">
         <div className="db-wallet-section-title">
@@ -2620,8 +2728,9 @@ function KycValidationModalBody({ intro, errors }) {
   );
 }
 
-function TabVerification({ investor, onNav }) {
-  const [stage, setStage] = useState('terms');  // 'terms' | 'info' | 'docs' | 'pending'
+// gateMode: render only the consent screen (shown on first entry); onConsent records acceptance.
+function TabVerification({ investor, onNav, consentGiven = true, gateMode = false, onConsent, onKycSubmitted }) {
+  const [stage, setStage] = useState(gateMode || !consentGiven ? 'terms' : 'info');  // 'terms' | 'info' | 'docs' | 'pending'
   const [termsScrolled, setTermsScrolled] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -2671,6 +2780,17 @@ function TabVerification({ investor, onNav }) {
     address:     '',
   });
   const [errors, setErrors] = useState({});
+  const [stateOptions, setStateOptions] = useState([]);
+  const ocrRef = useRef({});               // field -> Promise<string> of OCR text
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrResult, setOcrResult] = useState({ ran: false, found: false, nameMatch: null });
+
+  // State list follows the selected country
+  useEffect(() => {
+    let cancelled = false;
+    getStatesForCountry(form.country).then((list) => { if (!cancelled) setStateOptions(list); });
+    return () => { cancelled = true; };
+  }, [form.country]);
 
   // Prefill the legal name from the registered account name once it loads.
   // Only sets it if the user hasn't started editing the field yet (or it's the placeholder default).
@@ -2841,13 +2961,13 @@ function TabVerification({ investor, onNav }) {
       <div className="db-tab-content">
         <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
           <div>
-            <h1 className="db-h1">Identity Verification</h1>
+            <h1 className="db-h1">{gateMode ? 'Consent & Terms' : 'Identity Verification'}</h1>
             <p className="db-muted">Read and accept the terms before you proceed.</p>
           </div>
           <KycBadge status={investor.kycStatus || 'not_started'} />
         </div>
 
-        <div className="kyc-stepper">
+        {!gateMode && <div className="kyc-stepper">
           <div className="kyc-stepper__step kyc-stepper__step--active">
             <span className="kyc-stepper__num">1</span>
             <span className="kyc-stepper__label">Consent</span>
@@ -2855,7 +2975,7 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
             <span className="kyc-stepper__num">2</span>
-            <span className="kyc-stepper__label">Personal Info</span>
+            <span className="kyc-stepper__label">Basic Info</span>
           </div>
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
@@ -2865,9 +2985,9 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
             <span className="kyc-stepper__num">4</span>
-            <span className="kyc-stepper__label">Review</span>
+            <span className="kyc-stepper__label">Details</span>
           </div>
-        </div>
+        </div>}
 
         <div className="kyc-terms-container">
           <div className="kyc-terms__scroll" onScroll={handleTermsScroll}>
@@ -2948,10 +3068,20 @@ function TabVerification({ investor, onNav }) {
           <button
             type="button"
             className="kyc-form__submit"
-            disabled={!termsAccepted}
-            onClick={() => setStage('info')}
+            disabled={!termsAccepted || isLoading}
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                await onConsent?.();
+                if (!gateMode) setStage('info');
+              } catch (err) {
+                showToast(err?.message || 'We could not record your consent. Please try again.', 'error');
+              } finally {
+                setIsLoading(false);
+              }
+            }}
           >
-            I Agree — Continue to Personal Info
+            {isLoading ? <span className="login-spinner" /> : (gateMode ? 'I Agree — Continue to Dashboard' : 'I Agree — Continue to Basic Info')}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
         </div>
@@ -2963,7 +3093,7 @@ function TabVerification({ investor, onNav }) {
   if (stage === 'info') {
     const handleChange = (e) => {
       const { name, value } = e.target;
-      setForm(prev => ({ ...prev, [name]: value }));
+      setForm(prev => ({ ...prev, [name]: value, ...(name === 'country' ? { state: '' } : {}) }));
       if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
@@ -2975,38 +3105,12 @@ function TabVerification({ investor, onNav }) {
       } else if (!/^[a-zA-Z\s'\-\.]{2,80}$/.test(form.fullName.trim())) {
         errs.fullName = 'Name can only contain letters, spaces, hyphens and apostrophes (2–80 chars)';
       }
-      // DOB
-      if (!form.dob) errs.dob = 'Date of birth is required';
-      // Nationality
-      if (!form.nationality.trim()) {
-        errs.nationality = 'Nationality is required';
-      } else if (!/^[a-zA-Z\s\-]{2,60}$/.test(form.nationality.trim())) {
-        errs.nationality = 'Enter a valid nationality (letters only)';
-      }
       if (!form.country.trim()) errs.country = 'Country of residence is required';
-      // City
-      if (!form.city.trim()) {
-        errs.city = 'City is required';
-      } else if (form.city.trim().length > 100) {
-        errs.city = 'City name too long (max 100 characters)';
-      }
       // State
       if (!form.state.trim()) {
         errs.state = 'State / Province is required';
       } else if (form.state.trim().length > 100) {
         errs.state = 'State name too long (max 100 characters)';
-      }
-      // Phone: optional leading +, 7–15 digits (spaces/dashes allowed between digits)
-      if (!form.phone.trim()) {
-        errs.phone = 'Phone number is required';
-      } else if (!/^\+?[\d\s\-]{7,20}$/.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 7) {
-        errs.phone = 'Enter a valid phone number (e.g. +44 7700 900000)';
-      }
-      // Address
-      if (!form.address.trim()) {
-        errs.address = 'Residential address is required';
-      } else if (form.address.trim().length > 200) {
-        errs.address = 'Address too long (max 200 characters)';
       }
       setErrors(errs);
       return errs;
@@ -3016,7 +3120,7 @@ function TabVerification({ investor, onNav }) {
       e.preventDefault();
       const errs = validate();
       if (Object.keys(errs).length > 0) {
-        showValidationModal('Please correct your personal information', errs);
+        showValidationModal('Please correct your basic information', errs);
         return;
       }
       setStage('docs');
@@ -3045,7 +3149,7 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-stepper__line kyc-stepper__line--done" />
           <div className="kyc-stepper__step kyc-stepper__step--active">
             <span className="kyc-stepper__num">2</span>
-            <span className="kyc-stepper__label">Personal Info</span>
+            <span className="kyc-stepper__label">Basic Info</span>
           </div>
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
@@ -3055,69 +3159,17 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
             <span className="kyc-stepper__num">4</span>
-            <span className="kyc-stepper__label">Review</span>
+            <span className="kyc-stepper__label">Details</span>
           </div>
         </div>
 
         <div className="kyc-info-banner">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>Please enter your details exactly as they appear on your government-issued ID. This information is encrypted and securely processed.</span>
+          <span>Just your country and state for now. Next you will upload your ID documents, and we will fill in the rest of your details for you to confirm.</span>
         </div>
 
         <form className="kyc-form" onSubmit={handleSubmit} noValidate>
           <div className="kyc-form__row">
-            <div className="kyc-form__group">
-              <label className="kyc-form__label">
-                Full Legal Name <span className="kyc-form__req">*</span>
-                <span style={{
-                  marginLeft: 8,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: '#9D6FFF',
-                  background: 'rgba(157,111,255,0.1)',
-                  border: '1px solid rgba(157,111,255,0.25)',
-                  padding: '2px 8px',
-                  borderRadius: 100,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  verticalAlign: 'middle',
-                }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                  </svg>
-                  Locked
-                </span>
-              </label>
-              <div className="db-kyc-locked-hint">
-                This is the legal name you provided at signup. It cannot be edited here — please contact support if it needs to be corrected.
-              </div>
-              <input
-                className={`kyc-form__input kyc-form__input--locked${errors.fullName ? ' kyc-form__input--err' : ''}`}
-                name="fullName"
-                value={form.fullName}
-                readOnly
-                tabIndex={-1}
-                placeholder="As on your passport/ID"
-                maxLength={80}
-              />
-              <span className="kyc-form__error">{errors.fullName || ''}</span>
-            </div>
-            <div className="kyc-form__group">
-              <label className="kyc-form__label">Date of Birth <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.dob ? ' kyc-form__input--err' : ''}`} type="date" name="dob" value={form.dob} onChange={handleChange} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
-              <span className="kyc-form__error">{errors.dob || ''}</span>
-            </div>
-          </div>
-          <div className="kyc-form__row">
-            <div className="kyc-form__group">
-              <label className="kyc-form__label">Nationality <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Indian" maxLength={60} />
-              <span className="kyc-form__error">{errors.nationality || ''}</span>
-            </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">Country of Residence <span className="kyc-form__req">*</span></label>
               <select className={`kyc-form__input kyc-form__select${errors.country ? ' kyc-form__input--err' : ''}`} name="country" value={form.country} onChange={handleChange}>
@@ -3126,36 +3178,18 @@ function TabVerification({ investor, onNav }) {
               </select>
               <span className="kyc-form__error">{errors.country || ''}</span>
             </div>
-          </div>
-          <div className="kyc-form__row">
-            <div className="kyc-form__group">
-              <label className="kyc-form__label">City <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.city ? ' kyc-form__input--err' : ''}`} name="city" value={form.city} onChange={handleChange} placeholder="e.g. London" maxLength={100} />
-              <span className="kyc-form__error">{errors.city || ''}</span>
-            </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">State / Province <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.state ? ' kyc-form__input--err' : ''}`} name="state" value={form.state} onChange={handleChange} placeholder="e.g. England, Punjab" maxLength={100} />
+              {stateOptions.length > 0 ? (
+                <select className={`kyc-form__input kyc-form__select${errors.state ? ' kyc-form__input--err' : ''}`} name="state" value={form.state} onChange={handleChange}>
+                  <option value="">Select state / province…</option>
+                  {stateOptions.map(st => <option key={st} value={st}>{st}</option>)}
+                </select>
+              ) : (
+                <input className={`kyc-form__input${errors.state ? ' kyc-form__input--err' : ''}`} name="state" value={form.state} onChange={handleChange} placeholder={form.country ? 'Enter state / province' : 'Select a country first'} maxLength={100} disabled={!form.country} />
+              )}
               <span className="kyc-form__error">{errors.state || ''}</span>
             </div>
-          </div>
-          <div className="kyc-form__row">
-            <div className="kyc-form__group">
-              <label className="kyc-form__label">Phone Number <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" maxLength={20} />
-              <span className="kyc-form__error">{errors.phone || ''}</span>
-            </div>
-            <div className="kyc-form__group">
-              <label className="kyc-form__label">Street Address <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street number and name, Postcode" maxLength={200} />
-              <span className="kyc-form__error">{errors.address || ''}</span>
-            </div>
-          </div>
-
-          {/* Address disclaimer */}
-          <div className="kyc-address-disclaimer">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span>The address details you provide must exactly match those on your legally verified government-issued documents (passport, national ID, or utility bill). Mismatches may result in verification failure.</span>
           </div>
 
           {apiError && <div className="kyc-form__api-error">{apiError}</div>}
@@ -3242,6 +3276,19 @@ function TabVerification({ investor, onNav }) {
       };
       setDocs(prev => ({ ...prev, [field]: uploadFile }));
       setDocPreviews(prev => ({ ...prev, [field]: preview }));
+
+      // Read the document in the background; document numbers are filled in as soon as they are found
+      ocrRef.current[field] = extractText(uploadFile).then((text) => {
+        const patch = {};
+        if (field === 'aadhaarFront' || field === 'aadhaarBack') patch.aadhaarNumber = parseAadhaarNumber(text);
+        if (field === 'panFront') patch.panNumber = parsePanNumber(text);
+        setDocs(prev => {
+          const next = { ...prev };
+          Object.entries(patch).forEach(([k, v]) => { if (v && !prev[k]) next[k] = v; });
+          return next;
+        });
+        return text;
+      });
       if (docErrors[field]) setDocErrors(prev => ({ ...prev, [field]: '' }));
     };
 
@@ -3293,7 +3340,7 @@ function TabVerification({ investor, onNav }) {
       return errs;
     };
 
-    const handleDocSubmit = async (e) => {
+    const handleDocContinue = async (e) => {
       e.preventDefault();
       const errs = validateDocs();
       if (Object.keys(errs).length > 0) {
@@ -3311,47 +3358,25 @@ function TabVerification({ investor, onNav }) {
         }
         return;
       }
-      setIsLoading(true);
-      setApiError('');
+      setOcrBusy(true);
       try {
-        const [y, mo, d] = form.dob.split('-');
-        const formData = new FormData();
-        formData.append('fullLegalName', form.fullName.trim());
-        formData.append('dateOfBirth', `${d}-${mo}-${y}`);
-        formData.append('nationality', form.nationality.trim());
-        formData.append('countryOfResidence', form.country);
-        formData.append('city', form.city.trim());
-        formData.append('stateProvince', form.state.trim());
-        formData.append('phoneNumber', form.phone.trim());
-        formData.append('streetAddress', form.address.trim());
-        formData.append('termsAgreed', 'true');
-
-        if (form.country === 'India') {
-          formData.append('aadhaarNumber', docs.aadhaarNumber.replace(/[\s-]/g, ''));
-          formData.append('panNumber', docs.panNumber.trim().toUpperCase());
-          formData.append('aadhaarFront', docs.aadhaarFront);
-          formData.append('aadhaarBack', docs.aadhaarBack);
-          formData.append('panFront', docs.panFront);
-        } else {
-          formData.append('aadhaarNumber', docs.primaryNumber || 'N/A');
-          formData.append('panNumber', docs.primaryType ? docs.primaryType.toUpperCase() : 'N/A');
-          formData.append('aadhaarFront', docs.primaryFront);
-          formData.append('aadhaarBack', docs.primaryBack || docs.primaryFront);
-          formData.append('panFront', docs.primaryFront);
-        }
-
-        if (docs.secondaryFile) formData.append('supportingDoc', docs.secondaryFile);
-        if (docs.secondaryName?.trim()) formData.append('supportingDocName', docs.secondaryName.trim());
-
-        await apiService.submitKyc(formData);
-        setStage('pending');
-      } catch (err) {
-        const friendly = getFriendlyUploadError(err, { context: 'kyc' });
-        setApiError(friendly.message);
-        showValidationModal(friendly.title, { _general: friendly.message }, 'Please review the issue below and try again.');
+        const texts = await Promise.all(Object.values(ocrRef.current));
+        const parsed = parseKycText(texts, { country: form.country, state: form.state, fullName: form.fullName });
+        setForm(prev => ({
+          ...prev,
+          dob:         prev.dob         || parsed.dob,
+          nationality: prev.nationality || parsed.nationality,
+          city:        prev.city        || parsed.city,
+          address:     prev.address     || parsed.address,
+          phone:       prev.phone       || (investor.phone || ''),
+        }));
+        setOcrResult({ ran: true, found: !!(parsed.dob || parsed.address), nameMatch: parsed.nameMatch });
+      } catch {
+        setOcrResult({ ran: true, found: false, nameMatch: null });
       } finally {
-        setIsLoading(false);
+        setOcrBusy(false);
       }
+      setStage('details');
     };
 
     return (
@@ -3378,7 +3403,7 @@ function TabVerification({ investor, onNav }) {
             <span className="kyc-stepper__num">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </span>
-            <span className="kyc-stepper__label">Personal Info</span>
+            <span className="kyc-stepper__label">Basic Info</span>
           </div>
           <div className="kyc-stepper__line kyc-stepper__line--done" />
           <div className="kyc-stepper__step kyc-stepper__step--active">
@@ -3388,11 +3413,11 @@ function TabVerification({ investor, onNav }) {
           <div className="kyc-stepper__line" />
           <div className="kyc-stepper__step">
             <span className="kyc-stepper__num">4</span>
-            <span className="kyc-stepper__label">Review</span>
+            <span className="kyc-stepper__label">Details</span>
           </div>
         </div>
 
-        <form className="kyc-form" onSubmit={handleDocSubmit} noValidate>
+        <form className="kyc-form" onSubmit={handleDocContinue} noValidate>
 
           {/* ── Primary ID Sections ── */}
           {form.country === 'India' ? (
@@ -3552,6 +3577,278 @@ function TabVerification({ investor, onNav }) {
 
           <div className="kyc-doc-actions">
             <button type="button" className="kyc-back-btn" onClick={() => setStage('info')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              Back
+            </button>
+            <button type="submit" className="kyc-form__submit" style={{ flex: 1 }} disabled={ocrBusy}>
+              {ocrBusy ? (<><span className="login-spinner" /> Reading your documents…</>) : (
+                <>
+                  Continue
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // ── Stage 3: Details (pre-filled from documents) ──
+  if (stage === 'details') {
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setForm(prev => ({ ...prev, [name]: value }));
+      if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const validateDetails = () => {
+      const errs = {};
+      if (!form.dob) errs.dob = 'Date of birth is required';
+      if (!form.nationality.trim()) {
+        errs.nationality = 'Nationality is required';
+      } else if (!/^[a-zA-Z\s\-]{2,60}$/.test(form.nationality.trim())) {
+        errs.nationality = 'Enter a valid nationality (letters only)';
+      }
+      if (!form.city.trim()) {
+        errs.city = 'City is required';
+      } else if (form.city.trim().length > 100) {
+        errs.city = 'City name too long (max 100 characters)';
+      }
+      if (!form.phone.trim()) {
+        errs.phone = 'Phone number is required';
+      } else if (!/^\+?[\d\s\-]{7,20}$/.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 7) {
+        errs.phone = 'Enter a valid phone number (e.g. +44 7700 900000)';
+      }
+      if (!form.address.trim()) {
+        errs.address = 'Residential address is required';
+      } else if (form.address.trim().length > 200) {
+        errs.address = 'Address too long (max 200 characters)';
+      }
+      setErrors(errs);
+      return errs;
+    };
+
+    const handleDetailsSubmit = async (e) => {
+      e.preventDefault();
+      const errs = validateDetails();
+      if (Object.keys(errs).length > 0) {
+        showValidationModal('Please correct your details', errs);
+        return;
+      }
+      setIsLoading(true);
+      setApiError('');
+      try {
+        const [y, mo, d] = form.dob.split('-');
+        const formData = new FormData();
+        formData.append('fullLegalName', form.fullName.trim());
+        formData.append('dateOfBirth', `${d}-${mo}-${y}`);
+        formData.append('nationality', form.nationality.trim());
+        formData.append('countryOfResidence', form.country);
+        formData.append('city', form.city.trim());
+        formData.append('stateProvince', form.state.trim());
+        formData.append('phoneNumber', form.phone.trim());
+        formData.append('streetAddress', form.address.trim());
+        formData.append('termsAgreed', 'true');
+
+        if (form.country === 'India') {
+          formData.append('aadhaarNumber', docs.aadhaarNumber.replace(/[\s-]/g, ''));
+          formData.append('panNumber', docs.panNumber.trim().toUpperCase());
+          formData.append('aadhaarFront', docs.aadhaarFront);
+          formData.append('aadhaarBack', docs.aadhaarBack);
+          formData.append('panFront', docs.panFront);
+        } else {
+          formData.append('aadhaarNumber', docs.primaryNumber || 'N/A');
+          formData.append('panNumber', docs.primaryType ? docs.primaryType.toUpperCase() : 'N/A');
+          formData.append('aadhaarFront', docs.primaryFront);
+          formData.append('aadhaarBack', docs.primaryBack || docs.primaryFront);
+          formData.append('panFront', docs.primaryFront);
+        }
+
+        if (docs.secondaryFile) formData.append('supportingDoc', docs.secondaryFile);
+        if (docs.secondaryName?.trim()) formData.append('supportingDocName', docs.secondaryName.trim());
+
+        await apiService.submitKyc(formData);
+        setStage('pending');
+        onKycSubmitted?.();   // re-fetch the profile so the latest KYC status is reflected everywhere
+      } catch (err) {
+        const friendly = getFriendlyUploadError(err, { context: 'kyc' });
+        setApiError(friendly.message);
+        showValidationModal(friendly.title, { _general: friendly.message }, 'Please review the issue below and try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    return (
+      <div className="db-tab-content">
+        <Toast isOpen={toast.open} onClose={closeToast} message={toast.message} type={toast.type} />
+        {kycValidationModal}
+        <div className="db-welcome-bar" style={{ marginBottom: 8 }}>
+          <div>
+            <h1 className="db-h1">Identity Verification</h1>
+            <p className="db-muted">Confirm your details.</p>
+          </div>
+          <KycBadge status={investor.kycStatus || 'not_started'} />
+        </div>
+
+        <div className="kyc-stepper">
+          <div className="kyc-stepper__step kyc-stepper__step--done">
+            <span className="kyc-stepper__num"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span className="kyc-stepper__label">Consent</span>
+          </div>
+          <div className="kyc-stepper__line kyc-stepper__line--done" />
+          <div className="kyc-stepper__step kyc-stepper__step--done">
+            <span className="kyc-stepper__num"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span className="kyc-stepper__label">Basic Info</span>
+          </div>
+          <div className="kyc-stepper__line kyc-stepper__line--done" />
+          <div className="kyc-stepper__step kyc-stepper__step--done">
+            <span className="kyc-stepper__num"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span className="kyc-stepper__label">Documents</span>
+          </div>
+          <div className="kyc-stepper__line kyc-stepper__line--done" />
+          <div className="kyc-stepper__step kyc-stepper__step--active">
+            <span className="kyc-stepper__num">4</span>
+            <span className="kyc-stepper__label">Details</span>
+          </div>
+        </div>
+
+        <div className="kyc-info-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>
+            {ocrResult.found
+              ? 'We read your documents and filled in what we could. Please check every field and correct anything that is wrong.'
+              : 'We could not read all details from your documents automatically. Please fill in the remaining fields.'}
+          </span>
+        </div>
+        {ocrResult.nameMatch === false && (
+          <div className="kyc-address-disclaimer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>We could not find your registered name ({form.fullName}) on the uploaded documents. Please make sure the documents belong to you and the photos are clear.</span>
+          </div>
+        )}
+
+        {(() => {
+          const isIndia = form.country === 'India';
+          const docType = getDocConfig(form.country).types.find(t => t.id === docs.primaryType);
+          const maskNum = (n) => String(n || '').replace(/d(?=(?:s?d){4})/g, 'X');
+          const items = [
+            ['Country of residence', form.country],
+            ['State / Province', form.state],
+            ...(isIndia
+              ? [['Aadhaar number', maskNum(docs.aadhaarNumber)], ['PAN number', docs.panNumber ? String(docs.panNumber).toUpperCase() : '']]
+              : [['Document type', docType?.label || ''], ['Document number', docs.primaryNumber || '']]),
+            ...(docs.secondaryName ? [['Supporting document', docs.secondaryName]] : []),
+          ].filter(([, v]) => v);
+          const files = [
+            ['aadhaarFront', 'Aadhaar front'], ['aadhaarBack', 'Aadhaar back'], ['panFront', 'PAN card'],
+            ['primaryFront', (docType?.label || 'ID') + ' front'], ['primaryBack', (docType?.label || 'ID') + ' back'],
+            ['secondaryFile', 'Supporting document'],
+          ].filter(([k]) => docPreviews[k]);
+          return (
+            <div className="kyc-summary">
+              <h3 className="kyc-summary__title">From your previous steps</h3>
+              <div className="kyc-summary__grid">
+                {items.map(([label, value]) => (
+                  <div className="kyc-summary__item" key={label}><span>{label}</span><strong>{value}</strong></div>
+                ))}
+              </div>
+              {files.length > 0 && (
+                <div className="kyc-summary__files">
+                  {files.map(([k, label]) => (
+                    <div className="kyc-summary__file" key={k}>
+                      {docPreviews[k].isPdf
+                        ? <div className="kyc-summary__file-ph">PDF</div>
+                        : <img src={docPreviews[k].url} alt={label} />}
+                      <div><strong>{label}</strong><small>{docPreviews[k].name}</small></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        <form className="kyc-form" onSubmit={handleDetailsSubmit} noValidate>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">
+                Full Legal Name <span className="kyc-form__req">*</span>
+                <span style={{
+                  marginLeft: 8,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: '#6B7280',
+                  background: 'rgba(107,114,128,0.12)',
+                  border: '1px solid rgba(107,114,128,0.25)',
+                  padding: '2px 8px',
+                  borderRadius: 100,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  verticalAlign: 'middle',
+                }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  Locked
+                </span>
+              </label>
+              <input
+                className={`kyc-form__input kyc-form__input--locked${errors.fullName ? ' kyc-form__input--err' : ''}`}
+                name="fullName"
+                value={form.fullName}
+                readOnly
+                tabIndex={-1}
+                placeholder="As on your passport/ID"
+                maxLength={80}
+              />
+              <span className="kyc-form__error">{errors.fullName || ''}</span>
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Phone Number <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" maxLength={20} />
+              <span className="kyc-form__error">{errors.phone || ''}</span>
+            </div>
+          </div>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Date of Birth <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.dob ? ' kyc-form__input--err' : ''}`} type="date" name="dob" value={form.dob} onChange={handleChange} onClick={(e) => { try { e.currentTarget.showPicker?.(); } catch { /* ignore */ } }} min="1900-01-01" max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} />
+              <span className="kyc-form__error">{errors.dob || ''}</span>
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Nationality <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.nationality ? ' kyc-form__input--err' : ''}`} name="nationality" value={form.nationality} onChange={handleChange} placeholder="e.g. British, Indian" maxLength={60} />
+              <span className="kyc-form__error">{errors.nationality || ''}</span>
+            </div>
+          </div>
+          <div className="kyc-form__row">
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">City <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.city ? ' kyc-form__input--err' : ''}`} name="city" value={form.city} onChange={handleChange} placeholder="e.g. London" maxLength={100} />
+              <span className="kyc-form__error">{errors.city || ''}</span>
+            </div>
+            <div className="kyc-form__group">
+              <label className="kyc-form__label">Street Address <span className="kyc-form__req">*</span></label>
+              <input className={`kyc-form__input${errors.address ? ' kyc-form__input--err' : ''}`} name="address" value={form.address} onChange={handleChange} placeholder="Street number and name, Postcode" maxLength={200} />
+              <span className="kyc-form__error">{errors.address || ''}</span>
+            </div>
+          </div>
+
+          <div className="kyc-address-disclaimer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>The details you confirm must exactly match your legally verified government-issued documents. Mismatches may result in verification failure.</span>
+          </div>
+
+          {apiError && <div className="kyc-form__api-error">{apiError}</div>}
+
+          <div className="kyc-doc-actions">
+            <button type="button" className="kyc-back-btn" onClick={() => setStage('docs')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
               Back
             </button>
@@ -3783,6 +4080,16 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+  useEffect(() => {
+    if (!profileMenuOpen) return undefined;
+    const onDown = (e) => { if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) setProfileMenuOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setProfileMenuOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [profileMenuOpen]);
   const { theme, toggleTheme } = useTheme();
   /* Affiliate application — none | pending | approved | rejected */
   const [affiliateApp, setAffiliateApp] = useState(null);
@@ -4111,6 +4418,37 @@ const Dashboard = () => {
 
   const affiliateUserKey = u?.id || u?._id || investor.email;
 
+  // KYC consent — accepted once on first entry; the panel stays browsable while KYC is pending.
+  const purchaseAgreed = !!(u?.purchase_agree ?? u?.purchaseAgree);
+  const handleAcceptAgreement = async () => {
+    await apiService.acceptPurchaseAgreement();
+    const next = { ...(u || {}), purchase_agree: true };
+    setUser(next);
+    saveUser(next);
+  };
+
+  // KYC consent lives on the profile (consent_kyc); the consent screen shows until it is true.
+  const kycConsentGiven = !!(u?.consent_kyc ?? u?.consentKyc);
+  // Re-fetch the profile (KYC status, name, tier…) and sync it into app state
+  const refreshProfile = useCallback(async () => {
+    try {
+      const res = await apiService.get('/auth/me');
+      const profile = res?.data || res;
+      if (profile && typeof profile === 'object' && profile.email) {
+        setUser(profile);
+        saveUser(profile);
+      }
+    } catch { /* keep current state; the next tab switch will retry */ }
+  }, [setUser]);
+
+  const handleConsent = async () => {
+    await apiService.acceptKycConsent();
+    const next = { ...(u || {}), consent_kyc: true };
+    setUser(next);
+    saveUser(next);
+    navigate('/dashboard', { replace: true });
+  };
+
   useEffect(() => {
     const stored = loadAffiliateApplication(affiliateUserKey);
     const apiStatus = investor.affiliateStatus;
@@ -4145,24 +4483,20 @@ const Dashboard = () => {
   const tabFromUrl = pathname.split('/dashboard')[1]?.replace('/', '') || 'overview';
   const activeTab = VALID_TABS.has(tabFromUrl) ? tabFromUrl : 'overview';
 
-  // KYC gate — tabs locked until KYC approved, EXCEPT invest/wallet/transactions are open
+  // Only the consent screen is gated (first entry, KYC never started). After that every tab is
+  // browsable while KYC is pending; invest/wallet show a "complete KYC" notice instead.
   const kycApproved = investor.kycStatus === 'approved';
-  const KYC_FREE_TABS = new Set(['verification', 'settings', 'invest', 'wallet', 'transactions']);
-  const isTabLocked = (id) => !kycApproved && !KYC_FREE_TABS.has(id);
+  const needsConsent = !kycApproved && !kycConsentGiven;
 
-  // On mount: if not KYC-approved and trying to access a locked tab → redirect to verification
-  // Also redirect away from verification tab if KYC is already approved
+  // Redirect away from the verification tab once KYC is approved
   useEffect(() => {
-    if (!kycApproved && !KYC_FREE_TABS.has(activeTab)) {
-      navigate('/dashboard/verification', { replace: true });
-    } else if (kycApproved && activeTab === 'verification') {
+    if (kycApproved && activeTab === 'verification') {
       navigate('/dashboard', { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kycApproved]);
 
   const handleNav = (id) => {
-    if (isTabLocked(id)) return; // ignore clicks on locked tabs
     navigate(`/dashboard${id === 'overview' ? '' : '/' + id}`);
     setSidebarOpen(false);
   };
@@ -4190,13 +4524,12 @@ const Dashboard = () => {
   }, [activeTab]);
 
   const renderTab = () => {
-    // Safety: if tab is locked (shouldn't happen after redirect), show verification
-    if (isTabLocked(activeTab)) return <TabVerification investor={investor} onNav={handleNav} />;
+    if (needsConsent) return <TabVerification investor={investor} onNav={handleNav} gateMode consentGiven={false} onConsent={handleConsent} />;
     const addPendingPurchase = (p) => setPendingPurchases(prev => [p, ...prev]);
     switch (activeTab) {
       case 'overview':     return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} directAirdrops={directAirdrops} onNav={handleNav} />;
       case 'portfolio':    return <TabPortfolio onNav={handleNav} availableTokens={availableTokens} approvedPurchases={approvedPurchases} directAirdrops={directAirdrops} />;
-      case 'invest':       return <TabInvest investor={investor} availableTokens={availableTokens} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onAddPendingPurchase={addPendingPurchase} />;
+      case 'invest':       return <TabInvest investor={investor} availableTokens={availableTokens} dataLoading={dataLoading} lastRefreshed={lastRefreshed} onRefresh={fetchLiveData} onAddPendingPurchase={addPendingPurchase} onNav={handleNav} purchaseAgreed={purchaseAgreed} onAcceptAgreement={handleAcceptAgreement} />;
       case 'transactions': return <TabTransactions pendingPurchases={pendingPurchases} walletTransactions={walletTransactions} onUploadScreenshot={(id, file) => {
         setPendingPurchases(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'screenshot_uploaded', screenshotFile: file } : p));
       }} />;
@@ -4212,7 +4545,7 @@ const Dashboard = () => {
           onClearDirect={() => setDirectAffProgId(null)}
         />
       );
-      case 'verification': return <TabVerification investor={investor} onNav={handleNav} />;
+      case 'verification': return <TabVerification investor={investor} onNav={handleNav} consentGiven onKycSubmitted={refreshProfile} />;
       case 'settings':     return <TabSettings investor={investor} />;
       default:             return <TabOverview investor={investor} approvedPurchases={approvedPurchases} pendingPurchases={pendingPurchases} walletData={walletData} walletTransactions={walletTransactions} directAirdrops={directAirdrops} onNav={handleNav} />;
     }
@@ -4245,15 +4578,16 @@ const Dashboard = () => {
             return (
               <div key={item.id}>
                 <button
-                  className={`db-nav-item ${activeTab === item.id ? 'db-nav-item--active' : ''} ${isTabLocked(item.id) ? 'db-nav-item--locked' : ''}`}
+                  className={`db-nav-item ${activeTab === item.id ? 'db-nav-item--active' : ''} ${item.id === 'verification' && !kycApproved ? 'db-nav-item--kyc-todo' : ''}`}
                   onClick={() => handleNav(item.id)}
-                  title={isTabLocked(item.id) ? 'Complete KYC verification to unlock' : undefined}
                 >
                   <item.Icon />
                   <span>{item.label}</span>
-                  {item.id === 'invest'
-                    ? <span className="db-nav-badge">LIVE</span>
-                    : item.badge && <span className="db-nav-badge db-nav-badge--earn">{item.badge}</span>
+                  {item.id === 'verification' && !kycApproved
+                    ? <span className="db-nav-badge db-nav-badge--kyc">{investor.kycStatus === 'pending' || investor.kycStatus === 'under_review' ? 'Review' : 'Action'}</span>
+                    : item.id === 'invest'
+                      ? <span className="db-nav-badge">LIVE</span>
+                      : item.badge && <span className="db-nav-badge db-nav-badge--earn">{item.badge}</span>
                   }
                 </button>
                 {enrolledList.length > 0 && (
@@ -4340,7 +4674,34 @@ const Dashboard = () => {
               <Icon.bell />
               <span className="db-notif-dot" />
             </button>
-            <div className="db-topbar-avatar">{investor.name.charAt(0)}</div>
+            <div className="db-profile-menu" ref={profileMenuRef}>
+              <button
+                type="button"
+                className="db-topbar-avatar"
+                aria-haspopup="menu"
+                aria-expanded={profileMenuOpen}
+                aria-label="Open profile menu"
+                onClick={() => setProfileMenuOpen(o => !o)}
+              >
+                {investor.name.charAt(0)}
+              </button>
+              {profileMenuOpen && (
+                <div className="db-profile-menu__panel" role="menu">
+                  <div className="db-profile-menu__head">
+                    <strong>{investor.name}</strong>
+                    <span>{investor.email}</span>
+                  </div>
+                  <button type="button" role="menuitem" className="db-profile-menu__item" onClick={() => { setProfileMenuOpen(false); handleNav('settings'); }}>
+                    <Icon.settings />
+                    <span>Profile Settings</span>
+                  </button>
+                  <button type="button" role="menuitem" className="db-profile-menu__item db-profile-menu__item--danger" onClick={() => { setProfileMenuOpen(false); handleLogout(); }}>
+                    <Icon.logout />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

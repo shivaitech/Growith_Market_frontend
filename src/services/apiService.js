@@ -286,6 +286,24 @@ class ApiService {
   createWalletRequest(data) {
     return this.post('/wallet/requests', data);
   }
+
+  /**
+   * POST /api/v1/investor/purchase-agreement
+   * Records the one-time acceptance of the Private Participation Agreement.
+   * The backend should set `purchase_agree: true` on the profile returned by GET /auth/me.
+   */
+  acceptPurchaseAgreement() {
+    return this.post('/purchase-agreement', { agreed: true, version: '1.0' });
+  }
+
+  /**
+   * POST /api/v1/investor/kyc-consent
+   * Records the KYC consent & terms acceptance. The backend should set `consent_kyc: true`
+   * on the profile returned by GET /auth/me.
+   */
+  acceptKycConsent() {
+    return this.post('/kyc-consent', { agreed: true, version: '1.0' });
+  }
 }
 
 const apiService = new ApiService();    

@@ -5,7 +5,7 @@ import 'swiper/css'
 import { Link } from 'react-router-dom'
 import { tokenOfferings } from '../../../data'
 
-function CardImageSlider({ item, detailUrl, isLive }) {
+function CardImageSlider({ item, detailUrl, isLive, height = '220px', radius = '12px 12px 0 0' }) {
   const [, setSw] = useState(null)
   const [, setActiveIdx] = useState(0)
   const hasSlider = item.images && item.images.length > 1
@@ -14,7 +14,7 @@ function CardImageSlider({ item, detailUrl, isLive }) {
 
   return (
     <div>
-      <div style={{ position: 'relative', overflow: 'hidden', height: '220px', width: '100%', borderRadius: '12px 12px 0 0', background: '#0a0d2a' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', height, width: '100%', borderRadius: radius, background: '#0a0d2a' }}>
         {hasSlider ? (
           <Swiper
             modules={[Autoplay]}
@@ -23,10 +23,10 @@ function CardImageSlider({ item, detailUrl, isLive }) {
             grabCursor
             onSwiper={setSw}
             onSlideChange={(s) => setActiveIdx(s.realIndex)}
-            style={{ width: '100%', height: '220px' }}
+            style={{ width: '100%', height }}
           >
             {item.images.map((src, i) => (
-              <SwiperSlide key={i} style={{ height: '220px', width: '100%' }}>
+              <SwiperSlide key={i} style={{ height, width: '100%' }}>
                 <Link to={detailUrl} style={{ display: 'block', height: '100%', width: '100%' }}>
                   <img src={src} alt={`${item.title} ${i + 1}`} style={imgStyle}
                     onError={(e) => { e.target.style.background = 'linear-gradient(135deg, rgba(92,39,254,0.2), rgba(222,199,255,0.1))'; e.target.src = '' }}
@@ -64,6 +64,8 @@ function FeaturedCard({ item }) {
         cursor: 'pointer',
         marginBottom: 0,
         height: '100%',
+        display: 'flex',
+        flexWrap: 'wrap',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.borderColor = 'rgba(157,111,255,0.55)'
@@ -76,9 +78,11 @@ function FeaturedCard({ item }) {
         e.currentTarget.style.background = 'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)'
       }}
     >
-      <CardImageSlider item={item} detailUrl={detailUrl} isLive={isLive} />
+      <div style={{ flex: '1 1 480px', minWidth: 0 }}>
+        <CardImageSlider item={item} detailUrl={detailUrl} isLive={isLive} height="clamp(260px, 42vw, 520px)" radius="20px 0 0 20px" />
+      </div>
 
-      <div style={{ padding: '24px' }}>
+      <div style={{ flex: '1 1 380px', minWidth: 0, padding: 'clamp(24px, 4vw, 48px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <img
             src={item.logo || item.ownerImg}
@@ -105,7 +109,7 @@ function FeaturedCard({ item }) {
 
         <Link to={detailUrl}>
           <h4 className="font-heading" style={{
-            color: '#fff', fontSize: '17px', fontWeight: '600',
+            color: '#fff', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: '600',
             marginBottom: '10px', lineHeight: '1.3', transition: 'color 0.2s ease',
           }}
             onMouseEnter={e => e.currentTarget.style.color = '#DEC7FF'}
@@ -117,10 +121,8 @@ function FeaturedCard({ item }) {
 
         {item.shortDescription && (
           <p style={{
-            fontSize: '13px', lineHeight: '1.6',
-            color: 'rgba(255,255,255,0.5)', marginBottom: '18px',
-            display: '-webkit-box', WebkitLineClamp: '4',
-            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            fontSize: '15px', lineHeight: '1.7',
+            color: 'rgba(255,255,255,0.6)', marginBottom: '22px',
           }}>
             {item.shortDescription}
           </p>
@@ -181,115 +183,18 @@ function FeaturedCard({ item }) {
 }
 
 export default function Project() {
-  // Show all tokens in slider (ShivAI first, then others)
   const shivaiToken = tokenOfferings.find(token => token.slug === 'shivai')
-  const otherTokens = tokenOfferings.filter(token => token.slug !== 'shivai')
-  const featuredTokens = [shivaiToken, ...otherTokens].filter(Boolean)
-
-  const [swiperInstance, setSwiperInstance] = useState(null)
-  const [activeIdx, setActiveIdx] = useState(0)
 
   return (
     <section className="project">
       <div className="shape right" />
       <div className="container-main relative z-10">
         <div className="block-text center mb-10">
-          <h6 className="sub-heading"><span>Live & Upcoming Offerings</span></h6>
-          <h3 className="heading font-heading font-bold text-white">Featured Opportunities</h3>
+          <h6 className="sub-heading"><span>Live Offering</span></h6>
+          <h3 className="heading font-heading font-bold text-white">Current Opportunity</h3>
         </div>
 
-        <div className="featured-tokens-slider-wrap">
-          <Swiper
-            modules={[Autoplay]}
-            spaceBetween={24}
-            slidesPerView={1}
-            loop={featuredTokens.length > 1}
-            centeredSlides
-            autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-            speed={700}
-            grabCursor
-            breakpoints={{
-              640:  { slidesPerView: 1.2, centeredSlides: true },
-              768:  { slidesPerView: 2, centeredSlides: false },
-              1024: { slidesPerView: 2, centeredSlides: false },
-              1200: { slidesPerView: 3, centeredSlides: true },
-            }}
-            onSwiper={setSwiperInstance}
-            onSlideChange={(s) => setActiveIdx(s.realIndex)}
-            className="featured-tokens-swiper"
-          >
-            {featuredTokens.map(item => (
-              <SwiperSlide key={item.id} style={{ height: 'auto' }}>
-                <FeaturedCard item={item} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-
-          <div className="featured-tokens-nav">
-            <button
-              type="button"
-              className="featured-tokens-nav__arrow"
-              aria-label="Previous"
-              onClick={() => swiperInstance?.slidePrev()}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6"/>
-              </svg>
-            </button>
-            <div className="featured-tokens-nav__dots">
-              {featuredTokens.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`featured-tokens-nav__dot${i === activeIdx ? ' featured-tokens-nav__dot--active' : ''}`}
-                  aria-label={`Go to token ${i + 1}`}
-                  onClick={() => swiperInstance?.slideToLoop(i)}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              className="featured-tokens-nav__arrow"
-              aria-label="Next"
-              onClick={() => swiperInstance?.slideNext()}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div className="featured-tokens-cta" style={{ textAlign: 'center', paddingLeft: '40px', paddingRight: '40px', marginTop: '24px' }}>
-          <Link
-            to="/nft"
-            className="action-btn"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              padding: '14px 36px', borderRadius: '100px',
-              fontSize: '14px', fontWeight: '600',
-              fontFamily: "'Conthrax', sans-serif",
-              background: 'linear-gradient(135deg, #5C27FE, #7B45FE)',
-              border: '1px solid rgba(92,39,254,0.5)',
-              color: '#fff', textDecoration: 'none',
-              boxShadow: '0 4px 24px rgba(92,39,254,0.35)',
-              transition: 'all 0.3s ease',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(92,39,254,0.5)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 4px 24px rgba(92,39,254,0.35)'
-            }}
-          >
-            Explore More
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </Link>
-        </div>
+        {shivaiToken && <FeaturedCard item={shivaiToken} />}
       </div>
     </section>
   )

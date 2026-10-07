@@ -47,15 +47,20 @@ const FormInput = ({
       {label && <label htmlFor={name} className="login-label">{label}</label>}
       {hint && (
         <div style={{
-          fontSize: 11,
+          fontSize: 12,
           lineHeight: 1.5,
-          color: 'rgba(255,255,255,0.55)',
-          margin: '0 0 8px',
+          color: 'rgba(255,255,255,0.88)',
+          margin: '0 0 10px',
+          padding: '8px 10px',
+          background: 'rgba(245,158,11,0.12)',
+          border: '1px solid rgba(245,158,11,0.35)',
+          borderLeft: '3px solid #f59e0b',
+          borderRadius: 8,
           display: 'flex',
           alignItems: 'flex-start',
-          gap: 6,
+          gap: 8,
         }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, flexShrink: 0, opacity: 0.7 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, flexShrink: 0 }}>
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="16" x2="12" y2="12"/>
             <line x1="12" y1="8" x2="12.01" y2="8"/>

@@ -10359,3 +10359,36 @@ select.form-input option {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ── Shiny animated nav link (ShivAI) ── */
+.nav-shiny,
+.main-nav .menu .menu-item > a.nav-shiny,
+.mobi-drawer__nav a.nav-shiny {
+  background-image: linear-gradient(100deg,
+    #b9a3f5 0%, #b9a3f5 40%,
+    #ffffff 50%,
+    #b9a3f5 60%, #b9a3f5 100%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: navShiny 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(157,111,255,0.35));
+}
+@keyframes navShiny {
+  0%   { background-position: 100% 0; }
+  70%, 100% { background-position: 0% 0; }
+}
+body[data-theme="light"] .nav-shiny,
+body[data-theme="light"] .main-nav .menu .menu-item > a.nav-shiny {
+  background-image: linear-gradient(100deg,
+    #5C27FE 0%, #5C27FE 40%,
+    #c9a8ff 50%,
+    #5C27FE 60%, #5C27FE 100%);
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-shiny { animation: none; }
+}

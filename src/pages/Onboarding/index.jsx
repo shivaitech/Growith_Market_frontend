@@ -53,7 +53,7 @@ export default function Onboarding() {
     if (user) setUser(user);
     // 4. Show success then navigate
     setShowSuccess(true);
-    setTimeout(() => navigate('/dashboard/verification'), 3000);
+    setTimeout(() => navigate('/dashboard'), 3000);
   };
 
   const renderStep = () => {

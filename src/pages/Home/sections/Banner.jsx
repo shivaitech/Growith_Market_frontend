@@ -19,6 +19,8 @@ const GRADIENT_TEXT = {
   backgroundClip: "text",
 };
 
+const heroTokens = tokenOfferings.filter((t) => t.slug === "shivai");
+
 export default function Banner() {
   const [headlineIndex, setHeadlineIndex] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -36,7 +38,7 @@ export default function Banner() {
     return () => clearInterval(timer);
   }, []);
 
-  const activeToken = tokenOfferings[activeIdx] || tokenOfferings[0];
+  const activeToken = heroTokens[activeIdx] || heroTokens[0];
   const isLive = activeToken?.bid === "LIVE";
   const detailUrl = isLive ? `/token/${activeToken.slug}` : "/nft";
 
@@ -72,7 +74,7 @@ export default function Banner() {
                   projects through a secure, digital ownership platform.
                 </p>
                 <div className="banner-cta-group">
-                  <Link to="/nft" className="action-btn">
+                  <Link to="/token/shivai" className="action-btn">
                     <span>Explore Opportunities</span>
                   </Link>
                   <Link to="/about" className="action-btn banner-cta-secondary">
@@ -100,9 +102,9 @@ export default function Banner() {
                 <Swiper
                   modules={[EffectCards, Autoplay]}
                   effect="cards"
-                  loop
+                  loop={heroTokens.length > 1}
                   speed={1200}
-                  autoplay={{ delay: 6000, disableOnInteraction: false }}
+                  autoplay={heroTokens.length > 1 ? { delay: 6000, disableOnInteraction: false } : false}
                   cardsEffect={{
                     slideShadows: false,
                     perSlideOffset: 10,
@@ -112,7 +114,7 @@ export default function Banner() {
                   onSlideChange={(s) => setActiveIdx(s.realIndex)}
                   className="banner-token-swiper"
                 >
-                  {tokenOfferings.map((t) => (
+                  {heroTokens.map((t) => (
                     <SwiperSlide key={t.id} className="banner-token-slide">
                       <Link
                         to={t.bid === "LIVE" ? `/token/${t.slug}` : "/nft"}
@@ -125,6 +127,7 @@ export default function Banner() {
                 </Swiper>
               </div>
 
+              {heroTokens.length > 1 && (
               <div className="banner-token-nav">
                 <button
                   type="button"
@@ -137,7 +140,7 @@ export default function Banner() {
                   </svg>
                 </button>
                 <div className="banner-token-nav__dots">
-                  {tokenOfferings.map((_, i) => (
+                  {heroTokens.map((_, i) => (
                     <button
                       key={i}
                       type="button"
@@ -158,6 +161,7 @@ export default function Banner() {
                   </svg>
                 </button>
               </div>
+              )}
               </div>
 
               <div className="owner">
