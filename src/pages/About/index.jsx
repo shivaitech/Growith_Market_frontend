@@ -19,7 +19,7 @@ const values = [
       </svg>
     ),
     title: 'Transparent Infrastructure',
-    text: 'Token issuances are minted on Polygon with immutable on-chain records. Every allocation, transfer, and lock-in period is publicly auditable in real time.',
+    text: 'DOS issuances are minted on Polygon with immutable on-chain records. Every allocation, transfer, and lock-in period is publicly auditable in real time.',
   },
   {
     icon: (

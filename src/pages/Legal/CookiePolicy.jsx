@@ -33,7 +33,7 @@ export default function CookiePolicy() {
                     <tbody>
                       <tr>
                         <td><strong>Essential</strong></td>
-                        <td>Authentication, session management, security tokens</td>
+                        <td>Authentication, session management, security credentials</td>
                         <td>Session</td>
                       </tr>
                       <tr>

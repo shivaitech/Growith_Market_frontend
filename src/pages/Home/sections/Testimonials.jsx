@@ -17,7 +17,7 @@ const testimonials = [
   },
   {
     id: 3,
-    text: 'I liked that the platform focuses on real businesses and growth sectors instead of hype-driven token launches. The ShivAI opportunity especially caught my attention because AI adoption across businesses is growing extremely fast.',
+    text: 'I liked that the platform focuses on real businesses and growth sectors instead of hype-driven DOS launches. The ShivAI opportunity especially caught my attention because AI adoption across businesses is growing extremely fast.',
     name: 'Arjun Singh',
     role: 'Private Investor, Singapore',
     rating: 5,

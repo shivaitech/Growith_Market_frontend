@@ -74,7 +74,7 @@ export default function StripeCheckoutModal({
     idemRef.current = makeIdempotencyKey()
 
     if (!tokenId) {
-      setError('Missing token ID — cannot start checkout.')
+      setError('Missing DOS ID — cannot start checkout.')
       return
     }
 
@@ -308,7 +308,7 @@ export default function StripeCheckoutModal({
               Payment Request Created
             </h3>
             <p style={{ fontSize: 13, lineHeight: 1.65, color: 'rgba(255,255,255,0.6)', margin: '0 0 16px' }}>
-              Your purchase request has been registered. Once payment is confirmed through our payment provider, the tokens will be allocated to your wallet automatically.
+              Your purchase request has been registered. Once payment is confirmed through our payment provider, the DOS will be allocated to your wallet automatically.
             </p>
             <div style={{
               background: 'rgba(255,255,255,0.04)',

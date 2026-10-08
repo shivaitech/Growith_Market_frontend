@@ -98,7 +98,7 @@ export default function TokenDetail() {
     return (
       <section className="td-not-found">
         <div className="container big" style={{textAlign:'center',paddingTop:'10rem',paddingBottom:'10rem'}}>
-          <h2 className="font-heading text-white text-3xl mb-4">Token Not Found</h2>
+          <h2 className="font-heading text-white text-3xl mb-4">DOS Not Found</h2>
           <p className="text-white/60 mb-8">The offering you're looking for doesn't exist or has been removed.</p>
           <Link to="/nft" className="action-btn"><span>Browse Marketplace</span></Link>
         </div>
@@ -123,7 +123,7 @@ export default function TokenDetail() {
             <span>/</span>
             <Link to="/nft">Marketplace</Link>
             <span>/</span>
-            <span className="td-breadcrumb--active">{token.name || token.ticker || 'Token'}</span>
+            <span className="td-breadcrumb--active">{token.name || token.ticker || 'DOS'}</span>
           </nav>
 
           <div className="td-hero__grid">
@@ -326,7 +326,7 @@ export default function TokenDetail() {
               <div className="td-section-nav">
                 {[
                   { label: 'Founder',        id: 'td-founder' },
-                  { label: 'Token Structure',id: 'td-structure' },
+                  { label: 'DOS Structure',id: 'td-structure' },
                   { label: 'FAQ',            id: 'td-faq' },
                 ].map(n => (
                   <button key={n.id} className="td-nav-pill" onClick={() => scrollTo(n.id)}>
@@ -422,7 +422,7 @@ export default function TokenDetail() {
                   </SwiperSlide>
                 ))}
               </Swiper>
-              <div className="td-reel-controls">
+              <div className={`td-reel-controls${token.founderVideos.length <= 3 ? " td-reel-controls--fit-desktop" : ""}`}>
                 <button className="td-reel-prev">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
@@ -499,8 +499,8 @@ export default function TokenDetail() {
             {/* Header */}
             <div className="block-text center td-tokenrep-top">
               <h6 className="sub-heading"><span>Digital Asset</span></h6>
-              <h3 className="heading">Token Representation</h3>
-              <p className="td-tokenrep-intro">Security-backed digital assets aligned with long-term platform growth — each token reflects a fractional participation interest in the ShivAI ecosystem.</p>
+              <h3 className="heading">DOS Representation</h3>
+              <p className="td-tokenrep-intro">Security-backed digital assets aligned with long-term platform growth — each DOS reflects a fractional participation interest in the ShivAI ecosystem.</p>
             </div>
 
             {/* 4 Pillar Cards */}
@@ -509,7 +509,7 @@ export default function TokenDetail() {
                 {
                   icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#9D6FFF" strokeWidth="1.8"/><circle cx="12" cy="12" r="3" stroke="#9D6FFF" strokeWidth="1.8"/></svg>,
                   title: 'Digital Ownership Transparency',
-                  desc: 'Full on-chain visibility into token ownership and transaction history.',
+                  desc: 'Full on-chain visibility into DOS ownership and transaction history.',
                   accent: '#9D6FFF',
                 },
                 {
@@ -527,7 +527,7 @@ export default function TokenDetail() {
                 {
                   icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="16 7 22 7 22 13" stroke="#9D6FFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
                   title: 'Long-Term Ecosystem Alignment',
-                  desc: "Token value tied directly to ShivAI's commercial growth and expansion.",
+                  desc: "DOS value tied directly to ShivAI's commercial growth and expansion.",
                   accent: '#9D6FFF',
                 },
               ].map(item => (
@@ -564,7 +564,7 @@ export default function TokenDetail() {
         <section className="td-section td-section--alt" id="td-structure">
           <div className="container big">
             <div className="block-text center">
-              <h6 className="sub-heading"><span>Token Structure</span></h6>
+              <h6 className="sub-heading"><span>DOS Structure</span></h6>
               <h3 className="heading font-heading text-white">Economics & Transparency</h3>
             </div>
 
@@ -572,16 +572,16 @@ export default function TokenDetail() {
               {/* Icon info cards */}
               <div className="td-structure-cards">
                 {[
-                  { title: 'What the Token Represents', text: token.tokenStructure.whatItRepresents },
+                  { title: 'What the DOS Represents', text: token.tokenStructure.whatItRepresents },
                   { title: 'Custodial Wallet',          text: token.tokenStructure.custodialWallet },
                   { title: 'Minting Process',           text: token.tokenStructure.mintingProcess },
                   {
                     title: 'Issuance Pricing',
-                    text: `Fixed issuance price: ${token.issuancePrice} per token. A ${token.minInvestment} investment = ${
+                    text: `Fixed issuance price: ${token.issuancePrice} per DOS. A ${token.minInvestment} investment = ${
                       token.minInvestment && token.issuancePrice
                         ? (parseFloat(token.minInvestment.replace(/[^0-9.]/g, '')) / parseFloat(token.issuancePrice.replace(/[^0-9.]/g, ''))).toLocaleString()
                         : '—'
-                    } tokens.`,
+                    } DOS.`,
                     highlight: true,
                   },
                 ].map((card, i) => (

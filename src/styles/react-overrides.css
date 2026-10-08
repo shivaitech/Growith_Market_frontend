@@ -4794,7 +4794,7 @@ html, body {
 
 
 @media (max-width: 640px) {
-  .td-reel-card__thumb { aspect-ratio: 4 / 3; }
+  .td-reel-card__thumb { aspect-ratio: 4 / 5; }
   .td-founders-header .heading { font-size: 20px !important; }
 }
 
@@ -10391,4 +10391,19 @@ body[data-theme="light"] .main-nav .menu .menu-item > a.nav-shiny {
 }
 @media (prefers-reduced-motion: reduce) {
   .nav-shiny { animation: none; }
+}
+
+/* Founder reel: with 3 or fewer videos all cards fit on desktop, so hide the slider controls there */
+@media (min-width: 1024px) {
+  .td-reel-controls--fit-desktop { display: none; }
+}
+
+/* Hero (mobile): larger ShivAI card */
+@media (max-width: 767px) {
+  .banner .banner__right .image.banner-token-image {
+    width: min(88vw, 360px) !important;
+    height: calc(min(88vw, 360px) * 1.3) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }

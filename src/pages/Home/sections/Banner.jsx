@@ -132,7 +132,7 @@ export default function Banner() {
                 <button
                   type="button"
                   className="banner-token-nav__arrow"
-                  aria-label="Previous token"
+                  aria-label="Previous DOS"
                   onClick={() => swiperInstance?.slidePrev()}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -145,7 +145,7 @@ export default function Banner() {
                       key={i}
                       type="button"
                       className={`banner-token-nav__dot${i === activeIdx ? " banner-token-nav__dot--active" : ""}`}
-                      aria-label={`Go to token ${i + 1}`}
+                      aria-label={`Go to DOS ${i + 1}`}
                       onClick={() => swiperInstance?.slideToLoop(i)}
                     />
                   ))}
@@ -153,7 +153,7 @@ export default function Banner() {
                 <button
                   type="button"
                   className="banner-token-nav__arrow"
-                  aria-label="Next token"
+                  aria-label="Next DOS"
                   onClick={() => swiperInstance?.slideNext()}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -168,11 +168,11 @@ export default function Banner() {
                 <div className="image">
                   <img
                     src={activeToken?.logo || activeToken?.ownerImg || "/assets/images/icon/shivAiToken.png"}
-                    alt={activeToken?.name || "Token"}
+                    alt={activeToken?.name || "DOS"}
                   />
                 </div>
                 <div className="content">
-                  <h5>{activeToken?.name || activeToken?.title?.split(" ")[0]} Token</h5>
+                  <h5>{activeToken?.name || activeToken?.title?.split(" ")[0]} DOS</h5>
                   <p>Status: {activeToken?.bid || "—"}</p>
                 </div>
               </div>

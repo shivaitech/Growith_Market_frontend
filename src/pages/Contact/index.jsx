@@ -159,7 +159,7 @@ export default function Contact() {
                 <h6 className="sub-heading"><span>Get In Touch</span></h6>
                 <h3 className="heading">Talk to the Growith Team</h3>
                 <p className="contact-pg__lead">
-                  Have questions about investing, token issuances, or regulatory requirements?
+                  Have questions about investing, DOS issuances, or regulatory requirements?
                   Our team is here to help — reach out and we'll respond within one business day.
                 </p>
               </div>

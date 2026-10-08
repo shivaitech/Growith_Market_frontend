@@ -104,7 +104,7 @@ const KYC_STEPS = [
 
 const AVAILABLE_TOKENS = [
   {
-    id: 1, slug: 'shivai', name: 'ShivAI Token', ticker: 'DOS',
+    id: 1, slug: 'shivai', name: 'ShivAI DOS', ticker: 'DOS',
     logo: '/assets/images/icon/shivAiToken.png',
     image: '/assets/images/partner/MainShiv.jpeg',
     price: `$${CURRENT_TOKEN_PRICE.toFixed(3)}`,
@@ -114,7 +114,7 @@ const AVAILABLE_TOKENS = [
     raised: 100000000, target: 1000000000,
     totalTokens: 1000000000, availSupply: 900000000, soldTokens: 100000000,
     investors: 511, network: 'ethereum',
-    desc: 'Next-generation AI compute infrastructure token. RAKEZ-registered private placement.'
+    desc: 'Next-generation AI compute infrastructure DOS. RAKEZ-registered private placement.'
   },
 ];
 
@@ -651,7 +651,7 @@ function TokenHoldingDetailsModal({ holding, onClose }) {
                 {e.date && <span className="db-token-detail-row__date">{e.kind === 'airdrop' ? 'Received' : 'Approved'} · {e.date}</span>}
               </div>
               <div className="db-token-detail-row__stats">
-                <div><span>Tokens</span><strong>{fmt(e.amount)} {holding.ticker}</strong></div>
+                <div><span>DOS</span><strong>{fmt(e.amount)} {holding.ticker}</strong></div>
                 {e.kind === 'purchase'
                   ? <div><span>Invested</span><strong>${fmt(e.invested)}</strong></div>
                   : <div><span>USD Value</span><strong>${fmt(e.currentValue)}</strong></div>
@@ -751,7 +751,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
             <span className="db-live-offer-card__badge">
               <span className="db-invest-live-dot" /> LIVE
             </span>
-            <span className="db-live-offer-card__name">ShivAI Token · DOS</span>
+            <span className="db-live-offer-card__name">ShivAI · DOS</span>
           </div>
           <p className="db-live-offer-card__desc">AI-powered infrastructure. Minimum investment $500 — UAE Holding-Backed private placement.</p>
           <div className="db-live-offer-card__stats">
@@ -885,7 +885,7 @@ function TabOverview({ investor, approvedPurchases = [], pendingPurchases = [], 
           <div className="db-wallet-empty" style={{ padding: '16px 0' }}>No transactions yet.</div>
         ) : walletTransactions.slice(0, 5).map(tx => {
           const statusColors = { confirmed: '#22C55E', approved: '#22C55E', completed: '#9D6FFF', pending: '#F59E0B', failed: '#f87171' };
-          const typeLabel = { investment: 'Investment', affiliate: 'Affiliate Commission', redeem: 'Redemption', commission: 'Commission', withdrawal: 'Withdrawal', token_purchase: 'Token Purchase' };
+          const typeLabel = { investment: 'Investment', affiliate: 'Affiliate Commission', redeem: 'Redemption', commission: 'Commission', withdrawal: 'Withdrawal', token_purchase: 'DOS Purchase' };
           return (
             <div key={tx.id} className="db-activity-row">
               <div className="db-activity-dot" style={{ background: statusColors[tx.status] || '#9D6FFF' }} />
@@ -936,7 +936,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
       <div className="db-welcome-bar">
         <div>
           <h1 className="db-h1">My Portfolio</h1>
-          <p className="db-muted">Token holdings, allocation breakdown, and vesting schedule.</p>
+          <p className="db-muted">DOS holdings, allocation breakdown, and vesting schedule.</p>
         </div>
       </div>
       <PrelaunchOfferBanner onNav={onNav} />
@@ -960,7 +960,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
         {/* Token sale progress */}
         <div className="db-raise-progress" style={{ marginBottom: 20 }}>
           <div className="db-raise-progress__header">
-            <span className="db-raise-label">Tokens Sold</span>
+            <span className="db-raise-label">DOS Sold</span>
             <span className="db-raise-pct">{soldPct.toFixed(0)}%</span>
           </div>
           <div className="db-raise-track"><div className="db-raise-fill" style={{ width: `${soldPct}%` }} /></div>
@@ -975,7 +975,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
 
         {/* Token price + supply stats */}
         <div className="db-portfolio-stat-row">
-          <div className="db-p-stat"><span className="db-p-stat__label">Token Price</span><span className="db-p-stat__value" style={{ color: '#6B35FF' }}>{token.price}</span></div>
+          <div className="db-p-stat"><span className="db-p-stat__label">DOS Price</span><span className="db-p-stat__value" style={{ color: '#6B35FF' }}>{token.price}</span></div>
           <div className="db-p-stat"><span className="db-p-stat__label">Total Supply</span><span className="db-p-stat__value">{fmtNum(token.totalTokens || token.target || 0)} {token.ticker}</span></div>
           <div className="db-p-stat"><span className="db-p-stat__label">Min. Investment</span><span className="db-p-stat__value">{token.minInvest || '$500'}</span></div>
           <div className="db-p-stat"><span className="db-p-stat__label">Lock Period</span><span className="db-p-stat__value">{token.lock || '12 months'}</span></div>
@@ -994,7 +994,7 @@ function TabPortfolio({ onNav, availableTokens = AVAILABLE_TOKENS, approvedPurch
             </div>
           </div>
           <div className="db-alloc-bars">
-            <div className="db-section-title" style={{ marginTop: 0, marginBottom: 14 }}>Token Allocation Breakdown</div>
+            <div className="db-section-title" style={{ marginTop: 0, marginBottom: 14 }}>DOS Allocation Breakdown</div>
             {allocSegments.map(a => (
               <div key={a.label} className="db-alloc-row">
                 <div className="db-alloc-row__label">
@@ -1063,8 +1063,8 @@ function PrelaunchOfferBanner({ onNav }) {
         <div className="db-prelaunch-banner__pricing">
           <span className="db-prelaunch-price-old">$10.00</span>
           <span className="db-prelaunch-arrow">→</span>
-          <span className="db-prelaunch-price-new">$5.00 per token</span>
-          <span className="db-prelaunch-saving">2× tokens for the same investment!</span>
+          <span className="db-prelaunch-price-new">$5.00 per DOS</span>
+          <span className="db-prelaunch-saving">2× DOS for the same investment!</span>
         </div>
       </div>
       <div className="db-prelaunch-banner__right">
@@ -1196,7 +1196,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
     if (!selectedToken || tokenQty < 1 || Number(amount) < 500) return;
     const tokenId = selectedToken.id || selectedToken.tokenId || selectedToken._id;
     if (!tokenId) {
-      setApiError('Missing token ID — cannot start checkout.');
+      setApiError('Missing DOS ID — cannot start checkout.');
       return;
     }
 
@@ -1331,7 +1331,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
           )}
           <div className="db-alert db-alert--info" style={{ maxWidth: 460, margin: '0 auto 20px', textAlign: 'left' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div>Tokens will appear in your Wallet with a <strong>Pending Verification</strong> tag. They become active after admin approves your KYC &amp; payment.</div>
+            <div>DOS will appear in your Wallet with a <strong>Pending Verification</strong> tag. They become active after admin approves your KYC &amp; payment.</div>
           </div>
           <button className="db-btn db-btn--primary" onClick={resetFlow}>Invest Again</button>
           <Link to="/dashboard" className="db-btn db-btn--ghost" style={{ marginTop: 10, display: 'inline-block', textAlign: 'center' }}>Go to Dashboard</Link>
@@ -1345,7 +1345,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
       <div className="db-welcome-bar">
         <div>
           <h1 className="db-h1">Invest</h1>
-          <p className="db-muted">Browse open offerings and purchase tokens with USDT.</p>
+          <p className="db-muted">Browse open offerings and purchase DOS with USDT.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {lastRefreshed && (
@@ -1420,7 +1420,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
               {/* Progress bar */}
               <div className="db-raise-progress">
                 <div className="db-raise-progress__header">
-                  <span className="db-raise-label">Tokens Sold</span>
+                  <span className="db-raise-label">DOS Sold</span>
                   <span className="db-raise-pct">{Math.round((t.raised / t.target) * 100)}%</span>
                 </div>
                 <div className="db-raise-track">
@@ -1485,7 +1485,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                   {selectedToken.ticker}
                   {IS_PRELAUNCH ? (
                     <> · <span style={{color:'#4ade80',fontWeight:700}}>{selectedToken.price}</span> <span className="db-price-50off" style={{fontSize:'10px'}}>50% OFF</span></>
-                  ) : <> · {selectedToken.price} per token</>}
+                  ) : <> · {selectedToken.price} per DOS</>}
                 </div>
               </div>
             </div>
@@ -1516,7 +1516,7 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
                 }
               </div>
               <div className="db-form-group">
-                <label className="db-form-label">Estimated Token Allocation</label>
+                <label className="db-form-label">Estimated DOS Allocation</label>
                 <div className="db-token-calc">
                   {tokenQty > 0
                     ? <><strong>{tokenQty.toLocaleString()}</strong> {selectedToken.ticker}</>
@@ -2281,7 +2281,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       <div className="db-welcome-bar">
         <div>
           <h1 className="db-h1">My Wallet</h1>
-          <p className="db-muted">Your token holdings, pending purchases and wallet requests.</p>
+          <p className="db-muted">Your DOS holdings, pending purchases and wallet requests.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {lastRefreshed && (
@@ -2307,14 +2307,14 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       <div className="db-wallet-section-header">
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
-          Active Tokens (All)
+          Active DOS (All)
           <span className="db-wallet-section-count">
             {approvedRows.length + airdropRows.length} total
           </span>
         </div>
       </div>
       {(approvedRows.length + airdropRows.length) === 0 ? (
-        <div className="db-wallet-empty">No active tokens yet.</div>
+        <div className="db-wallet-empty">No active DOS yet.</div>
       ) : (
         <div className="db-holdings-grid">
           {aggregateHoldings(approvedRows, airdropRows).map(h => (
@@ -2328,11 +2328,11 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--green" />
-          Approved Tokens
+          Approved DOS
         </div>
       </div>
       {approvedRows.length === 0 ? (
-        <div className="db-wallet-empty">No approved token holdings yet.</div>
+        <div className="db-wallet-empty">No approved DOS holdings yet.</div>
       ) : (
         <div className="db-wallet-token-grid">
           {approvedRows.map(h => (
@@ -2346,7 +2346,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 <span className="db-wallet-tag db-wallet-tag--green">Active</span>
               </div>
               <div className="db-wallet-token-card__stats">
-                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{h.amount?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>DOS</span><strong>{h.amount?.toLocaleString()}</strong></div>
                 <div className="db-wallet-token-stat"><span>Invested</span><strong>${h.invested?.toLocaleString()}</strong></div>
                 <div className="db-wallet-token-stat"><span>Current Value</span><strong style={{ color: '#22C55E' }}>${h.currentValue?.toLocaleString()}</strong></div>
                 <div className="db-wallet-token-stat"><span>Lock Expiry</span><strong>{h.lockExpiry}</strong></div>
@@ -2382,7 +2382,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 <span className="db-wallet-tag db-wallet-tag--green" style={{ padding: '2px 10px', fontSize: 12 }}>Active</span>
               </div>
               <div className="db-modal-row">
-                <span>Token Name</span>
+                <span>DOS Name</span>
                 <strong>{viewToken.token}</strong>
               </div>
               <div className="db-modal-row">
@@ -2390,7 +2390,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 <strong>{viewToken.ticker || '—'}</strong>
               </div>
               <div className="db-modal-row">
-                <span>Token Qty</span>
+                <span>DOS Qty</span>
                 <strong>{viewToken.amount?.toLocaleString() ?? '—'}</strong>
               </div>
               <div className="db-modal-row">
@@ -2440,7 +2440,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--purple" />
-          Airdrop Tokens
+          Airdrop DOS
         </div>
       </div>
       {airdropRows.length === 0 ? (
@@ -2460,7 +2460,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 </span>
               </div>
               <div className="db-wallet-token-card__stats">
-                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{a.tokenQty?.toLocaleString()} {a.ticker}</strong></div>
+                <div className="db-wallet-token-stat"><span>DOS</span><strong>{a.tokenQty?.toLocaleString()} {a.ticker}</strong></div>
                 <div className="db-wallet-token-stat"><span>Value</span><strong style={{ color: '#22C55E' }}>${a.amountUsd?.toLocaleString()} USD</strong></div>
                 <div className="db-wallet-token-stat"><span>Date</span><strong>{a.date}</strong></div>
                 {a.completedAt && <div className="db-wallet-token-stat"><span>Completed</span><strong>{a.completedAt}</strong></div>}
@@ -2476,12 +2476,12 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
       <div className="db-wallet-section-header" style={{ marginTop: 28 }}>
         <div className="db-wallet-section-title">
           <span className="db-wallet-section-dot db-wallet-section-dot--amber" />
-          Pending Tokens
+          Pending DOS
         </div>
       </div>
       {pendingRows.length === 0 ? (
         <div className="db-wallet-empty">
-          No pending token purchases.{' '}
+          No pending DOS purchases.{' '}
           <button className="db-wallet-link-btn" onClick={() => onNav?.('invest')}>Invest now →</button>
         </div>
       ) : (
@@ -2497,7 +2497,7 @@ function TabWallet({ investor, pendingPurchases = [], approvedPurchases = [], wa
                 <span className="db-wallet-tag db-wallet-tag--amber">Pending</span>
               </div>
               <div className="db-wallet-token-card__stats">
-                <div className="db-wallet-token-stat"><span>Tokens</span><strong>{p.tokenQty?.toLocaleString()}</strong></div>
+                <div className="db-wallet-token-stat"><span>DOS</span><strong>{p.tokenQty?.toLocaleString()}</strong></div>
                 <div className="db-wallet-token-stat"><span>Paid</span><strong>${p.amountUsd?.toLocaleString()} USDT</strong></div>
                 <div className="db-wallet-token-stat"><span>Date</span><strong>{p.date}</strong></div>
                 <div className="db-wallet-token-stat">
@@ -2931,7 +2931,7 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
               Start Investing Now!
             </button>
-            <p className="kyc-pending-invest-hint">You can purchase tokens while your KYC is under review. Tokens will be activated once your verification is approved.</p>
+            <p className="kyc-pending-invest-hint">You can purchase DOS while your KYC is under review. DOS will be activated once your verification is approved.</p>
           </div>
         </div>
       </div>
@@ -4043,7 +4043,7 @@ function TabSettings({ investor }) {
         {[
           { label: 'Investment Confirmations', enabled: true },
           { label: 'KYC Status Updates', enabled: true },
-          { label: 'Token Minting Alerts', enabled: true },
+          { label: 'DOS Minting Alerts', enabled: true },
           { label: 'Lock Expiry Reminders', enabled: false },
           { label: 'Platform Updates', enabled: false },
         ].map(n => (
@@ -4203,7 +4203,7 @@ const Dashboard = () => {
           setAvailableTokens([{
             id:          raw._id || raw.id || 1,
             slug:        raw.slug || 'shivai',
-            name:        raw.name || 'ShivAI Token',
+            name:        raw.name || 'ShivAI DOS',
             ticker:      raw.symbol || raw.ticker || 'DOS',
             logo:        raw.logo || raw.logoUrl || '/assets/images/icon/shivAiToken.png',
             image:       raw.image || raw.bannerImage || '/assets/images/partner/MainShiv.jpeg',
@@ -4213,13 +4213,13 @@ const Dashboard = () => {
             maxInvest:   raw.maxInvestment ? `$${Number(raw.maxInvestment).toLocaleString()}` : '$25,000',
             lock:        raw.lockPeriod || raw.lockDuration || '12 months',
             status:      raw.status || 'LIVE',
-            raised:      sold,          // token count sold
-            target:      totalSupply,   // total token supply
+            raised:      sold,          // DOS count sold
+            target:      totalSupply,   // total DOS supply
             totalTokens: totalSupply,
             availSupply: avSupply,
             soldTokens:  sold,
             investors:   Number(raw.investors || raw.investorCount || raw.totalInvestors || 0),
-            desc:        raw.description || raw.desc || 'Next-generation AI compute infrastructure token.',
+            desc:        raw.description || raw.desc || 'Next-generation AI compute infrastructure DOS.',
             network:     raw.network || 'ethereum',
           }]);
         }
@@ -4619,7 +4619,7 @@ const Dashboard = () => {
             Invest Now
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
-          <p className="db-sidebar-invest-sub">ShivAI Token · LIVE</p>
+          <p className="db-sidebar-invest-sub">ShivAI DOS · LIVE</p>
         </div>
 
         {/* KYC status chip at bottom */}

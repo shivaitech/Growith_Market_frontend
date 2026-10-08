@@ -45,7 +45,7 @@ const ShareButtons = ({ link, tokenName, tokenTicker }) => (
   <div className="db-aff-share-row db-aff-share-row--stack">
     {[
       { label: 'Telegram', color: '#229ED9', href: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`Invest in ${tokenName || 'Growith'} — join via my link`)}` },
-      { label: 'X / Twitter', color: '#1DA1F2', href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`Investing in ${tokenTicker || 'tokens'} on Growith`)}` },
+      { label: 'X / Twitter', color: '#1DA1F2', href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(link)}&text=${encodeURIComponent(`Investing in ${tokenTicker || 'DOS'} on Growith`)}` },
       { label: 'WhatsApp', color: '#25D366', href: `https://wa.me/?text=${encodeURIComponent(`Join Growith: ${link}`)}` },
     ].map(s => (
       <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
@@ -117,7 +117,7 @@ function AffiliateApplyView({ investor, onSubmit, submitting }) {
           <span className="db-aff-hero__pill">Partner Program</span>
           <h1 className="db-aff-hero__title">Turn your network into <span>real earnings</span></h1>
           <p className="db-aff-hero__desc">
-            Apply to become a Growith affiliate. Share token investment links, grow the community, and earn up to <strong>5% commission</strong> on every confirmed investment — plus L2 &amp; L3 network rewards.
+            Apply to become a Growith affiliate. Share DOS investment links, grow the community, and earn up to <strong>5% commission</strong> on every confirmed investment — plus L2 &amp; L3 network rewards.
           </p>
           <div className="db-aff-hero__chips">
             <span>💎 ShivAI campaigns live</span>
@@ -411,7 +411,7 @@ function AffiliateDashboard({
       <div className="db-aff-block">
         <div className="db-aff-v2-section-head">
           <AffSectionTitle>Active programs</AffSectionTitle>
-          <p className="db-aff-v2-section-desc">Join campaigns for token-specific links and boosted rates.</p>
+          <p className="db-aff-v2-section-desc">Join campaigns for DOS-specific links and boosted rates.</p>
         </div>
         <div className="db-aff-program-list">
           {AFFILIATE_PROGRAMS.map(prog => {

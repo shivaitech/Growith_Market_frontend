@@ -58,7 +58,7 @@ export default function FutureLiquidity() {
             <div className="fl-body">
               <h5 className="fl-sub-heading">Exchange Integration Vision</h5>
               <p className="fl-text">
-                The long-term vision includes enabling future public exchange accessibility for ShivAI tokens, subject to:
+                The long-term vision includes enabling future public exchange accessibility for ShivAI DOS, subject to:
               </p>
               <ul className="fl-pills">
                 {subjectTo.map(item => (

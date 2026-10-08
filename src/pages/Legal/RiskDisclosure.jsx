@@ -29,7 +29,7 @@ export default function RiskDisclosure() {
 
               <div className="legal-pg__section">
                 <h5 className="legal-pg__section-title">2. Illiquidity Risk</h5>
-                <p>Tokens issued on Growith represent private placement securities. There is no secondary market for resale unless explicitly indicated in a specific offering. You should be prepared to hold your investment for the full duration of the stated lock-in period, which may range from 12 to 60 months.</p>
+                <p>DOS issued on Growith represent private placement securities. There is no secondary market for resale unless explicitly indicated in a specific offering. You should be prepared to hold your investment for the full duration of the stated lock-in period, which may range from 12 to 60 months.</p>
               </div>
 
               <div className="legal-pg__section">
@@ -39,7 +39,7 @@ export default function RiskDisclosure() {
 
               <div className="legal-pg__section">
                 <h5 className="legal-pg__section-title">4. Technology &amp; Blockchain Risk</h5>
-                <p>Tokens are issued on the Polygon blockchain. Blockchain technology is subject to smart contract vulnerabilities, network congestion, protocol upgrades, and regulatory uncertainty. While Growith uses institutional custodial infrastructure, no technology is entirely risk-free.</p>
+                <p>DOS are issued on the Polygon blockchain. Blockchain technology is subject to smart contract vulnerabilities, network congestion, protocol upgrades, and regulatory uncertainty. While Growith uses institutional custodial infrastructure, no technology is entirely risk-free.</p>
               </div>
 
               <div className="legal-pg__section">
@@ -54,7 +54,7 @@ export default function RiskDisclosure() {
 
               <div className="legal-pg__section">
                 <h5 className="legal-pg__section-title">7. Dilution Risk</h5>
-                <p>Future funding rounds by an issuer may dilute the proportional ownership represented by your token. Growith will disclose pre-emption rights and dilution provisions in each offering prospectus.</p>
+                <p>Future funding rounds by an issuer may dilute the proportional ownership represented by your DOS. Growith will disclose pre-emption rights and dilution provisions in each offering prospectus.</p>
               </div>
 
               <div className="legal-pg__section">

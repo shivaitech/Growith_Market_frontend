@@ -20,7 +20,7 @@ export const REWARD_HIGHLIGHTS = [
   { icon: '💰', title: 'Up to 5% per referral', desc: 'Earn on every confirmed L1 investment' },
   { icon: '🔗', title: '3-level network', desc: 'L2 & L3 commissions from your network' },
   { icon: '⚡', title: 'Fast payouts', desc: 'Commissions land in your Growith wallet' },
-  { icon: '🚀', title: 'Token campaigns', desc: 'Join ShivAI & VIP programs for boosted rates' },
+  { icon: '🚀', title: 'DOS campaigns', desc: 'Join ShivAI & VIP programs for boosted rates' },
 ];
 
 export function loadAffiliateApplication(userKey) {

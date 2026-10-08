@@ -135,14 +135,14 @@ export default function StripePaymentPage() {
           setAllocationPending(true)
           stripeLog('UI: showing success with allocation still pending (webhook slow or missing)')
         } else {
-          stripeLog('UI: showing success — tokens allocated', req)
+          stripeLog('UI: showing success — DOS allocated', req)
         }
         setPhase('success')
       })
       .catch((err) => {
         if (err?.name === 'AbortError') return
         stripeLog('Approval wait failed', err?.message)
-        setError(err?.message || 'Could not confirm token allocation.')
+        setError(err?.message || 'Could not confirm DOS allocation.')
         setPhase('error')
       })
   }
@@ -155,8 +155,8 @@ export default function StripePaymentPage() {
   const stripe = getStripe()
   const displayAmount = order?.amountUsd ?? 0
   const displayQty = order?.tokenQty ?? 0
-  const displayTicker = order?.ticker || 'TOKENS'
-  const displayName = order?.tokenName || 'Token Purchase'
+  const displayTicker = order?.ticker || 'DOS'
+  const displayName = order?.tokenName || 'DOS Purchase'
 
   return (
     <div className="sp-page">
@@ -191,7 +191,7 @@ export default function StripePaymentPage() {
 
             <div className="sp-summary__rows">
               <div className="sp-summary__row">
-                <span>Tokens</span>
+                <span>DOS</span>
                 <strong>{Number(displayQty).toLocaleString()} {displayTicker}</strong>
               </div>
               <div className="sp-summary__row">
@@ -205,7 +205,7 @@ export default function StripePaymentPage() {
             </div>
 
             <p className="sp-summary__note">
-              Token allocation is confirmed after payment verification. You will receive an email once tokens are credited to your wallet.
+              DOS allocation is confirmed after payment verification. You will receive an email once DOS are credited to your wallet.
             </p>
           </aside>
 
@@ -238,7 +238,7 @@ export default function StripePaymentPage() {
                 <div className="sp-spinner" />
                 <h2>Payment confirmed</h2>
                 <p>
-                  Stripe accepted your payment. Waiting for secure verification and token allocation…
+                  Stripe accepted your payment. Waiting for secure verification and DOS allocation…
                 </p>
                 {paymentIntentId && (
                   <p className="sp-state__ref">Ref: <span className="sp-mono">{paymentIntentId}</span></p>
@@ -249,10 +249,10 @@ export default function StripePaymentPage() {
             {phase === 'success' && (
               <div className="sp-state sp-state--success">
                 <div className="sp-state__icon sp-state__icon--success">✓</div>
-                <h2>{allocationPending ? 'Payment received' : 'Tokens allocated'}</h2>
+                <h2>{allocationPending ? 'Payment received' : 'DOS allocated'}</h2>
                 <p>
                   {allocationPending
-                    ? 'Your payment was successful. Token allocation is still processing — check your wallet in a few minutes or watch for the confirmation email.'
+                    ? 'Your payment was successful. DOS allocation is still processing — check your wallet in a few minutes or watch for the confirmation email.'
                     : `Your payment is complete and ${Number(displayQty).toLocaleString()} ${displayTicker} will appear in your wallet. A confirmation email has been sent.`}
                 </p>
                 {paymentIntentId && (

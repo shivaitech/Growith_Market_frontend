@@ -82,7 +82,7 @@ const OnboardingSuccess = () => {
               <div className="step-number">3</div>
               <div className="step-content">
                 <p className="step-title">Start Investing</p>
-                <p className="step-desc">Access exclusive AI token sales and investment opportunities.</p>
+                <p className="step-desc">Access exclusive AI DOS sales and investment opportunities.</p>
               </div>
             </div>
           </div>

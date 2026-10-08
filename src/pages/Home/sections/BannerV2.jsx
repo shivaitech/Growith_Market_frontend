@@ -32,7 +32,7 @@ export default function BannerV2() {
       <div className="bv2__header">
         <Link to="/token/shivai" className="bv2__live-pill">
           <span className="bv2__live-dot" />
-          <span>ShivAI Token is now LIVE</span>
+          <span>ShivAI DOS is now LIVE</span>
           <span className="bv2__pill-sep">&nbsp;&middot;&nbsp;</span>
           <span>UAE-Structured Framework</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -142,7 +142,7 @@ export default function BannerV2() {
               <div className="bv2__img-ring">
                 <img
                   src="/assets/images/partner/HeroShivaAI.jpeg"
-                  alt="ShivAI Token"
+                  alt="ShivAI DOS"
                   className="bv2__img"
                 />
               </div>
@@ -157,7 +157,7 @@ export default function BannerV2() {
                 </svg>
               </div>
               <div className="bv2__notif-body">
-                <div className="bv2__notif-title">ShivAI Token</div>
+                <div className="bv2__notif-title">ShivAI DOS</div>
                 <div className="bv2__notif-sub">ETA: Settlement In Your Favour</div>
               </div>
               <div className="bv2__notif-pct">+6.2%</div>
@@ -182,7 +182,7 @@ export default function BannerV2() {
             <div className="bv2__divider" />
             <div className="bv2__card-rows">
               {[
-                ["Token", "ShivAI"],
+                ["DOS", "ShivAI"],
                 ["Standard", "ERC-20"],
                 ["Chain", "Polygon"],
                 ["Regulated", "Yes"],

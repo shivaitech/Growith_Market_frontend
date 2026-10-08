@@ -306,7 +306,7 @@ export default function NFT() {
           {filteredTokens.length === 0 && (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <h4 className="font-heading" style={{ color: '#fff', fontSize: '20px', marginBottom: '12px' }}>
-                No Tokens Found
+                No DOS Found
               </h4>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>
                 Try adjusting your filters

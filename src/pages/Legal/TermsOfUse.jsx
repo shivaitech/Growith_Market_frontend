@@ -39,8 +39,8 @@ export default function TermsOfUse() {
               </div>
 
               <div className="legal-pg__section">
-                <h5 className="legal-pg__section-title">5. Investment Tokens</h5>
-                <p>All tokens issued on the Growith platform represent private placement securities. They are non-tradable on secondary markets unless explicitly stated. Tokens are subject to lock-in periods disclosed in each offering's prospectus. Growith does not guarantee returns or liquidity.</p>
+                <h5 className="legal-pg__section-title">5. Investment DOS</h5>
+                <p>All DOS issued on the Growith platform represent private placement securities. They are non-tradable on secondary markets unless explicitly stated. DOS are subject to lock-in periods disclosed in each offering's prospectus. Growith does not guarantee returns or liquidity.</p>
               </div>
 
               <div className="legal-pg__section">
