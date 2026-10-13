@@ -1,3 +1,4 @@
+import { profileFromResponse } from '../utils/profile';
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
@@ -40,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
     authService.getMe()
       .then(res => {
         // API shape: { success, data: { user: {...} } } — extract the nested user
-        const userData = res?.data?.user || res?.data || res?.user || res;
+        const userData = profileFromResponse(res);
         setUser(userData);
         setToken(storedToken);
         ssSetUser(userData);

@@ -3,7 +3,26 @@
     "allow": [
       "Bash(grep -rn \"2\\\\.4M\\\\|1,200\\\\|\\\\$2\\\\|Capital\\\\|EU-Regulated Issuances\\\\|stats\" \"c:\\\\Users\\\\admin\\\\Desktop\\\\growith\\\\Growith_Market_frontend\\\\src\\\\layouts\" --include=\"*.jsx\" --include=\"*.js\")",
       "Bash(awk -F: '$1 <= 2268')",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(ls \"c:/Users/admin/Desktop/growith/\" 2>&1)",
+      "Read(//c/Users/admin/Desktop/growith/**)",
+      "Bash(grep -oE \"#[0-9A-Fa-f]{3,8}\" src/styles/dashboard.css)",
+      "Read(//tmp/**)",
+      "Bash(awk ' *)",
+      "Bash(wc -l /tmp_worklist_a.txt)",
+      "Bash(mkdir -p 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-admin-Desktop-growith-Growith-Market-frontend\\\\69e7140c-5571-48b2-be5a-b611140c491c\\\\scratchpad')",
+      "Bash(npx vite *)",
+      "Bash(python3 -c ' *)",
+      "Bash(grep -oE 'body\\\\[data-theme=\"light\"\\\\][^{,]*' src/styles/dashboard.css)",
+      "Bash(grep -E \"^\\\\.db-\\(tx-note|alloc-row|token-card|portfolio-card|qa-card|settings-card|holding-row|stat-card|stat-value|token-detail-row$\\)$\" \"C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-admin-Desktop-growith-Growith-Market-frontend\\\\69e7140c-5571-48b2-be5a-b611140c491c\\\\scratchpad\\\\covered.txt\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git push *)",
+      "Bash(sed -i \"1261s/.*/            <span className=\\\\\"db-last-refreshed\\\\\">/\" src/pages/Dashboard/index.jsx)",
+      "Bash(sed -i \"2181s/.*/            <span className=\\\\\"db-last-refreshed\\\\\">/\" src/pages/Dashboard/index.jsx)"
     ]
   }
 }

@@ -130,6 +130,13 @@ class ApiService {
     }
   }
 
+  async patch(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
   async put(endpoint, data) {
     return this.request(endpoint, {
       method: 'PUT',
@@ -287,22 +294,32 @@ class ApiService {
     return this.post('/wallet/requests', data);
   }
 
+  // ── Agreements ───────────────────────────────────────────
+
   /**
-   * POST /api/v1/investor/purchase-agreement
-   * Records the one-time acceptance of the Private Participation Agreement.
-   * The backend should set `purchase_agree: true` on the profile returned by GET /auth/me.
+   * GET /api/v1/investor/agreements
+   * -> { termsAndCondition, purchaseAgree, consentKyc, agreementFile } or null
    */
-  acceptPurchaseAgreement() {
-    return this.post('/purchase-agreement', { agreed: true, version: '1.0' });
+  getAgreements() {
+    return this.get('/agreements');
   }
 
   /**
-   * POST /api/v1/investor/kyc-consent
-   * Records the KYC consent & terms acceptance. The backend should set `consent_kyc: true`
-   * on the profile returned by GET /auth/me.
+   * PATCH /api/v1/investor/agreements/terms
+   * Records the KYC consent & terms checkbox (termsAndCondition: true).
    */
   acceptKycConsent() {
-    return this.post('/kyc-consent', { agreed: true, version: '1.0' });
+    return this.patch('/agreements/terms', { termsAndCondition: true });
+  }
+
+  /**
+   * POST /api/v1/investor/agreements/purchase  (multipart/form-data, PDF up to 10MB)
+   * Uploads the final signed Private Participation Agreement; the backend sets purchaseAgree = true.
+   */
+  uploadPurchaseAgreement(file) {
+    const formData = new FormData();
+    formData.append('agreementFile', file, file.name);
+    return this.postForm('/agreements/purchase', formData);
   }
 }
 

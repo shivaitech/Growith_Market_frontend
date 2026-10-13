@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"\\\\$0\\\\.01\\\\b\" src/pages/Dashboard/index.jsx src/data/index.js src/pages/Home/sections/FAQ.jsx)",
+      "Bash(npx vite *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 // Country → state/province list. The dataset is loaded lazily so it stays out of the main bundle.
 // Returns [] when a country has no subdivisions in the dataset (caller falls back to free text).
 
-const ALIASES = {
+export const ALIASES = {
   'Bahamas': 'The Bahamas',
   'Cabo Verde': 'Cape Verde',
   'Congo (DRC)': 'Democratic Republic of the Congo',
@@ -14,7 +14,7 @@ const ALIASES = {
   'São Tomé & Príncipe': 'Sao Tome and Principe',
 };
 
-const norm = (s) => s.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, ' ').trim();
+export const norm = (s) => s.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, ' ').trim();
 
 let cache = null;
 

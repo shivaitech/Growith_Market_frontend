@@ -8,6 +8,7 @@ import { useRecoilValue, useRecoilState } from 'recoil';
 import { userState, authTokenState } from '../../recoil/auth';
 import apiService from '../../services/apiService';
 import { getStatesForCountry } from '../../utils/countryStates';
+import { getDialCodes, isoForCountryName, splitInternationalPhone } from '../../utils/dialCodes';
 import { extractText, parseKycText, parseAadhaarNumber, parsePanNumber } from '../../utils/kycOcr';
 import { clearAuth, getUser, getToken, setUser as saveUser } from '../../utils/secureStorage';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -15,6 +16,8 @@ import { Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import TabAffiliate from './TabAffiliate';
+import PurchaseAgreementFlow from './PurchaseAgreementFlow';
+import { normalizeProfile, profileFromResponse } from '../../utils/profile';
 import { AFFILIATE_PROGRAMS, AFFILIATE_STATUS, loadAffiliateApplication, saveAffiliateApplication } from './affiliateData';
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -1090,65 +1093,6 @@ function PrelaunchOfferBanner({ onNav }) {
   );
 }
 
-const AGREEMENT_PDF = '/assets/documents/ShivAI_DOS_Private_Participation_Agreement.pdf';
-
-/* ── One-time Private Participation Agreement (shown when a verified user first starts purchasing) ── */
-function PurchaseAgreementModal({ open, onClose, onAccept }) {
-  const [checked, setChecked] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => { if (open) { setChecked(false); setError(''); } }, [open]);
-  if (!open) return null;
-
-  const handleAccept = async () => {
-    setSubmitting(true);
-    setError('');
-    try {
-      await onAccept();
-    } catch (err) {
-      setError(err?.message || 'We could not record your acceptance. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="db-modal-overlay" onClick={submitting ? undefined : onClose}>
-      <div className="db-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 820, width: '94vw' }}>
-        <div className="db-modal-header">
-          <div>
-            <div className="db-modal-header__title">Private Participation Agreement</div>
-            <div className="db-modal-header__sub">Please review and accept before you start investing. This is a one-time step.</div>
-          </div>
-          <button className="db-modal-close" onClick={onClose} disabled={submitting} aria-label="Close">✕</button>
-        </div>
-        <div className="db-modal-body">
-          <iframe
-            title="Private Participation Agreement"
-            src={`${AGREEMENT_PDF}#toolbar=0&navpanes=0`}
-            style={{ width: '100%', height: '52vh', minHeight: 300, border: '1px solid rgba(128,128,128,0.3)', borderRadius: 10, background: '#fff' }}
-          />
-          <a href={AGREEMENT_PDF} target="_blank" rel="noreferrer" style={{ display: 'inline-block', margin: '10px 0 14px', fontSize: 13, color: '#9D6FFF' }}>
-            Open the full agreement in a new tab ↗
-          </a>
-          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, lineHeight: 1.6, cursor: 'pointer' }}>
-            <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} style={{ marginTop: 4 }} />
-            <span>I have read, understood and agree to be legally bound by the Private Participation Agreement, including the Risk Statement in Schedule 3. I understand that selecting "I Accept" is my electronic signature.</span>
-          </label>
-          {error && <div className="kyc-form__api-error" style={{ marginTop: 12 }}>{error}</div>}
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
-            <button type="button" className="db-btn db-btn--ghost" onClick={onClose} disabled={submitting}>Cancel</button>
-            <button type="button" className="db-btn db-btn--primary" onClick={handleAccept} disabled={!checked || submitting}>
-              {submitting ? 'Recording…' : 'I Accept / Agree'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading = false, lastRefreshed = null, onRefresh, onAddPendingPurchase, onNav, purchaseAgreed = false, onAcceptAgreement }) {
   const navigate = useNavigate();
   const [agreementFor, setAgreementFor] = useState(null);   // token waiting for the agreement to be accepted
@@ -1367,11 +1311,12 @@ function TabInvest({ investor, availableTokens = AVAILABLE_TOKENS, dataLoading =
 
       <PrelaunchOfferBanner />
 
-      <PurchaseAgreementModal
+      <PurchaseAgreementFlow
         open={!!agreementFor}
+        investor={investor}
         onClose={() => setAgreementFor(null)}
-        onAccept={async () => {
-          await onAcceptAgreement?.();
+        onAccept={async (file, values) => {
+          await onAcceptAgreement?.(file, values);
           const t = agreementFor;
           setAgreementFor(null);
           if (t) {
@@ -2777,10 +2722,24 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
     city:        '',
     state:       '',
     phone:       '',
+    phoneIso:    '',
     address:     '',
   });
   const [errors, setErrors] = useState({});
   const [stateOptions, setStateOptions] = useState([]);
+  const [dialCodes, setDialCodes] = useState([]);
+  useEffect(() => { getDialCodes().then(setDialCodes); }, []);
+  // Pick the dial code once the list is loaded: from an international number if present, else from the country
+  useEffect(() => {
+    if (!dialCodes.length) return;
+    setForm(prev => {
+      if (prev.phoneIso) return prev;
+      const countryIso = isoForCountryName(dialCodes, prev.country);
+      const split = splitInternationalPhone(dialCodes, prev.phone, countryIso);
+      if (split) return { ...prev, phoneIso: split.iso, phone: split.number };
+      return countryIso ? { ...prev, phoneIso: countryIso } : prev;
+    });
+  }, [dialCodes, form.country, form.phone]);
   const ocrRef = useRef({});               // field -> Promise<string> of OCR text
   const [ocrBusy, setOcrBusy] = useState(false);
   const [ocrResult, setOcrResult] = useState({ ran: false, found: false, nameMatch: null });
@@ -2879,7 +2838,7 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
   };
 
   // Already approved — show status only
-  if (investor.kycStatus === 'approved') {
+  if (!gateMode && investor.kycStatus === 'approved') {
     return (
       <div className="db-tab-content">
         <div className="db-welcome-bar">
@@ -2898,7 +2857,7 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
   }
 
   // Under review
-  if (investor.kycStatus === 'pending' || stage === 'pending') {
+  if (!gateMode && (investor.kycStatus === 'pending' || stage === 'pending')) {
     return (
       <div className="db-tab-content">
         <div className="db-welcome-bar">
@@ -3617,8 +3576,10 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
       }
       if (!form.phone.trim()) {
         errs.phone = 'Phone number is required';
-      } else if (!/^\+?[\d\s\-]{7,20}$/.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 7) {
-        errs.phone = 'Enter a valid phone number (e.g. +44 7700 900000)';
+      } else if (!form.phoneIso) {
+        errs.phone = 'Select a country code';
+      } else if (!/^[\d\s\-]{6,18}$/.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 6 || form.phone.replace(/\D/g, '').length > 14) {
+        errs.phone = 'Enter a valid phone number (6–14 digits)';
       }
       if (!form.address.trim()) {
         errs.address = 'Residential address is required';
@@ -3647,7 +3608,7 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
         formData.append('countryOfResidence', form.country);
         formData.append('city', form.city.trim());
         formData.append('stateProvince', form.state.trim());
-        formData.append('phoneNumber', form.phone.trim());
+        formData.append('phoneNumber', `+${(dialCodes.find(c => c.iso === form.phoneIso)?.code) || ''} ${form.phone.replace(/\D/g, '')}`);
         formData.append('streetAddress', form.address.trim());
         formData.append('termsAgreed', 'true');
 
@@ -3811,7 +3772,20 @@ function TabVerification({ investor, onNav, consentGiven = true, gateMode = fals
             </div>
             <div className="kyc-form__group">
               <label className="kyc-form__label">Phone Number <span className="kyc-form__req">*</span></label>
-              <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+44 7700 900000" maxLength={20} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <select
+                  className={`kyc-form__input kyc-form__select${errors.phone ? ' kyc-form__input--err' : ''}`}
+                  name="phoneIso"
+                  value={form.phoneIso}
+                  onChange={handleChange}
+                  aria-label="Country code"
+                  style={{ flex: '0 0 42%', minWidth: 0, textOverflow: 'ellipsis' }}
+                >
+                  <option value="">Code…</option>
+                  {dialCodes.map(c => <option key={c.iso} value={c.iso}>{c.flag} {c.name} (+{c.code})</option>)}
+                </select>
+                <input className={`kyc-form__input${errors.phone ? ' kyc-form__input--err' : ''}`} type="tel" inputMode="numeric" name="phone" value={form.phone} onChange={handleChange} placeholder="Phone number" maxLength={18} style={{ flex: 1, minWidth: 0 }} />
+              </div>
               <span className="kyc-form__error">{errors.phone || ''}</span>
             </div>
           </div>
@@ -4401,6 +4375,7 @@ const Dashboard = () => {
   const investor = {
     name:                  u?.name        || u?.fullName   || INVESTOR.name,
     email:                 u?.email                       || INVESTOR.email,
+    accountId:             u?.id || u?._id || '',
     phone:                 u?.phone       || u?.phoneNumber || '',
     country:               u?.country     || u?.countryOfResidence || '',
     dob:                   u?.dob         || u?.dateOfBirth || '',
@@ -4419,21 +4394,27 @@ const Dashboard = () => {
   const affiliateUserKey = u?.id || u?._id || investor.email;
 
   // KYC consent — accepted once on first entry; the panel stays browsable while KYC is pending.
-  const purchaseAgreed = !!(u?.purchase_agree ?? u?.purchaseAgree);
-  const handleAcceptAgreement = async () => {
-    await apiService.acceptPurchaseAgreement();
-    const next = { ...(u || {}), purchase_agree: true };
+  const purchaseAgreed = !!(u?.purchase_agree ?? u?.purchaseAgree ?? u?.agreement?.purchaseAgree);
+  const handleAcceptAgreement = async (signedPdf) => {
+    const res = await apiService.uploadPurchaseAgreement(signedPdf);
+    const saved = res?.data || {};
+    const next = {
+      ...(u || {}),
+      purchase_agree: true,
+      agreement_file: saved.agreementFile || u?.agreement_file || null,
+      agreement: { ...(u?.agreement || {}), purchaseAgree: true, agreementFile: saved.agreementFile || u?.agreement?.agreementFile || null },
+    };
     setUser(next);
     saveUser(next);
   };
 
   // KYC consent lives on the profile (consent_kyc); the consent screen shows until it is true.
-  const kycConsentGiven = !!(u?.consent_kyc ?? u?.consentKyc);
+  const kycConsentGiven = !!(u?.consent_kyc || u?.consentKyc || u?.terms_accepted || u?.agreement?.consentKyc || u?.agreement?.termsAndCondition);
   // Re-fetch the profile (KYC status, name, tier…) and sync it into app state
   const refreshProfile = useCallback(async () => {
     try {
       const res = await apiService.get('/auth/me');
-      const profile = res?.data || res;
+      const profile = profileFromResponse(res);
       if (profile && typeof profile === 'object' && profile.email) {
         setUser(profile);
         saveUser(profile);
@@ -4443,7 +4424,7 @@ const Dashboard = () => {
 
   const handleConsent = async () => {
     await apiService.acceptKycConsent();
-    const next = { ...(u || {}), consent_kyc: true };
+    const next = { ...(u || {}), terms_accepted: true, agreement: { ...(u?.agreement || {}), termsAndCondition: true } };
     setUser(next);
     saveUser(next);
     navigate('/dashboard', { replace: true });
@@ -4513,7 +4494,7 @@ const Dashboard = () => {
     const tok = getToken();
     if (tok) {
       apiService.get('/auth/me').then(res => {
-        const profile = res?.data || res;
+        const profile = profileFromResponse(res);
         if (profile && typeof profile === 'object' && profile.email) {
           setUser(profile);
           saveUser(profile);
