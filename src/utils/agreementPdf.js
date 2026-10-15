@@ -73,8 +73,8 @@ export const PARTICIPATION_PLACEHOLDERS = {
 // Not shown to the user. Fixed ShivAI company details printed on every agreement.
 // TODO: fill these in (values are not final until provided by ShivAI).
 export const COMPANY_DETAILS = {
-  company_licence_no: '',
-  company_registered_address: '',
+  company_licence_no: '1581558',
+  company_registered_address: 'Office 109, Metropolis Towers, Business Bay, Dubai, United Arab Emirates',
   company_notice_contact: '',
   dispute_forum: '',
   company_authorised_representative: '',
@@ -100,7 +100,7 @@ export function buildPrefill(investor = {}) {
 
 // Small boxes: shrink the font so longer values still fit on one line
 const FONT_SIZE = {
-  company_registered_address: 7, company_notice_contact: 7, dispute_forum: 7, participant_full_name: 8,
+  company_registered_address: 6, company_notice_contact: 7, dispute_forum: 7, participant_full_name: 8,
   month_12_date: 7, month_24_date: 7, participation_level: 6.5, participation_amount: 6.5, dos_allocated: 6.5, price_per_dos: 7.5, hold_bonus_percent: 7.5,
 };
 
